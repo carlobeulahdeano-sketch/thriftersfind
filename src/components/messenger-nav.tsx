@@ -17,7 +17,11 @@ import { User } from "@/lib/types";
 import { getUsers } from "@/app/(app)/users/actions";
 import { getUnreadCounts } from "./chat/chat-actions";
 
-export function MessengerNav() {
+interface MessengerNavProps {
+    currentUser: User | null;
+}
+
+export function MessengerNav({ currentUser }: MessengerNavProps) {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -123,6 +127,7 @@ export function MessengerNav() {
             {selectedUser && (
                 <ChatBox
                     user={selectedUser}
+                    currentUser={currentUser}
                     onClose={() => setSelectedUser(null)}
                 />
             )}

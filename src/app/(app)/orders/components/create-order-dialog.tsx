@@ -33,6 +33,7 @@ import { createOrder } from "../actions";
 import { useRouter } from "next/navigation";
 import { createCustomer } from "../../customers/actions";
 import { Station } from "../../stations/actions";
+import { format } from "date-fns";
 
 interface CreateOrderDialogProps {
   isOpen: boolean;
@@ -303,7 +304,7 @@ export function CreateOrderDialog({
     setComboboxOpen(false);
   }
 
-  const handleProductSelect = (newSelectedItems: { product: Product; quantity: number | string }[]) => {
+  const handleProductSelect = (newSelectedItems: { product: Product; quantity: number | string }[], selectedBatchId?: string | null) => {
     setSelectedItems(prev => {
       const updated = [...prev];
       newSelectedItems.forEach(newItem => {
@@ -318,6 +319,11 @@ export function CreateOrderDialog({
       });
       return updated;
     });
+
+    if (selectedBatchId && (!batchId || batchId === 'none')) {
+      setBatchId(selectedBatchId);
+    }
+
     setProductSelectOpen(false);
   };
 
@@ -415,7 +421,7 @@ export function CreateOrderDialog({
                                     />
                                     Walk In Customer
                                   </CommandItem>
-                                  {customers.map((customer) => (
+                                  {customers.filter(c => c.name.toLowerCase() !== "walk in customer").map((customer) => (
                                     <CommandItem
                                       key={customer.id}
                                       value={customer.name}
@@ -641,6 +647,12 @@ export function CreateOrderDialog({
                           <SelectContent>
                             <SelectItem value="hold">Hold for Next Batch</SelectItem>
                             <SelectItem value="none">Normal Delivery</SelectItem>
+                            {batches?.length > 0 && <div className="border-t my-1" />}
+                            {batches?.map((batch) => (
+                              <SelectItem key={batch.id} value={batch.id}>
+                                {batch.batchName} ({format(new Date(batch.manufactureDate), "MMM d")})
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>

@@ -18,8 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@/lib/types";
 import { Image as ImageIcon, X, RefreshCw } from "lucide-react";
 import { createBodegaProduct } from "../actions";
-import { getBatches } from "../../../batches/actions";
-import { Batch } from "@/lib/types";
+
 import { useEffect } from "react";
 import {
     Select,
@@ -49,18 +48,9 @@ export function AddBodegaProductDialog({ isOpen, onClose, onSuccess }: AddBodega
     const [images, setImages] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [batches, setBatches] = useState<Batch[]>([]);
-    const [selectedBatchId, setSelectedBatchId] = useState<string>("");
 
-    useEffect(() => {
-        const fetchBatches = async () => {
-            const data = await getBatches();
-            setBatches(data);
-        };
-        if (isOpen) {
-            fetchBatches();
-        }
-    }, [isOpen]);
+
+
 
     const sku = baseSku + (variantColor ? "-" + variantColor : "");
 
@@ -79,7 +69,7 @@ export function AddBodegaProductDialog({ isOpen, onClose, onSuccess }: AddBodega
         setAlertStock("0");
         setImages([]);
         setImagePreviews([]);
-        setSelectedBatchId("");
+
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,7 +131,7 @@ export function AddBodegaProductDialog({ isOpen, onClose, onSuccess }: AddBodega
                 cost: parseFloat(cost) || 0,
                 retailPrice: parseFloat(retailPrice) || 0,
                 images: imageDataUrls,
-                batchId: selectedBatchId || null,
+
             };
 
             await createBodegaProduct(productData);
@@ -193,22 +183,7 @@ export function AddBodegaProductDialog({ isOpen, onClose, onSuccess }: AddBodega
                             </div>
                         </div>
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="batch">Batch (Optional)</Label>
-                        <Select value={selectedBatchId} onValueChange={setSelectedBatchId}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a batch" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">No Batch</SelectItem>
-                                {batches.map((batch) => (
-                                    <SelectItem key={batch.id} value={batch.id}>
-                                        {batch.batchName} ({new Date(batch.deliveryDate).toLocaleDateString()})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+
                     <div className="grid gap-2">
                         <Label htmlFor="description">Description</Label>
                         <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} />

@@ -36,23 +36,22 @@ export function EditBatchDialog({ isOpen, onClose, batch }: EditBatchDialogProps
   const { toast } = useToast();
 
   const [batchName, setBatchName] = useState("");
-  const [deliveryDate, setDeliveryDate] = useState("");
-  const [cutoffDate, setCutoffDate] = useState("");
+  const [manufactureDate, setManufactureDate] = useState("");
   const [status, setStatus] = useState<BatchStatus>("Open");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (batch) {
       setBatchName(batch.batchName);
-      setDeliveryDate(batch.deliveryDate);
-      setCutoffDate(batch.cutoffDate);
+      setManufactureDate(batch.manufactureDate);
       setStatus(batch.status);
     }
   }, [batch]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!batch) return;
 
-    if (!batchName || !deliveryDate || !cutoffDate) {
+    if (!batchName || !manufactureDate) {
       toast({
         variant: "destructive",
         title: "Missing Information",
@@ -61,12 +60,37 @@ export function EditBatchDialog({ isOpen, onClose, batch }: EditBatchDialogProps
       return;
     }
 
-    toast({
-        title: "Batch Updated",
-        description: `Batch "${batchName}" has been updated successfully.`,
-    });
+    setIsSubmitting(true);
+    try {
+      const { updateBatch } = await import("../actions");
+      const result = await updateBatch(batch.id, {
+        batchName,
+        manufactureDate,
+        status,
+      });
 
-    onClose();
+      if (result.success) {
+        toast({
+          title: "Batch Updated",
+          description: `Batch "${batchName}" has been updated successfully.`,
+        });
+        onClose();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Update Failed",
+          description: result.error || "Could not update batch.",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -84,25 +108,21 @@ export function EditBatchDialog({ isOpen, onClose, batch }: EditBatchDialogProps
             <Input id="batchName" value={batchName} onChange={(e) => setBatchName(e.target.value)} placeholder="e.g. Week 42 - Saturday" />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="deliveryDate">Delivery Date</Label>
-            <Input id="deliveryDate" type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)}/>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="cutoffDate">Cutoff Date</Label>
-            <Input id="cutoffDate" type="date" value={cutoffDate} onChange={(e) => setCutoffDate(e.target.value)} />
+            <Label htmlFor="manufactureDate">Manufacture Date</Label>
+            <Input id="manufactureDate" type="date" value={manufactureDate} onChange={(e) => setManufactureDate(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="status">Status</Label>
-             <Select value={status} onValueChange={(value: BatchStatus) => setStatus(value)}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="Open">Open</SelectItem>
-                    <SelectItem value="Closed">Closed</SelectItem>
-                    <SelectItem value="Delivered">Delivered</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
-                </SelectContent>
+            <Select value={status} onValueChange={(value: BatchStatus) => setStatus(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Open">Open</SelectItem>
+                <SelectItem value="Closed">Closed</SelectItem>
+                <SelectItem value="Delivered">Delivered</SelectItem>
+                <SelectItem value="Cancelled">Cancelled</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </div>

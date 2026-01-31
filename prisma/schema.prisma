@@ -58,6 +58,7 @@ model Order {
   customer       Customer  @relation(fields: [customerId], references: [id])
 
   salesLogs      SalesLog[]
+  inventoryLogs InventoryLog[]
 
   @@index([batchId], map: "orders_batchId_fkey")
   @@index([customerId], map: "orders_customerId_fkey")
@@ -78,21 +79,18 @@ model Notification {
 
 
 model Batch {
-  id           String    @id @default(cuid())
-  batchName    String
-  deliveryDate DateTime
-  cutoffDate   DateTime
-  status       String
+  id              String    @id @default(cuid())
+  batchName       String
+  manufactureDate DateTime  @default(now())
+  status          String
   totalOrders  Int?
   totalSales   Float?
   createdBy    Json?     // { uid: string, name: string }
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   orders       Order[]
+  preOrders    PreOrder[]
   products     Product[]
-
-
-
 
   @@map("batches")
 }
@@ -107,18 +105,22 @@ model Product {
   cost               Float
   retailPrice        Float?
   images             Json?
-  batchId            String?
+
   warehouseId        String?           // Reference to warehouse_products
   createdBy          Json?             // { uid: string, name: string }
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @default(now()) @updatedAt
-  batch              Batch?            @relation(fields: [batchId], references: [id])
+
   warehouseProduct   WarehouseProduct? @relation(fields: [warehouseId], references: [id])
   inventoryLogs      InventoryLog[]
+  preOrderProducts   PreOrderProduct[]
 
 
-  @@index([batchId], map: "products_batchId_fkey")
+  batchId            String?           // Reference to batches
+  batch              Batch?            @relation(fields: [batchId], references: [id])
+
   @@index([warehouseId], map: "products_warehouseId_fkey")
+  @@index([batchId], map: "products_batchId_fkey")
   @@map("products")
 }
 
@@ -142,6 +144,7 @@ model User {
   @@index([branchId], map: "users_branchId_fkey")
   @@index([roleId], map: "users_roleId_fkey")
   @@map("users")
+  inventoryLogs InventoryLog[]
 }
 
 model Message {
@@ -166,6 +169,7 @@ model Branch {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
   users     User[]
+  inventoryLogs InventoryLog[]
 
   @@map("branches")
 }
@@ -295,10 +299,14 @@ model PreOrder {
   updatedAt     DateTime        @default(now()) @updatedAt
   customer      Customer        @relation(fields: [customerId], references: [id])
   items         PreOrderItem[]
+  batchId       String?
+  batch         Batch?          @relation(fields: [batchId], references: [id])
 
   salesLogs     SalesLog[]
+  inventoryLogs InventoryLog[]
 
   @@index([customerId], map: "pre_orders_customerId_fkey")
+  @@index([batchId], map: "pre_orders_batchId_fkey")
   @@map("pre_orders")
 }
 
@@ -330,6 +338,8 @@ model PreOrderProduct {
   cost          Float
   retailPrice   Float?         @default(0)
   images        Json?
+  inventoryProductId String?
+  inventoryProduct   Product? @relation(fields: [inventoryProductId], references: [id])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @default(now()) @updatedAt
   preOrderItems PreOrderItem[]
@@ -350,11 +360,26 @@ model InventoryLog {
   performedBy        Json?             // { uid: string, name: string }
   createdAt          DateTime          @default(now())
 
+  // Relations
+  orderId            String?
+  preOrderId         String?
+  userId             String?
+  branchId           String?
+
   product            Product?          @relation(fields: [productId], references: [id])
   warehouseProduct   WarehouseProduct? @relation(fields: [warehouseProductId], references: [id])
+  
+  order              Order?            @relation(fields: [orderId], references: [id])
+  preOrder           PreOrder?         @relation(fields: [preOrderId], references: [id])
+  user               User?             @relation(fields: [userId], references: [id])
+  branch             Branch?           @relation(fields: [branchId], references: [id])
 
   @@index([productId])
   @@index([warehouseProductId])
+  @@index([orderId])
+  @@index([preOrderId])
+  @@index([userId])
+  @@index([branchId])
   @@index([createdAt])
   @@map("inventory_logs")
 }

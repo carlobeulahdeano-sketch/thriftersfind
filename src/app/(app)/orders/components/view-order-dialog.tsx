@@ -166,6 +166,10 @@ export function ViewOrderDialog({ isOpen, onClose, order }: ViewOrderDialogProps
                                             <p className="text-xs text-muted-foreground mb-1">Order Date</p>
                                             <p className="font-medium">{order.orderDate}</p>
                                         </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground mb-1">Batch / Cycle</p>
+                                            <p className="font-medium">{order.batch?.batchName || <span className="text-muted-foreground italic">None</span>}</p>
+                                        </div>
                                         <div className="col-span-2">
                                             <p className="text-xs text-muted-foreground mb-1">Remarks</p>
                                             <p className="font-medium text-sm italic">{order.remarks || <span className="text-muted-foreground">None</span>}</p>

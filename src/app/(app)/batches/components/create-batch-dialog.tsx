@@ -37,21 +37,19 @@ export function CreateBatchDialog({ isOpen, onClose }: CreateBatchDialogProps) {
   const { toast } = useToast();
 
   const [batchName, setBatchName] = useState("");
-  const [deliveryDate, setDeliveryDate] = useState("");
-  const [cutoffDate, setCutoffDate] = useState("");
+  const [manufactureDate, setManufactureDate] = useState("");
   const [status, setStatus] = useState<BatchStatus>("Open");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const resetForm = () => {
     setBatchName("");
-    setDeliveryDate("");
-    setCutoffDate("");
+    setManufactureDate("");
     setStatus("Open");
   };
 
   const handleSave = async () => {
-    if (!batchName || !deliveryDate || !cutoffDate) {
+    if (!batchName || !manufactureDate) {
       toast({
         variant: "destructive",
         title: "Missing Information",
@@ -64,8 +62,7 @@ export function CreateBatchDialog({ isOpen, onClose }: CreateBatchDialogProps) {
     try {
       const result = await createBatch({
         batchName,
-        deliveryDate,
-        cutoffDate,
+        manufactureDate,
         status,
       });
 
@@ -107,15 +104,11 @@ export function CreateBatchDialog({ isOpen, onClose }: CreateBatchDialogProps) {
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="batchName">Batch Name</Label>
-            <Input id="batchName" value={batchName} onChange={(e) => setBatchName(e.target.value)} placeholder="e.g. Week 42 - Saturday" />
+            <Input id="batchName" value={batchName} onChange={(e) => setBatchName(e.target.value)} placeholder="" />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="deliveryDate">Delivery Date</Label>
-            <Input id="deliveryDate" type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="cutoffDate">Cutoff Date</Label>
-            <Input id="cutoffDate" type="date" value={cutoffDate} onChange={(e) => setCutoffDate(e.target.value)} />
+            <Label htmlFor="manufactureDate">Manufacture Date</Label>
+            <Input id="manufactureDate" type="date" value={manufactureDate} onChange={(e) => setManufactureDate(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="status">Status</Label>

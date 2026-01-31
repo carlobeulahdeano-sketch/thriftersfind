@@ -374,7 +374,7 @@ export function EditOrderDialog({
                                   />
                                   Walk In Customer
                                 </CommandItem>
-                                {customers.map((customer) => (
+                                {customers.filter(c => c.name.toLowerCase() !== "walk in customer").map((customer) => (
                                   <CommandItem
                                     key={customer.id}
                                     value={customer.name}

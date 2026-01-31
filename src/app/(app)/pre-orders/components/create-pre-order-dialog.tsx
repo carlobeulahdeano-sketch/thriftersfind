@@ -49,6 +49,7 @@ interface CreatePreOrderDialogProps {
     customers: Customer[];
     products: PreOrderProduct[];
     stations: Station[];
+    batches?: Batch[];
 }
 
 const paymentMethods: PaymentMethod[] = ["COD", "GCash", "Bank Transfer"];
@@ -59,6 +60,7 @@ export function CreatePreOrderDialog({
     customers,
     products,
     stations,
+    batches,
 }: CreatePreOrderDialogProps) {
     const { toast } = useToast();
     const router = useRouter();
@@ -72,6 +74,7 @@ export function CreatePreOrderDialog({
     const [selectedItems, setSelectedItems] = useState<{ product: PreOrderProduct; quantity: number | string }[]>([]);
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
     const [orderDate, setOrderDate] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [batchId, setBatchId] = useState<string>("none");
 
     // Payment Terms State
     const [paymentTerms, setPaymentTerms] = useState<"full" | "downpayment">("full");
@@ -99,7 +102,9 @@ export function CreatePreOrderDialog({
         setEmail("");
         setOrderDate(new Date().toISOString().split('T')[0]);
         setPaymentTerms("full");
+        setPaymentTerms("full");
         setDepositAmount(0);
+        setBatchId("none");
         setIsSubmitting(false);
     };
 
@@ -166,6 +171,7 @@ export function CreatePreOrderDialog({
                 customerEmail: finalCustomerEmail,
                 remarks: '',
                 items: itemsPayload,
+                batchId: batchId,
             });
 
             toast({
@@ -430,6 +436,23 @@ export function CreatePreOrderDialog({
                                     </div>
                                 </div>
                             )}
+
+                            <div className="grid gap-2">
+                                <Label>Delivery Batch</Label>
+                                <Select value={batchId} onValueChange={(v) => setBatchId(v)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select delivery batch" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">Normal Delivery</SelectItem>
+                                        {batches?.map((batch) => (
+                                            <SelectItem key={batch.id} value={batch.id}>
+                                                {batch.batchName} ({format(new Date(batch.manufactureDate), 'MMM d')})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
 

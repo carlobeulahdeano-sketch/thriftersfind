@@ -46,7 +46,7 @@ export function AppShell({ children, user }: AppShellProps) {
                     <div className="flex-1">
                         <Breadcrumbs />
                     </div>
-                    <MessengerNav />
+                    <MessengerNav currentUser={user} />
                     <NotificationBell />
                     <ThemeToggle />
                     <UserNav user={user} />

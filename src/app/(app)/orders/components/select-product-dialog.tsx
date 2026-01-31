@@ -28,7 +28,7 @@ import { Separator } from "@/components/ui/separator";
 interface SelectProductDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onProductSelect: (selectedItems: { product: Product, quantity: number }[] | any) => void;
+  onProductSelect: (selectedItems: { product: Product, quantity: number }[], selectedBatchId?: string | null) => void;
   products: Product[];
 }
 
@@ -49,9 +49,11 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
   const isLoading = false;
 
   const filteredProducts = allProducts.filter(
-    (product) =>
-    (product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+    (product) => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesSearch;
+    }
   );
 
   const getTotalQuantity = (product: Product) => {
@@ -81,7 +83,7 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
 
   const handleAddToOrder = () => {
     if (selectedProducts.length > 0) {
-      onProductSelect(selectedProducts);
+      onProductSelect(selectedProducts as any, selectedBatch !== "all" ? selectedBatch : null);
       handleClose();
     }
   };
@@ -118,10 +120,10 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
               </div>
               <Select value={selectedBatch} onValueChange={setSelectedBatch}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by batch" />
+                  <SelectValue placeholder="Apply to Batch" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All batches</SelectItem>
+                  <SelectItem value="all">None / Normal</SelectItem>
                   {batches.map((batch) => (
                     <SelectItem key={batch.id} value={batch.id}>
                       {batch.batchName}

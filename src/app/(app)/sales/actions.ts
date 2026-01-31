@@ -77,3 +77,106 @@ export async function getSalesData(timeframe: "week" | "month" | "year"): Promis
         return [];
     }
 }
+
+export type BatchAnalytics = {
+    id: string;
+    batchName: string;
+    status: string;
+    manufactureDate: Date;
+    totalOrders: number;
+    totalSales: number;
+    totalCapital: number;
+    netProfit: number;
+    bestSellingProduct: {
+        name: string;
+        quantitySold: number;
+    } | null;
+    topProducts?: {
+        name: string;
+        quantity: number;
+        sales: number;
+    }[];
+};
+
+export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promise<BatchAnalytics[]> {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return [];
+
+        const dateFilter: any = {};
+        if (startDate && endDate) {
+            dateFilter.manufactureDate = {
+                gte: startDate,
+                lte: endDate,
+            };
+        }
+
+        const batches = await prisma.batch.findMany({
+            where: dateFilter,
+            include: {
+                orders: {
+                    where: {
+                        paymentStatus: 'Paid'
+                    }
+                }
+            },
+            orderBy: {
+                manufactureDate: 'desc'
+            }
+        });
+
+        const analytics = batches.map(batch => {
+            let batchTotalSales = 0;
+            let batchTotalCapital = 0;
+            const productSalesMap = new Map<string, { name: string; quantity: number; sales: number }>();
+
+            batch.orders.forEach((order: any) => {
+                batchTotalSales += order.totalAmount;
+
+                if (order.items) {
+                    const items = Array.isArray(order.items) ? order.items : (order.items as any).items || [];
+
+                    (items as any[]).forEach((item: any) => {
+                        const qty = typeof item.quantity === 'string' ? parseInt(item.quantity) : (item.quantity || 0);
+                        const cost = item.product?.cost || 0;
+                        const productName = item.product?.name || "Unknown Product";
+
+                        batchTotalCapital += qty * cost;
+
+                        const current = productSalesMap.get(productName) || { name: productName, quantity: 0, sales: 0 };
+                        current.quantity += qty;
+                        productSalesMap.set(productName, current);
+                    });
+                }
+            });
+
+            // Convert map to array and sort
+            const allProducts = Array.from(productSalesMap.values());
+            allProducts.sort((a, b) => b.quantity - a.quantity);
+
+            const bestSellingProduct = allProducts.length > 0 ? {
+                name: allProducts[0].name,
+                quantitySold: allProducts[0].quantity
+            } : null;
+
+            return {
+                id: batch.id,
+                batchName: batch.batchName,
+                status: batch.status,
+                manufactureDate: batch.manufactureDate,
+                totalOrders: batch.orders.length,
+                totalSales: batchTotalSales,
+                totalCapital: batchTotalCapital,
+                netProfit: batchTotalSales - batchTotalCapital,
+                bestSellingProduct,
+                topProducts: allProducts.slice(0, 10)
+            };
+        });
+
+        return analytics;
+
+    } catch (error) {
+        console.error("Error fetching batch analytics:", error);
+        return [];
+    }
+}

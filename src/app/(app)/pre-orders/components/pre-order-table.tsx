@@ -13,19 +13,21 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ShoppingBag, Truck, Calendar, Filter, Archive, User, Package, PlusCircle, CircleDollarSign } from "lucide-react";
+import { Search, ShoppingBag, Truck, Calendar, Filter, Archive, User, Package, PlusCircle, CircleDollarSign, Banknote } from "lucide-react";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { CreatePreOrderDialog } from "./create-pre-order-dialog";
+import { PayBalanceDialog } from "./pay-balance-dialog";
 
 interface PreOrderTableProps {
     orders: PreOrder[];
     customers: Customer[];
     products: PreOrderProduct[];
     stations: Station[];
+    batches?: Batch[];
 }
 
 const statusBadgeStyles: Record<ShippingStatus, string> = {
@@ -41,11 +43,13 @@ const statusBadgeStyles: Record<ShippingStatus, string> = {
 // Mock payment statuses for the filter UI - in real app this would likely be on the Order object
 const PAYMENT_STATUSES = ["TO PAY", "DOWNPAYMENT", "PAID"];
 
-export default function PreOrderTable({ orders, customers, products, stations }: PreOrderTableProps) {
+export default function PreOrderTable({ orders, customers, products, stations, batches }: PreOrderTableProps) {
     const [searchTerm, setSearchTerm] = React.useState("");
     const [statusFilter, setStatusFilter] = React.useState<string>("all");
     const [paymentStatusFilter, setPaymentStatusFilter] = React.useState<string>("all");
     const [isCreateDialogOpen, setCreateDialogOpen] = React.useState(false);
+    const [isPayBalanceDialogOpen, setPayBalanceDialogOpen] = React.useState(false);
+    const [selectedPreOrder, setSelectedPreOrder] = React.useState<PreOrder | null>(null);
 
     const filteredOrders = React.useMemo(() => {
         return orders.filter((order) => {
@@ -134,10 +138,10 @@ export default function PreOrderTable({ orders, customers, products, stations }:
                             <TableHead className="w-[250px]">Item Details</TableHead>
                             <TableHead>Customer</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Total</TableHead>
                             <TableHead className="text-right text-green-600">Paid</TableHead>
                             <TableHead className="text-right text-red-600">Bal</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                            <TableHead className="w-[50px]"></TableHead>
+                            <TableHead className="w-[100px]">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -185,7 +189,15 @@ export default function PreOrderTable({ orders, customers, products, stations }:
                                                     </Avatar>
                                                     <div className="grid gap-0.5">
                                                         <span className="font-medium text-sm leading-none">{order.customerName}</span>
-                                                        <span className="text-xs text-muted-foreground font-mono">{order.paymentMethod}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-muted-foreground font-mono">{order.paymentMethod}</span>
+                                                            {order.batch && (
+                                                                <div className="text-[10px] text-zinc-500 flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-1.5 rounded">
+                                                                    <Calendar className="h-2.5 w-2.5" />
+                                                                    {order.batch.batchName} ({format(new Date(order.batch.manufactureDate), 'MMM d')})
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </TableCell>
@@ -221,12 +233,22 @@ export default function PreOrderTable({ orders, customers, products, stations }:
 
                                             {/* Action Column */}
                                             <TableCell className="align-top py-4">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <span className="sr-only">Menu</span>
-                                                    <div className="bg-primary/20 p-1.5 rounded-md">
-                                                        <User className="h-4 w-4 text-primary" />
-                                                    </div>
-                                                </Button>
+                                                <div className="flex items-center gap-2">
+                                                    {remainingBalance > 0 && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-8 px-2 text-xs"
+                                                            onClick={() => {
+                                                                setSelectedPreOrder(order);
+                                                                setPayBalanceDialogOpen(true);
+                                                            }}
+                                                        >
+                                                            <Banknote className="h-3.5 w-3.5 mr-1" />
+                                                            Pay
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         </motion.tr>
                                     )
@@ -252,7 +274,16 @@ export default function PreOrderTable({ orders, customers, products, stations }:
                 customers={customers}
                 products={products}
                 stations={stations}
+                batches={batches}
+            />
 
+            <PayBalanceDialog
+                isOpen={isPayBalanceDialogOpen}
+                onClose={() => {
+                    setPayBalanceDialogOpen(false);
+                    setSelectedPreOrder(null);
+                }}
+                preOrder={selectedPreOrder}
             />
         </div>
     );

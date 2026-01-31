@@ -15,9 +15,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import type { Product } from "@/lib/types";
 import { Image as ImageIcon, X } from "lucide-react";
 import { updateProduct } from "../actions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { Product, Batch } from "@/lib/types";
 
 interface EditProductDialogProps {
   isOpen: boolean;
@@ -37,6 +44,8 @@ export function EditProductDialog({ isOpen, onClose, product, onSuccess }: EditP
   const [retailPrice, setRetailPrice] = useState("0.00");
   const [alertStock, setAlertStock] = useState("0");
   const [isLoading, setIsLoading] = useState(false);
+
+
 
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);

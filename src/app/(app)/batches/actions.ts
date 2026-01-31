@@ -41,8 +41,7 @@ export async function getBatches(): Promise<Batch[]> {
         return filteredBatches.map((batch: any) => ({
             id: batch.id,
             batchName: batch.batchName,
-            deliveryDate: batch.deliveryDate.toISOString(),
-            cutoffDate: batch.cutoffDate.toISOString(),
+            manufactureDate: batch.manufactureDate.toISOString(),
             status: batch.status as any,
             totalOrders: batch.totalOrders || 0,
             totalSales: batch.totalSales || 0,
@@ -55,8 +54,7 @@ export async function getBatches(): Promise<Batch[]> {
 
 export async function createBatch(data: {
     batchName: string;
-    deliveryDate: string;
-    cutoffDate: string;
+    manufactureDate: string;
     status: string;
 }): Promise<{ success: boolean; error?: string }> {
     try {
@@ -70,10 +68,12 @@ export async function createBatch(data: {
         await prisma.batch.create({
             data: {
                 batchName: data.batchName,
-                deliveryDate: new Date(data.deliveryDate),
-                cutoffDate: new Date(data.cutoffDate),
+                // @ts-ignore - Prisma client needs regeneration
+                manufactureDate: new Date(data.manufactureDate),
                 status: data.status,
                 createdBy: createdBy as any,
+                totalOrders: 0,
+                totalSales: 0,
             },
         });
 
@@ -82,5 +82,43 @@ export async function createBatch(data: {
     } catch (error: any) {
         console.error("Error creating batch:", error);
         return { success: false, error: error.message || "Failed to create batch" };
+    }
+}
+
+export async function updateBatch(id: string, data: {
+    batchName?: string;
+    manufactureDate?: string;
+    status?: string;
+}): Promise<{ success: boolean; error?: string }> {
+    try {
+        await prisma.batch.update({
+            where: { id },
+            data: {
+                batchName: data.batchName,
+                // @ts-ignore - Prisma client needs regeneration
+                manufactureDate: data.manufactureDate ? new Date(data.manufactureDate) : undefined,
+                status: data.status,
+            },
+        });
+
+        revalidatePath("/batches");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error updating batch:", error);
+        return { success: false, error: error.message || "Failed to update batch" };
+    }
+}
+
+export async function deleteBatch(id: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        await prisma.batch.delete({
+            where: { id },
+        });
+
+        revalidatePath("/batches");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error deleting batch:", error);
+        return { success: false, error: error.message || "Failed to delete batch" };
     }
 }

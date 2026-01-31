@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
@@ -24,6 +25,67 @@ async function main() {
     }
 
     console.log('Seeding completed successfully!');
+
+    // Create Super Admin User
+    console.log('Creating super admin user...');
+
+    // hash password
+    const hashedPassword = await bcrypt.hash('password', 10);
+
+    // Find the super admin role
+    const superAdminRole = await prisma.role.findUnique({
+        where: { name: 'super admin' }
+    });
+
+    if (superAdminRole) {
+        await prisma.user.upsert({
+            where: { email: 'superadmin@gmail.com' },
+            update: {
+                roleId: superAdminRole.id, // Ensure role is linked if user exists
+                role: 'super admin',
+                permissions: {
+                    dashboard: true,
+                    orders: true,
+                    batches: true,
+                    inventory: true,
+                    customers: true,
+                    reports: true,
+                    users: true,
+                    settings: true,
+                    adminManage: true,
+                    stations: true,
+                    preOrders: true,
+                    warehouses: true
+                }
+            },
+            create: {
+                name: 'Super Admin',
+                email: 'superadmin@gmail.com',
+                password: hashedPassword,
+                role: 'super admin',
+                roleId: superAdminRole.id,
+                permissions: {
+                    dashboard: true,
+                    orders: true,
+                    batches: true,
+                    inventory: true,
+                    customers: true,
+                    reports: true,
+                    users: true,
+                    settings: true,
+                    adminManage: true,
+                    stations: true,
+                    preOrders: true,
+                    warehouses: true
+                }
+            }
+        });
+        console.log('Super admin user created: superadmin@gmail.com / password');
+    } else {
+        console.error('Super admin role not found, skipping user creation.');
+    }
+
+    console.log('Seeding process finished.');
 }
 
 main()

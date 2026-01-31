@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { createInventoryLog } from "@/lib/inventory-log-helper";
 
 export interface WarehouseProduct {
     id: string;
@@ -226,7 +227,32 @@ export async function transferToInventory(
             });
         }
 
-        revalidatePath(`/warehouses/${warehouseProduct.warehouseId}`);
+        // Log warehouse product transfer out
+        await createInventoryLog({
+            action: "TRANSFER_OUT",
+            warehouseProductId: warehouseProductId,
+            quantityChange: -quantity,
+            previousStock: warehouseProduct.quantity,
+            newStock: newQuantity,
+            reason: `Transfer to inventory`,
+            referenceId: warehouseProductId,
+        });
+
+        // Log inventory product transfer in
+        const finalProduct = inventoryProduct || await prisma.product.findUnique({ where: { sku: warehouseProduct.sku } });
+        if (finalProduct) {
+            await createInventoryLog({
+                action: "TRANSFER_IN",
+                productId: finalProduct.id,
+                quantityChange: quantity,
+                previousStock: (inventoryProduct as any)?.[destination] || 0,
+                newStock: ((inventoryProduct as any)?.[destination] || 0) + quantity,
+                reason: `Transfer from warehouse`,
+                referenceId: warehouseProductId,
+            });
+        }
+
+        revalidatePath(`/warehouses/${(warehouseProduct as any).warehouseId}`);
         revalidatePath('/inventory');
         return { success: true };
     } catch (error: any) {

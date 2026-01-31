@@ -3,6 +3,7 @@
 import { Product } from "@/lib/types";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-server";
+import { createInventoryLog } from "@/lib/inventory-log-helper";
 
 export async function getProducts(): Promise<Product[]> {
   try {
@@ -38,11 +39,45 @@ export async function getProducts(): Promise<Product[]> {
       cost: typeof product.cost === 'number' ? product.cost : 0,
       retailPrice: typeof product.retailPrice === 'number' ? product.retailPrice : 0,
       images: Array.isArray(product.images) ? (product.images as unknown as string[]) : [],
-      batchId: product.batchId,
     }));
   } catch (error) {
     console.error("Error fetching products:", error);
     throw new Error("Failed to fetch products. Please try again later.");
+  }
+}
+
+export async function searchProducts(query: string): Promise<Product[]> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return [];
+
+    const products = await prisma.product.findMany({
+      where: {
+        OR: [
+          { name: { contains: query } },
+          { sku: { contains: query } },
+        ],
+      },
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return products.map(product => ({
+      id: product.id,
+      name: product.name,
+      sku: product.sku,
+      description: product.description || "",
+      quantity: product.quantity,
+      warehouseId: product.warehouseId,
+      totalStock: product.quantity,
+      alertStock: product.alertStock,
+      cost: product.cost,
+      retailPrice: product.retailPrice || 0,
+      images: Array.isArray(product.images) ? (product.images as unknown as string[]) : [],
+    }));
+  } catch (error) {
+    console.error("Error searching products:", error);
+    return [];
   }
 }
 
@@ -67,10 +102,10 @@ export async function createProduct(productData: Omit<Product, 'id' | 'totalStoc
     const totalStock = (productData.quantity || 0);
     const id = `c${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
 
-    // Use raw query to bypass outdated Prisma client validation for batchId and createdBy
+    // Use raw query to bypass outdated Prisma client validation for createdBy
     await prisma.$executeRawUnsafe(
-      `INSERT INTO products (id, name, sku, description, quantity, warehouseId, alertStock, cost, retailPrice, images, batchId, createdBy, createdAt, updatedAt) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))`,
+      `INSERT INTO products (id, name, sku, description, quantity, warehouseId, alertStock, cost, retailPrice, images, createdBy, createdAt, updatedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))`,
       id,
       productData.name,
       productData.sku,
@@ -81,9 +116,20 @@ export async function createProduct(productData: Omit<Product, 'id' | 'totalStoc
       productData.cost || 0,
       productData.retailPrice || 0,
       JSON.stringify(productData.images || []),
-      productData.batchId || null,
       JSON.stringify(createdBy)
     );
+
+    // Log inventory change
+    await createInventoryLog({
+      action: "STOCK_IN",
+      productId: id,
+      quantityChange: productData.quantity || 0,
+      previousStock: 0,
+      newStock: productData.quantity || 0,
+      reason: "Initial stock",
+      referenceId: id,
+      branchId: user?.branchId || null,
+    });
 
     return {
       id,
@@ -97,7 +143,6 @@ export async function createProduct(productData: Omit<Product, 'id' | 'totalStoc
       cost: productData.cost || 0,
       retailPrice: productData.retailPrice || 0,
       images: productData.images || [],
-      batchId: productData.batchId,
     };
   } catch (error) {
     console.error("CRITICAL ERROR in createProduct:", error);
@@ -142,7 +187,6 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
     if (productData.cost !== undefined) { updates.push("cost = ?"); values.push(productData.cost); }
     if (productData.retailPrice !== undefined) { updates.push("retailPrice = ?"); values.push(productData.retailPrice); }
     if (productData.images !== undefined) { updates.push("images = ?"); values.push(JSON.stringify(productData.images)); }
-    if (productData.batchId !== undefined) { updates.push("batchId = ?"); values.push(productData.batchId); }
 
     updates.push("updatedAt = NOW(3)");
 
@@ -156,6 +200,20 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
 
     if (!updatedProduct) throw new Error("Failed to retrieve updated product");
 
+    // Log inventory change if quantity changed
+    if (productData.quantity !== undefined && productData.quantity !== currentProduct.quantity) {
+      const quantityChange = productData.quantity - currentProduct.quantity;
+      await createInventoryLog({
+        action: "ADJUSTMENT",
+        productId: id,
+        quantityChange: quantityChange,
+        previousStock: currentProduct.quantity,
+        newStock: productData.quantity,
+        reason: "Manual adjustment",
+        referenceId: id,
+      });
+    }
+
     return {
       id: updatedProduct.id,
       name: updatedProduct.name,
@@ -168,7 +226,6 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
       cost: updatedProduct.cost,
       retailPrice: updatedProduct.retailPrice || 0,
       images: Array.isArray(updatedProduct.images) ? (updatedProduct.images as unknown as string[]) : [],
-      batchId: updatedProduct.batchId,
     };
   } catch (error) {
     console.error("Error in updateProduct:", error);

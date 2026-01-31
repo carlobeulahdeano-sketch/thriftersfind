@@ -22,6 +22,7 @@ import { MoreHorizontal, PlusCircle, Search, X, Package } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AddWarehouseDialog } from "./add-warehouse-dialog";
 import { ViewWarehouseDialog } from "./view-warehouse-dialog";
+import { EditWarehouseDialog } from "./edit-warehouse-dialog";
 import type { WarehouseProduct } from "../actions";
 import { useToast } from "@/hooks/use-toast";
 import { deleteWarehouseProduct } from "../actions";
@@ -143,6 +144,7 @@ export default function WarehouseProductsTable({ products: initialProducts }: { 
                                 <TableHead>Location</TableHead>
                                 <TableHead>Quantity</TableHead>
                                 <TableHead>Cost</TableHead>
+                                <TableHead>Retail Price</TableHead>
                                 <TableHead>
                                     <span className="sr-only">Actions</span>
                                 </TableHead>
@@ -176,6 +178,9 @@ export default function WarehouseProductsTable({ products: initialProducts }: { 
                                     <TableCell>{product.location || "—"}</TableCell>
                                     <TableCell>{product.quantity}</TableCell>
                                     <TableCell>${product.cost.toFixed(2)}</TableCell>
+                                    <TableCell>
+                                        {product.retailPrice ? `$${product.retailPrice.toFixed(2)}` : "—"}
+                                    </TableCell>
                                     <TableCell>
                                         <AlertDialog>
                                             <DropdownMenu>

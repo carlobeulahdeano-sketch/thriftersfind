@@ -24,6 +24,7 @@ import { getSalesData } from "./actions";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
+import Link from "next/link";
 
 type Timeframe = "week" | "month" | "year";
 
@@ -94,6 +95,11 @@ export default function SalesPage() {
             <Printer className="mr-2 h-4 w-4" />
             Print Report
           </Button>
+          <Link href="/sales/batches">
+            <Button>
+              View Batch Analytics
+            </Button>
+          </Link>
           <Tabs value={timeframe} onValueChange={(value) => setTimeframe(value as Timeframe)}>
             <TabsList>
               <TabsTrigger value="week">This Week</TabsTrigger>

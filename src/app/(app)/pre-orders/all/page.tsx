@@ -1,6 +1,7 @@
 import { getPreOrders, getPreOrderProducts } from "../actions";
 import { getCustomers } from "../../customers/actions";
 import { getStations } from "../../stations/actions";
+import { getBatches } from "../../batches/actions";
 import PreOrderTable from "../components/pre-order-table";
 
 export const metadata = {
@@ -13,6 +14,7 @@ export default async function PreOrdersPage() {
     const customers = await getCustomers();
     const products = await getPreOrderProducts();
     const stations = await getStations();
+    const batches = await getBatches();
 
     return (
         <div className="space-y-8 p-4 md:p-8 pt-6">
@@ -29,7 +31,9 @@ export default async function PreOrdersPage() {
                 orders={preOrders}
                 customers={customers}
                 products={products}
+                products={products}
                 stations={stations}
+                batches={batches}
             />
         </div>
     );

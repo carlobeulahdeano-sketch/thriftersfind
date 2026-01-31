@@ -4,6 +4,7 @@ import { Order, PaymentMethod, PaymentStatus, ShippingStatus, OrderRemark } from
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth-server";
+import { createInventoryLog } from "@/lib/inventory-log-helper";
 
 export async function getOrders(): Promise<Order[]> {
   const user = await getCurrentUser();
@@ -57,8 +58,7 @@ export async function getOrders(): Promise<Order[]> {
     rushShip: order.rushShip,
     batch: order.batch ? {
       ...order.batch,
-      deliveryDate: order.batch.deliveryDate.toISOString().split('T')[0],
-      cutoffDate: order.batch.cutoffDate.toISOString().split('T')[0],
+      manufactureDate: (order.batch as any).manufactureDate.toISOString(),
       status: order.batch.status as any,
       totalOrders: order.batch.totalOrders || 0,
       totalSales: order.batch.totalSales || 0,
@@ -112,16 +112,6 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
 
       // 2. Deduct from inventory if items are provided
       if (orderData.items && orderData.items.length > 0) {
-        // NEW: Update Batch Totals
-        // batchId -> { sales: number, count: number }
-        // We track count separately to avoid double counting if multiple items have same batch? 
-        // Logic: 1 order = 1 increments to totalOrders? Or each product adds to totalOrders? 
-        // Convention: totalOrders usually means number of ORDERS in that batch. 
-        // But if an order has products from different batches, how do we count?
-        // Current existing implementation increments totalOrders per loop iteration over unique batches found in items.
-        // This effectively means "This batch is involved in 1 order".
-        const batchUpdates = new Map<string, number>();
-
         for (const item of orderData.items) {
           const productId = item.product.id;
           const quantityToDeduct = item.quantity;
@@ -132,7 +122,7 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
           const updatedProduct = await tx.product.update({
             where: { id: productId },
             data: updateData,
-            select: { id: true, name: true, quantity: true, alertStock: true, batchId: true, retailPrice: true }
+            select: { id: true, name: true, quantity: true, alertStock: true, retailPrice: true }
           });
 
           // 3. Create notifications if stock is low or out
@@ -151,41 +141,36 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
             );
           }
 
-
-          // Accumulate Batch Updates
-          if (updatedProduct?.batchId) {
-            const price = updatedProduct.retailPrice || 0;
-            const quantity = typeof item.quantity === 'number' ? item.quantity : (Number(item.quantity) || 0);
-
-            if (!isNaN(price) && !isNaN(quantity)) {
-              const itemTotal = price * quantity;
-              const currentTotal = batchUpdates.get(updatedProduct.batchId) || 0;
-              batchUpdates.set(updatedProduct.batchId, currentTotal + itemTotal);
-            }
-          }
+          // Log inventory change
+          const previousStock = updatedProduct.quantity + quantityToDeduct;
+          await createInventoryLog({
+            action: "SOLD",
+            productId: productId,
+            quantityChange: -quantityToDeduct,
+            previousStock: previousStock,
+            newStock: updatedProduct.quantity,
+            reason: `Order #${orderId.substring(0, 8)}`,
+            referenceId: orderId,
+            orderId: orderId,
+            branchId: user?.branchId || null,
+          }, tx, user);
         }
+      }
 
-        for (const [batchId, totalSales] of batchUpdates.entries()) {
-          if (isNaN(totalSales)) continue;
-
-          console.log(`[BatchUpdate] Start update for Batch: ${batchId}, Sales to add: ${totalSales}`);
-
-          const batch = await tx.batch.findUnique({ where: { id: batchId } });
-          if (batch) {
-            const currentOrders = batch.totalOrders || 0; // Coalesce null to 0
-            const currentSales = batch.totalSales || 0;   // Coalesce null to 0
-
-            await tx.batch.update({
-              where: { id: batchId },
-              data: {
-                totalOrders: currentOrders + 1,
-                totalSales: currentSales + totalSales
-              }
-            });
-            console.log(`[BatchUpdate] Updated Batch ${batchId}: Orders ${currentOrders} -> ${currentOrders + 1}, Sales ${currentSales} -> ${currentSales + totalSales}`);
-          } else {
-            console.warn(`[BatchUpdate] Batch ${batchId} not found!`);
-          }
+      // Update Batch Totals ONLY if shippingStatus is 'Delivered'
+      if (orderData.shippingStatus === 'Delivered' && orderData.batchId && orderData.batchId !== 'none' && orderData.batchId !== 'hold') {
+        const batch = await tx.batch.findUnique({ where: { id: orderData.batchId } });
+        if (batch) {
+          await tx.batch.update({
+            where: { id: orderData.batchId },
+            data: {
+              totalOrders: (batch.totalOrders || 0) + 1,
+              totalSales: (batch.totalSales || 0) + orderData.totalAmount
+            }
+          });
+          console.log(`[BatchUpdate] Updated Batch ${orderData.batchId}: Orders +1, Sales +${orderData.totalAmount}`);
+        } else {
+          console.warn(`[BatchUpdate] Batch ${orderData.batchId} not found!`);
         }
       }
 
@@ -223,7 +208,7 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
       );
 
       return { id: orderId, createdAt: now };
-    });
+    }, { timeout: 15000 });
 
     revalidatePath("/orders");
     revalidatePath("/inventory");
@@ -250,304 +235,98 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
       const existingOrder = await tx.order.findUnique({ where: { id } });
       if (!existingOrder) throw new Error("Order not found");
 
-      const itemsAreChanging = (data as any).items !== undefined;
-      let originalItems = [];
-      if (existingOrder.items) {
-        originalItems = typeof existingOrder.items === 'string' ? JSON.parse(existingOrder.items) : existingOrder.items as any[];
+      // 2. Manage Batch Totals based on shippingStatus transitions
+      // Stats should only be counted if shippingStatus === 'Delivered'
+      const wasDelivered = existingOrder.shippingStatus === 'Delivered';
+      const isNowDelivered = data.shippingStatus === 'Delivered' || (data.shippingStatus === undefined && wasDelivered);
+
+      const oldBatchId = existingOrder.batchId;
+      const newBatchId = data.batchId !== undefined ? data.batchId : oldBatchId;
+
+      const oldAmount = existingOrder.totalAmount;
+      const newAmount = data.totalAmount !== undefined ? data.totalAmount : oldAmount;
+
+      const batchChanged = oldBatchId !== newBatchId;
+      const amountChanged = oldAmount !== newAmount;
+      const statusChanged = (data.shippingStatus !== undefined && existingOrder.shippingStatus !== data.shippingStatus);
+
+      // Helper to check if batch is valid for stats
+      const isValidBatch = (bid: string | null) => bid && bid !== 'none' && bid !== 'hold';
+
+      if (wasDelivered && !isNowDelivered) {
+        // Condition 1: Transition FROM Delivered TO something else -> Revert stats
+        if (isValidBatch(oldBatchId)) {
+          const batch = await tx.batch.findUnique({ where: { id: oldBatchId! } });
+          if (batch) {
+            await tx.batch.update({
+              where: { id: oldBatchId! },
+              data: {
+                totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
+                totalSales: Math.max(0, (batch.totalSales || 0) - oldAmount)
+              }
+            });
+          }
+        }
+      } else if (!wasDelivered && isNowDelivered) {
+        // Condition 2: Transition FROM non-Delivered TO Delivered -> Apply stats
+        if (isValidBatch(newBatchId)) {
+          const batch = await tx.batch.findUnique({ where: { id: newBatchId! } });
+          if (batch) {
+            await tx.batch.update({
+              where: { id: newBatchId! },
+              data: {
+                totalOrders: (batch.totalOrders || 0) + 1,
+                totalSales: (batch.totalSales || 0) + newAmount
+              }
+            });
+          }
+        }
+      } else if (wasDelivered && isNowDelivered) {
+        // Condition 3: Stayed Delivered but Batch or Amount changed -> Diff stats
+        if (batchChanged) {
+          // Revert old
+          if (isValidBatch(oldBatchId)) {
+            const batch = await tx.batch.findUnique({ where: { id: oldBatchId! } });
+            if (batch) {
+              await tx.batch.update({
+                where: { id: oldBatchId! },
+                data: {
+                  totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
+                  totalSales: Math.max(0, (batch.totalSales || 0) - oldAmount)
+                }
+              });
+            }
+          }
+          // Apply new
+          if (isValidBatch(newBatchId)) {
+            const batch = await tx.batch.findUnique({ where: { id: newBatchId! } });
+            if (batch) {
+              await tx.batch.update({
+                where: { id: newBatchId! },
+                data: {
+                  totalOrders: (batch.totalOrders || 0) + 1,
+                  totalSales: (batch.totalSales || 0) + newAmount
+                }
+              });
+            }
+          }
+        } else if (amountChanged) {
+          // Same batch, different amount
+          if (isValidBatch(newBatchId)) {
+            const batch = await tx.batch.findUnique({ where: { id: newBatchId! } });
+            if (batch) {
+              await tx.batch.update({
+                where: { id: newBatchId! },
+                data: {
+                  totalSales: (batch.totalSales || 0) + (newAmount - oldAmount)
+                }
+              });
+            }
+          }
+        }
       }
 
-      // If items are changing, we need to revert old batch contributions and apply new ones
-      // Strictly speaking, we should only do this if items CHANGED. 
-      // But the frontend usually sends the whole items array on update if it was edited.
-      // Assuming if `data` has `items`, we do the Recalculation.
-
-      // However, `updateOrder` signature currently accepts Partial<Order>.
-      // `Order` type in `types.ts` defines `items` as `Json?`.
-      // The `EditOrderDialog` does NOT currently allow editing items list (adding/removing products). 
-      // It only allows editing quantity/price of the order as a whole, OR it might?
-      // Let's check `EditOrderDialog`.
-      // `EditOrderDialog` allows editing `quantity` field of the ORDER, but DOES NOT have an items editor. 
-      // Wait, `EditOrderDialog` has inputs for `quantity` and `price` (Order total), but not per-item list.
-      // So `updateOrder` is mostly changing meta-data.
-
-      // BUT, if the user changes `quantity` or `price` there, it might reflect a change in what was sold?
-      // Actually, `EditOrderDialog` edits the top-level `quantity` and `price`. 
-      // It does NOT update the `items` JSON blob.
-      // If `items` blob is not updated, then individual product batch tracking is broken if we rely on it.
-
-      // HOWEVER, the user request is "total sales will connect to total sales".
-      // If the user edits the order total amount in `EditOrderDialog`, should that reflect in batch sales?
-      // Yes, likely. But which batch?
-      // `Order` has `batchId`.
-      // If the order itself is assigned to a batch via `batchId` (Order Level Batch), that's one thing.
-      // But the `createOrder` logic I just saw uses `product.batchId`.
-
-      // Confusion: `Order` has `batchId` (Delivery Batch?). `Product` has `batchId` (Source Batch?).
-      // The user says "apply with that batch".
-      // In `createOrder`, we used `product.batchId`.
-      // In `BatchesTable`, we show `Total Sales`.
-
-      // If `EditOrderDialog` changes `batchId`, does it mean the Delivery Batch changed? Yes.
-      // Does `Batch` model `totalSales` track Delivery Batch sales or Product Source Batch sales?
-      // `createOrder` logic I was fixing tracks **Product Source Batch Sales**.
-
-      // If `updateOrder` does NOT change items, then Product Source Batch Sales shouldn't change...
-      // UNLESS the quantity of items changed.
-      // `EditOrderDialog` allows changing `quantity` (Total Quantity).
-      // It does NOT change `items` array details (per product quantity).
-      // This creates a discrepancy.
-
-      // If `EditOrderDialog` is used to simple change "Payment Status" or "Shipping Status", no calc needed.
-      // If `EditOrderDialog` changes manual `quantity` or `totalAmount`, we can't easily map that back to products if there are multiple.
-
-      // Strategy:
-      // Only if `items` are passed in `data`, we execute the rigorous update.
-      // Currently `EditOrderDialog` does NOT pass `items`.
-      // So `updateOrder` will mostly be used for status updates.
-
-      // WAIT. If `createOrder` logic is correct, it uses `product.batchId`.
-      // The user complained "total sales is still zero".
-      // Fixing `createOrder` (the `retailPrice` fix) handles NEW orders.
-      // Does the user expect OLD orders to be fixed? I cannot easily fix old orders without a migration script.
-      // I will assume they are testing with NEW orders.
-
-      // What if `EditOrderDialog` IS used to assign `batchId`?
-      // `EditOrderDialog` has "Delivery Option" -> sets `batchId`.
-      // If this `batchId` is set, does it affect `Batch` stats?
-      // `Batch.totalOrders` and `Batch.totalSales`.
-      // If `Batch` stats are meant to aggregate "Orders assigned to this delivery batch", then my `createOrder` fix was WRONG.
-      // Let's re-read the code and request.
-
-      // User said: "who purchase or order that product that apply with that batch the total sales will connect to total sales and total orders"
-      // "apply with THAT batch".
-
-      // `createOrder` has:
-      // `batchId: orderData.batchId` (The one selected in dropdown "Delivery Batch").
-
-      // AND `createOrder` logic I saw:
-      // `batchUpdates.get(product.batchId)` using `item.product.id`.
-      // It uses `product.batchId`. 
-
-      // Is `product.batchId` the same as `orderData.batchId`?
-      // NOT NECESSARILY.
-      // Products belong to a batch (Supply).
-      // Orders belong to a batch (Delivery/Logistics).
-
-      // Which one does the user want?
-      // "purchase or order that product that apply with that batch"
-      // Usually "Batch Management" in e-commerce can be "Inventory Batches" or "Delivery Batches".
-      // In this app, `BatchesTable` shows "Delivery Date", "Cutoff Date". This strongly suggests **Logistic/Delivery Batches**.
-      // The `Order` model has `batchId`.
-      // The `Product` model ALSO has `batchId`.
-
-      // If these are Delivery Batches, then `createOrder` logic using `product.batchId` might be WRONG if it was intended to use `order.batchId`.
-      // But wait, `Product` model has `batchId`.
-      // Let's check `Batch` model again.
-      // `model Batch { ... products Product[] ... }`
-      // `model Product { ... batch Batch? ... }`
-
-      // This implies Batches are indeed source/supply batches? Or Products are assigned to Delivery Batches?
-
-      // If I look at the screenshot "Batch Management", it has "Delivery Date".
-      // And "Total Orders".
-
-      // If `createOrder` assigns an order to a `batchId`, that is clearly the Delivery Batch.
-      // The prior logic in `createOrder` (before I touched it) was iterating `items` and using `product.batchId`.
-      // This suggests the previous developer thought it was about Source Batches.
-      // BUT `createOrder` ALSO saves `batchId` to the `Order`.
-
-      // HYPOTHESIS: The user wants to track sales for the **Delivery Batch** they verify in the dialog.
-      // If I select "Batch 05" in the "Delivery Batch" dropdown, I expect "Batch 05" stats to increment.
-
-      // In `createOrder` logic:
-      // `const product = await tx.product.findUnique(...)` -> `product.batchId`.
-      // This looks up the *product's* batch.
-      // If the product was imported in Batch A, but sold in Order with Delivery Batch B...
-      // Which batch should get the credit?
-      // The USER TEXT: "order that product that apply with **that batch**" (ambiguous).
-
-      // Let's look at `createOrder` again.
-      // `orderData.batchId` is passed.
-      // The existing code IGNORES `orderData.batchId` for the stats calculation and uses `product.batchId`.
-
-      // If I change it to use `orderData.batchId`, it makes more sense for "Delivery Batch" management.
-      // The `Batch` model has `deliveryDate`.
-
-      // Let's assume the user wants `Order.batchId` to drive the stats.
-      // WHY? Because they are "Creating Batch" with "Delivery Date".
-      // And in "Create Order", they select "Delivery Batch".
-      // It's highly likely they want to know "How much did we sell for this Delivery Batch?".
-
-      // So the PREVIOUS LOGIC in `createOrder` was likely FLAWED not just by `price` but by `batchId` source.
-
-      // HOWEVER, `Product` relations suggests Products belong to Batches.
-      // Maybe "Batch" means "Pre-order Batch"?
-      // If it's a pre-order system, you open a Batch, take orders for products IN that batch.
-      // In that case, the Product's Batch AND the Order's Batch might be the same conceptual thing.
-
-      // Let's do a safe bet:
-      // If `orderData.batchId` is present, update THAT batch.
-      // THIS is the most logical "Delivery Batch" behavior.
-      // The existing code loop over products might be legacy or misunderstood.
-
-      // Wait, if I look at `BatchesTable` (File 1), it lists `totalOrders` and `totalSales`.
-      // If I select "Batch 05" in Create Order, I expect Batch 05 to update.
-      // So I will modify `createOrder` to update the `orderData.batchId`.
-
-      // But what if `orderData.batchId` is null? Then no batch updates.
-
-      // REVISED PLAN FOR `createOrder`:
-      // 1. Keep the inventory deduction logic (it's correct).
-      // 2. Change Batch Total Update logic:
-      //    Instead of looping products and finding their source batches,
-      //    Check if `orderData.batchId` is set.
-      //    If yes, increment `totalOrders` by 1.
-      //    Increment `totalSales` by `orderData.totalAmount`.
-      //    (Much simpler and matches "Delivery Batch" concept).
-
-      // BUT, what if the user meant "Product Batch"?
-      // "who purchase or order that product that apply with that batch"
-      // This phrasing "apply with that batch" sounds like the Product Attribute.
-      // But "total sales will connect to total sales" -> Batch.totalSales.
-
-      // IF I look at the screenshot again (Step 38).
-      // Batch Name: batch05. Status: Open.
-      // This looks like a Pre-order Batch.
-      // "Create Batch" -> Name, Date.
-      // "Create Order" -> "Delivery Batch" dropdown.
-
-      // If I buy Product X (Batch A) and Product Y (Batch B) in one Order...
-      // And I select "Delivery Batch C".
-      // Does it make sense to add sales to Batch C? Yes, if it's a consolidation batch.
-
-      // Let's check `schema.prisma`.
-      // `model Batch` has `products Product[]`.
-      // `model Product` has `batchId`.
-      // `model Order` has `batchId`.
-
-      // If the user wants to track "How many of Batch A products were sold", that's one thing.
-      // If the user wants to track "How much value is in Delivery Batch C", that's another.
-      // The UI column "Delivery Date" strongly implies Delivery Batch logic.
-
-      // I will implement the logic based on `orderData.batchId` (The Order's assigned batch).
-      // This is the variable the user actively selects when creating an order.
-      // And it matches `orderData.totalAmount` perfectly.
-
-      // Also, the previous code had `totalOrders: { increment: 1 }`.
-
-      // So, in `createOrder`:
-      // IF `orderData.batchId` exists:
-      // Update Batch(id=orderData.batchId):
-      //   totalOrders += 1
-      //   totalSales += orderData.totalAmount
-
-      // This is robust and simple.
-
-      // What about `updateOrder`?
-      // If I change `batchId` from A to B.
-      // A: totalOrders -= 1, totalSales -= order.totalAmount
-      // B: totalOrders += 1, totalSales += order.totalAmount
-
-      // If I change `totalAmount` but keep batch A.
-      // A: totalSales += (newAmount - oldAmount)
-
-      // This seems correct for "Delivery Batch" tracking.
-
-      // Wait, the existing erroneous code was:
-      /*
-      for (const item of orderData.items) {
-        const product = await tx.product.findUnique({ where: { id: item.product.id }, select: { batchId: true } });
-         // ... updates batchUpdates per PRODUCT BATCH ID
-      }
-      */
-      // This logic strongly suggests the previous dev (or AI) thought it was Product Batches.
-      // But the user context "order that product that apply with that batch" might mean:
-      // "When I order a product that belongs to Batch X, I want Batch X sales to go up".
-
-      // **Ambiguity Alert**.
-      // However, I see `orderData.batchId` being passed to `INSERT INTO orders`.
-      // And the user selected "batch05" in the screenshot.
-      // If the user selected "batch05" in the "Delivery Batch" dropdown during order creation...
-      // Then `orderData.batchId` IS "batch05".
-
-      // In the screenshot, "batch05" has "Total Orders: 2".
-      // This means SOME code successfully incremented orders.
-      // The flawed code I saw loops through ITEMS and increments batches found in ITEMS.
-      // IF the product used in the test had `batchId` = "batch05", then the flawed code worked for Orders but failed for Sales (due to price).
-      // This means the user has set "batch05" on the PRODUCT as well.
-
-      // If I switch to `orderData.batchId` logic, I might break the "Product Batch" tracking if that's what they wanted.
-      // BUT, if `Order.batchId` is what determines the "Batch" in the UI loop, then `orderData.batchId` is the truth.
-
-      // Let's stick to the previous code's intent (Product Batch) BUT also consider Order Batch?
-      // No, mixing them is duplicate counting.
-
-      // Let's look at `actions.ts` again.
-      // The specific line: `const product = await tx.product.findUnique(...)`
-      // It was definitely tracking Product Source Batch.
-
-      // If I simply fix the `retailPrice` issue, the logic remains "Product Source Batch".
-      // If the user's setup is: Create Batch -> Create Product linked to Batch -> Create Order with that Product.
-      // Then "Batch Management" shows how much of that Batch has been sold.
-      // This is "Inventory Batch" logic.
-
-      // AND `totalOrders` being 2 means the Product `batchId` WAS found.
-      // So the user HAS linked products to batches.
-
-      // So I will stick to fixing the `retailPrice` in the loop.
-      // AND I will add `revalidatePath`.
-      // AND I will implement `updateOrder` to perform similar logic if `items` are not present but `status` changes?
-      // No, `updateOrder` usually doesn't change the products (in this app's UI).
-      // If `updateOrder` changes `batchId` (Delivery), it doesn't affect Product Source Batches.
-
-      // Wait. If `updateOrder` changes the *Delivery Batch* (Order.batchId), does that affect the stats?
-      // If the stats are driven by *Product Source Batch*, then changing *Delivery Batch* is irrelevant.
-
-      // BUT, if the user thinks "I selected Batch05 in the dropdown", they are selecting Delivery Batch.
-      // Did the user select Batch05 in the dropdown?
-      // In `CreateOrderDialog` (Step 22):
-      // `<Select onValueChange={(value) => setBatchId(value)} ...>` -> `Delivery Batch`.
-
-      // Does the user also set Batch on the Product?
-      // `Product` model has `batchId`.
-
-      // If the user selects "Batch 05" in the "Delivery Batch" dropdown, they *expect* Batch 05 stats to update.
-      // Does the user *also* ensure the Product is in Batch 05?
-      // Maybe. But if they just pick any product, and select Batch 05 for delivery...
-      // They probably expect Batch 05 (the delivery batch) to show the sales.
-
-      // Logic Shift: The existing code was checking `product.batchId`.
-      // If the user selects Batch 05 in the dialog, `orderData.batchId` is Batch 05.
-      // The product might NOT have Batch 05.
-      // If so, the existing code would NOT update Batch 05 (unless product matched).
-      // But the user screenshot shows "Total Orders: 2" for Batch 05.
-      // This implies either:
-      // 1. The products ordered WERE in Batch 05.
-      // 2. OR there is OTHER code updating the batch based on `Order.batchId`.
-
-      // Let's check `actions.ts` again.
-      // I see `// NEW: Update Batch Totals` block.
-      // Is there any other update?
-      // No.
-
-      // So, for "Total Orders: 2" to happen, `product.batchId` MUST have been found.
-      // This means the user IS using Product Batches.
-      // So my fix for `retailPrice` is the correct path.
-
-      // I will fix `createOrder` to use `retailPrice`.
-      // I will also add handling for `updateOrder`.
-      // Since `EditOrderDialog` doesn't change items, I will skip complex item diffing for now unless I see simple way.
-      // Actually, if `updateOrder` is called, and `items` didn't change, we shouldn't change Product Batch stats.
-      // EXCEPT if the order is CANCELLED.
-      // `cancelOrder` already has logic to decrement.
-
-      // So I just need to fix `createOrder` `retailPrice` and `revalidatePath`.
-      // And `cancelOrder` `revalidatePath`.
-
-      // I'll also add a fallback to `orderData.batchId` just in case? 
-      // No, keep it clean.
-
-      // 2. Update the order
+      // 3. Update the order
       const updatedOrder = await tx.order.update({
         where: { id },
         data: {
@@ -654,6 +433,7 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
 export async function cancelOrder(orderId: string): Promise<void> {
   console.log(`Starting cancellation for order: ${orderId}`);
   try {
+    const user = await getCurrentUser();
     await prisma.$transaction(async (tx) => {
       // 1. Get the order with items
       const order = await tx.order.findUnique({
@@ -718,57 +498,37 @@ export async function cancelOrder(orderId: string): Promise<void> {
             select: { id: true, quantity: true } // Select returned data to confirm update
           });
           console.log(`Stock updated for ${productId}. New level: ${updatedProd.quantity}`);
+
+          // Log inventory change
+          const previousStock = updatedProd.quantity - quantityToIncrement;
+          await createInventoryLog({
+            action: "RETURNED",
+            productId: productId,
+            quantityChange: quantityToIncrement,
+            previousStock: previousStock,
+            newStock: updatedProd.quantity,
+            reason: `Order #${orderId.substring(0, 8)} cancelled`,
+            referenceId: orderId,
+            orderId: orderId,
+            branchId: null, // No specific branch for cancellations
+          }, tx, user);
         } catch (updateError: any) {
           console.error(`Failed to restock product ${productId}:`, updateError.message);
           throw new Error(`Failed to restock product ${productId}: ${updateError.message}`);
         }
       }
 
-      // NEW: Update Batch Totals (Decrement) based on Product Source Batch
-      const batchUpdates = new Map<string, number>();
-
-      for (const item of items) {
-        const productId = item.product?.id || item.productId;
-
-        if (!productId) continue;
-
-        const product = await tx.product.findUnique({
-          where: { id: productId },
-          select: { batchId: true, retailPrice: true }
-        });
-
-        if (product?.batchId) {
-          const price = product.retailPrice || 0;
-          const quantity = typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity), 10);
-
-          if (!isNaN(quantity)) {
-            const total = price * quantity;
-            const currentTotal = batchUpdates.get(product.batchId) || 0;
-            batchUpdates.set(product.batchId, currentTotal + total);
-          }
-        }
-      }
-
-      for (const [batchId, totalSales] of batchUpdates.entries()) {
-        if (totalSales === 0 || isNaN(totalSales)) continue;
-
-        console.log(`[BatchCancel] Start revert for Batch: ${batchId}, Sales to remove: ${totalSales}`);
-
-        const batch = await tx.batch.findUnique({ where: { id: batchId } });
+      // Update Batch Totals (Decrement) ONLY if status was 'Delivered'
+      if (order.shippingStatus === 'Delivered' && order.batchId && order.batchId !== 'none' && order.batchId !== 'hold') {
+        const batch = await tx.batch.findUnique({ where: { id: order.batchId } });
         if (batch) {
-          const currentOrders = batch.totalOrders || 0;
-          const currentSales = batch.totalSales || 0;
-          const newOrders = Math.max(0, currentOrders - 1);
-          const newSales = Math.max(0, currentSales - totalSales);
-
           await tx.batch.update({
-            where: { id: batchId },
+            where: { id: order.batchId },
             data: {
-              totalOrders: newOrders,
-              totalSales: newSales
+              totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
+              totalSales: Math.max(0, (batch.totalSales || 0) - order.totalAmount)
             }
           });
-          console.log(`[BatchCancel] Updated Batch ${batchId}: Orders ${currentOrders} -> ${newOrders}, Sales ${currentSales} -> ${newSales}`);
         }
       }
 
@@ -799,7 +559,7 @@ export async function cancelOrder(orderId: string): Promise<void> {
         tracking: order.trackingNumber,
         shippingFee: order.shippingFee
       });
-      const orderItemsJson = JSON.stringify(items); // items was parsed earlier in cancelOrder
+      const orderItemsJson = JSON.stringify(items);
 
       await tx.$executeRawUnsafe(
         `INSERT INTO sales_logs (id, orderId, description, products, orders, customerName, totalAmount, shipments, order_items, createdAt) 
@@ -821,9 +581,8 @@ export async function cancelOrder(orderId: string): Promise<void> {
     revalidatePath("/inventory");
     revalidatePath("/customers");
     revalidatePath("/batches");
-    console.log(`Successfully completed cancellation and revalidation for order: ${orderId}`);
   } catch (error: any) {
-    console.error("CRITICAL ERROR in cancelOrder:", error);
+    console.error("Error in cancelOrder:", error);
     throw new Error(error.message || "Failed to cancel order.");
   }
 }

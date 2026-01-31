@@ -241,7 +241,11 @@ export default function OrderTable({ orders, customers, products, stations, batc
               <SelectContent>
                 <SelectItem value="all">All Batches</SelectItem>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
-                {batches?.map(b => <SelectItem key={b.id} value={b.id}>{b.batchName}</SelectItem>)}
+                {batches?.map(b => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.batchName} ({format(new Date(b.manufactureDate), 'MMM d')})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
@@ -327,7 +331,17 @@ export default function OrderTable({ orders, customers, products, stations, batc
               {paginatedOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.id.substring(0, 7)}...</TableCell>
-                  <TableCell>{order.customerName}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span>{order.customerName}</span>
+                      {order.batch && (
+                        <div className="text-[10px] text-zinc-500 flex items-center gap-1 mt-0.5">
+                          <CalendarIcon className="h-2.5 w-2.5" />
+                          {order.batch.batchName} ({format(new Date(order.batch.manufactureDate), 'MMM d')})
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={paymentStatusStyles[order.paymentStatus]}>
                       {order.paymentStatus}

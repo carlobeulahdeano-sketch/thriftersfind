@@ -34,7 +34,7 @@ export async function getBodegaProducts(): Promise<Product[]> {
             cost: typeof product.cost === 'number' ? product.cost : 0,
             retailPrice: typeof product.retailPrice === 'number' ? product.retailPrice : 0,
             images: Array.isArray(product.images) ? (product.images as unknown as string[]) : [],
-            batchId: product.batchId,
+
         }));
     } catch (error) {
         console.error("Error fetching bodega products:", error);
@@ -74,8 +74,8 @@ export async function createBodegaProduct(productData: Omit<Product, 'id' | 'tot
 
         // Use raw query to bypass outdated Prisma client validation for batchId and createdBy
         await prisma.$executeRawUnsafe(
-            `INSERT INTO products (id, name, sku, description, quantity, alertStock, cost, retailPrice, images, batchId, createdBy, createdAt, updatedAt) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))`,
+            `INSERT INTO products (id, name, sku, description, quantity, alertStock, cost, retailPrice, images, createdBy, createdAt, updatedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))`,
             id,
             productData.name,
             productData.sku,
@@ -85,7 +85,7 @@ export async function createBodegaProduct(productData: Omit<Product, 'id' | 'tot
             productData.cost || 0,
             productData.retailPrice || 0,
             JSON.stringify(productData.images || []),
-            productData.batchId || null,
+
             JSON.stringify(createdBy)
         );
 
@@ -100,7 +100,7 @@ export async function createBodegaProduct(productData: Omit<Product, 'id' | 'tot
             cost: productData.cost || 0,
             retailPrice: productData.retailPrice || 0,
             images: productData.images || [],
-            batchId: productData.batchId,
+
         };
     } catch (error) {
         console.error("CRITICAL ERROR in createBodegaProduct:", error);
@@ -156,7 +156,7 @@ export async function updateBodegaProduct(id: string, productData: Partial<Omit<
         if (productData.cost !== undefined) { updates.push("cost = ?"); values.push(productData.cost); }
         if (productData.retailPrice !== undefined) { updates.push("retailPrice = ?"); values.push(productData.retailPrice); }
         if (productData.images !== undefined) { updates.push("images = ?"); values.push(JSON.stringify(productData.images)); }
-        if (productData.batchId !== undefined) { updates.push("batchId = ?"); values.push(productData.batchId); }
+
 
         updates.push("updatedAt = NOW(3)");
 
@@ -184,7 +184,7 @@ export async function updateBodegaProduct(id: string, productData: Partial<Omit<
             cost: prod.cost,
             retailPrice: prod.retailPrice || 0,
             images: Array.isArray(prod.images) ? (prod.images as unknown as string[]) : [],
-            batchId: prod.batchId,
+
         };
     } catch (error) {
         console.error("Error in updateBodegaProduct:", error);

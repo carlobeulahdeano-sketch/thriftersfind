@@ -41,18 +41,14 @@ export function ViewBatchDialog({
             <p className="col-span-2 text-sm">{batch.status}</p>
           </div>
           <div className="grid grid-cols-3 items-center gap-4">
-            <p className="text-sm font-medium text-muted-foreground">Delivery Date</p>
-            <p className="col-span-2 text-sm">{format(new Date(batch.deliveryDate), "PPP")}</p>
-          </div>
-          <div className="grid grid-cols-3 items-center gap-4">
-            <p className="text-sm font-medium text-muted-foreground">Cutoff Date</p>
-            <p className="col-span-2 text-sm">{format(new Date(batch.cutoffDate), "PPP")}</p>
+            <p className="text-sm font-medium text-muted-foreground">Manufacture Date</p>
+            <p className="col-span-2 text-sm text-bold">{format(new Date(batch.manufactureDate), "PPP")}</p>
           </div>
           <div className="grid grid-cols-3 items-center gap-4">
             <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
             <p className="col-span-2 text-sm font-bold">{batch.totalOrders}</p>
           </div>
-           <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-3 items-center gap-4">
             <p className="text-sm font-medium text-muted-foreground">Total Sales</p>
             <p className="col-span-2 text-sm font-bold">₱{batch.totalSales.toFixed(2)}</p>
           </div>

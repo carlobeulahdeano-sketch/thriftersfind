@@ -433,6 +433,34 @@ export async function deleteUser(id: string): Promise<{ success: boolean; error?
       // Continue to delete the user even if order deletion fails
     }
 
+    // Cleanup relationships that would prevent user deletion
+    // 1. Delete messages where user is sender or receiver
+    try {
+      await prisma.message.deleteMany({
+        where: {
+          OR: [
+            { senderId: id },
+            { receiverId: id }
+          ]
+        }
+      });
+    } catch (msgError) {
+      console.error("Error deleting user messages:", msgError);
+      // Fail here? Or continue? If we can't delete messages, user delete will definitely fail due to FK.
+      // We should probably convert this to return error unless we are sure. 
+      // But let's let the final delete throw the error if this fails.
+    }
+
+    // 2. Anonymize inventory logs (set userId to null)
+    try {
+      await prisma.inventoryLog.updateMany({
+        where: { userId: id },
+        data: { userId: null }
+      });
+    } catch (logError) {
+      console.error("Error updating inventory logs:", logError);
+    }
+
     await prisma.user.delete({
       where: { id }
     });

@@ -36,6 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ChatBoxProps {
     user: User;
+    currentUser: User | null;
     onClose: () => void;
 }
 
@@ -51,7 +52,7 @@ interface Message {
     };
 }
 
-export function ChatBox({ user, onClose }: ChatBoxProps) {
+export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const [loading, setLoading] = useState(true);
@@ -172,7 +173,8 @@ export function ChatBox({ user, onClose }: ChatBoxProps) {
 
     const handleProductSelect = async (product: any) => {
         setIsProductModalOpen(false);
-        const productMessage = `📦 Shared Product:\nName: ${product.productName}\nSKU: ${product.sku}\nCost: ₱${product.cost}`;
+        const prefix = product.isRequest ? "📢 REQUESTING Product from Warehouse:" : "📦 Shared Product:";
+        const productMessage = `${prefix}\nName: ${product.productName}\nSKU: ${product.sku}${product.isRequest ? "" : `\nCost: ₱${product.cost}`}`;
         setNewMessage(productMessage);
         // Optionally auto-send:
         // await sendMessage(user.id, productMessage);
@@ -289,14 +291,16 @@ export function ChatBox({ user, onClose }: ChatBoxProps) {
                             <Button variant="ghost" size="icon" className="h-9 w-9 text-primary hover:bg-muted rounded-full">
                                 <ImageIcon className="h-5 w-5" />
                             </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-primary hover:bg-muted rounded-full"
-                                onClick={() => setIsProductModalOpen(true)}
-                            >
-                                <PlusCircle className="h-5 w-5" />
-                            </Button>
+                            {(currentUser?.role?.name.toLowerCase() === 'super admin' || currentUser?.role?.name.toLowerCase() === 'staff') && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-9 text-primary hover:bg-muted rounded-full"
+                                    onClick={() => setIsProductModalOpen(true)}
+                                >
+                                    <PlusCircle className="h-5 w-5" />
+                                </Button>
+                            )}
                         </div>
                         <form onSubmit={handleSendMessage} className="flex-1 flex items-center">
                             <div className="relative flex-1">
@@ -333,6 +337,8 @@ export function ChatBox({ user, onClose }: ChatBoxProps) {
                 isOpen={isProductModalOpen}
                 onClose={() => setIsProductModalOpen(false)}
                 onSelect={handleProductSelect}
+                currentUser={currentUser}
+                targetUser={user}
             />
         </>
     );
@@ -345,16 +351,23 @@ export function ChatBox({ user, onClose }: ChatBoxProps) {
 function ProductSelectorModal({
     isOpen,
     onClose,
-    onSelect
+    onSelect,
+    currentUser,
+    targetUser
 }: {
     isOpen: boolean;
     onClose: () => void;
     onSelect: (product: any) => void;
+    currentUser: User | null;
+    targetUser?: any;
 }) {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [transferringProduct, setTransferringProduct] = useState<any | null>(null);
+    const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+    const [isBulkTransferring, setIsBulkTransferring] = useState(false);
+    const { toast } = useToast();
 
     const handleTransferSuccess = () => {
         loadProducts(); // Refresh list to show updated quantities
@@ -380,6 +393,46 @@ function ProductSelectorModal({
         }
     }
 
+    const toggleProductSelection = (id: string) => {
+        const next = new Set(selectedProductIds);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setSelectedProductIds(next);
+    };
+
+    const handleBulkTransfer = async () => {
+        if (selectedProductIds.size === 0) return;
+
+        setIsBulkTransferring(true);
+        try {
+            const { bulkTransferStock } = await import("./chat-actions");
+            const result = await bulkTransferStock(Array.from(selectedProductIds), {
+                id: targetUser.id,
+                name: targetUser.name,
+                email: targetUser.email
+            });
+
+            if (result.success) {
+                toast({
+                    title: "Bulk Transfer Successful",
+                    description: `${selectedProductIds.size} products transferred to Main Inventory.`,
+                });
+                setSelectedProductIds(new Set());
+                loadProducts();
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Transfer Failed",
+                    description: result.error || "Failed to transfer products",
+                });
+            }
+        } catch (error) {
+            console.error("Bulk transfer error:", error);
+        } finally {
+            setIsBulkTransferring(false);
+        }
+    };
+
     const filteredProducts = products.filter(p =>
         p.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -390,7 +443,20 @@ function ProductSelectorModal({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[1000px] h-[80vh] flex flex-col">
                 <DialogHeader>
-                    <DialogTitle>Select Product to Share</DialogTitle>
+                    <div className="flex items-center justify-between pr-8">
+                        <DialogTitle>Warehouse Products</DialogTitle>
+                        {currentUser?.role?.name.toLowerCase() === 'super admin' && selectedProductIds.size > 0 && (
+                            <Button
+                                size="sm"
+                                className="h-8 gap-2 bg-primary hover:bg-primary/90"
+                                onClick={handleBulkTransfer}
+                                disabled={isBulkTransferring}
+                            >
+                                <ArrowRightLeft className="h-4 w-4" />
+                                Transfer Selected ({selectedProductIds.size})
+                            </Button>
+                        )}
+                    </div>
                 </DialogHeader>
                 <div className="space-y-4 flex-1 flex flex-col min-h-0">
                     <div className="relative">
@@ -428,9 +494,19 @@ function ProductSelectorModal({
                                 return (
                                     <div
                                         key={product.id}
-                                        className="group relative flex flex-col bg-card border rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
+                                        className={`group relative flex flex-col bg-card border rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-all ${selectedProductIds.has(product.id) ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50'}`}
                                         onClick={() => onSelect(product)}
                                     >
+                                        {currentUser?.role?.name.toLowerCase() === 'super admin' && (
+                                            <div className="absolute top-2 left-2 z-10" onClick={(e) => e.stopPropagation()}>
+                                                <input
+                                                    type="checkbox"
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                                                    checked={selectedProductIds.has(product.id)}
+                                                    onChange={() => toggleProductSelection(product.id)}
+                                                />
+                                            </div>
+                                        )}
                                         <div className="h-40 w-full bg-muted relative overflow-hidden">
                                             {/* Using standard img for simplicity here, can swap to Next/Image if domains allowed */}
                                             {product.image || product.images ? (
@@ -452,18 +528,69 @@ function ProductSelectorModal({
                                             <p className="text-[12px] text-muted-foreground truncate font-mono">
                                                 {product.sku}
                                             </p>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-full h-6 text-[10px] my-1 gap-1"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setTransferringProduct(product);
-                                                }}
-                                            >
-                                                <ArrowRightLeft className="h-3 w-3" />
-                                                Transfer Stock
-                                            </Button>
+                                            {currentUser?.role?.name.toLowerCase() === 'super admin' ? (
+                                                <div className="grid grid-cols-2 gap-1 my-1">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-6 text-[9px] gap-1 px-1"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setTransferringProduct(product);
+                                                        }}
+                                                    >
+                                                        <ArrowRightLeft className="h-3 w-3" />
+                                                        Partial
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-6 text-[9px] gap-1 px-1 bg-primary/5 hover:bg-primary/10 border-primary/20"
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            try {
+                                                                const { transferStock } = await import("./chat-actions");
+                                                                const res = await transferStock(product.id, undefined, {
+                                                                    id: targetUser.id,
+                                                                    name: targetUser.name,
+                                                                    email: targetUser.email
+                                                                });
+                                                                if (res.success) {
+                                                                    toast({
+                                                                        title: "Transfer Successful",
+                                                                        description: `Entire product transferred to Main Inventory.`
+                                                                    });
+                                                                    loadProducts();
+                                                                } else {
+                                                                    toast({
+                                                                        variant: "destructive",
+                                                                        title: "Transfer Failed",
+                                                                        description: (res as any).error || "Failed to transfer product"
+                                                                    });
+                                                                }
+                                                            } catch (err) {
+                                                                console.error("Transfer error:", err);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <ArrowRightLeft className="h-3 w-3" />
+                                                        All
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="w-full h-6 text-[10px] my-1 gap-1 border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onSelect({ ...product, isRequest: true });
+                                                    }}
+                                                >
+                                                    <ArrowRightLeft className="h-3 w-3" />
+                                                    Request Item
+                                                </Button>
+                                            )}
                                             <div className="flex items-center justify-between mt-1">
                                                 <span className="font-bold text-cyan-400 text-xs">
                                                     ₱{product.cost}
@@ -484,6 +611,7 @@ function ProductSelectorModal({
                     onClose={() => setTransferringProduct(null)}
                     product={transferringProduct}
                     onSuccess={handleTransferSuccess}
+                    targetUser={targetUser}
                 />
             </DialogContent>
         </Dialog>
@@ -494,18 +622,19 @@ function TransferStockModal({
     isOpen,
     onClose,
     product,
-    onSuccess
+    onSuccess,
+    targetUser
 }: {
     isOpen: boolean;
     onClose: () => void;
     product: any;
     onSuccess: () => void;
+    targetUser?: any;
 }) {
     const { toast } = useToast();
-    const [destination, setDestination] = useState<"quantity" | "warehouse">("quantity");
     const [quantity, setQuantity] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [existingStock, setExistingStock] = useState<{ quantity: number, warehouse: number } | null>(null);
+    const [existingStock, setExistingStock] = useState<{ quantity: number } | null>(null);
 
     useEffect(() => {
         if (isOpen && product) {
@@ -518,9 +647,9 @@ function TransferStockModal({
             const { getProductBySku } = await import("./chat-actions");
             const existing = await getProductBySku(product.sku);
             if (existing) {
-                setExistingStock({ quantity: existing.quantity, warehouse: (existing as any).warehouse || 0 });
+                setExistingStock({ quantity: existing.quantity });
             } else {
-                setExistingStock({ quantity: 0, warehouse: 0 });
+                setExistingStock({ quantity: 0 });
             }
         } catch (error) {
             console.error("Failed to check existing stock", error);
@@ -543,12 +672,16 @@ function TransferStockModal({
         setIsSubmitting(true);
         try {
             const { transferStock } = await import("./chat-actions");
-            const result = await transferStock(product.id, destination, transferQty);
+            const result = await transferStock(product.id, transferQty, {
+                id: targetUser.id,
+                name: targetUser.name,
+                email: targetUser.email
+            });
 
             if (result.success) {
                 toast({
                     title: "Transfer Successful",
-                    description: `${transferQty} units transferred to ${destination === "quantity" ? "Main Inventory" : "Warehouse"}.`,
+                    description: `${transferQty} units transferred to Main Inventory.`,
                 });
                 setQuantity("");
                 onClose();
@@ -557,7 +690,7 @@ function TransferStockModal({
                 toast({
                     variant: "destructive",
                     title: "Transfer Failed",
-                    description: result.error || "Failed to transfer product.",
+                    description: (result as any).error || "Failed to transfer product.",
                 });
             }
         } catch (error) {
@@ -597,25 +730,15 @@ function TransferStockModal({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="destination">Destination</Label>
-                        <Select value={destination} onValueChange={(value: any) => setDestination(value)}>
-                            <SelectTrigger className="h-8">
-                                <SelectValue placeholder="Select destination" />
-                            </SelectTrigger>
-                            <SelectContent className="z-[120]">
-                                <SelectItem value="quantity">
-                                    Main Inventory {existingStock ? `(Current: ${existingStock.quantity})` : ''}
-                                </SelectItem>
-                                <SelectItem value="warehouse">
-                                    Warehouse Inventory {existingStock ? `(Current: ${existingStock.warehouse})` : ''}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {existingStock && (
-                            <p className="text-[10px] text-muted-foreground mt-1">
-                                * Shows current stock in main inventory
-                            </p>
-                        )}
+                        <Label>Destination</Label>
+                        <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
+                            <span className="text-sm">Main Inventory</span>
+                            {existingStock && (
+                                <Badge variant="outline" className="ml-auto">
+                                    Current: {existingStock.quantity}
+                                </Badge>
+                            )}
+                        </div>
                     </div>
 
                     <div className="grid gap-2">

@@ -122,8 +122,7 @@ export type Order = {
 export type Batch = {
   id: string;
   batchName: string;
-  deliveryDate: string;
-  cutoffDate: string;
+  manufactureDate: string;
   status: 'Open' | 'Closed' | 'Delivered' | 'Cancelled';
   totalOrders: number;
   totalSales: number;
@@ -141,7 +140,6 @@ export type Product = {
   cost: number;
   retailPrice: number;
   images: string[];
-  batchId?: string | null;
 }
 
 export type PreOrderProduct = {
@@ -187,6 +185,8 @@ export type PreOrder = {
   updatedAt: Date | string;
   customer?: Customer;
   items: PreOrderItem[];
+  batchId?: string | null;
+  batch?: Batch;
   salesLogs?: any[];
 };
 
@@ -201,4 +201,29 @@ export type PreOrderItem = {
   createdAt: Date | string;
   updatedAt: Date | string;
   product?: PreOrderProduct;
+};
+
+export type InventoryLog = {
+  id: string;
+  action: string;
+  productId?: string | null;
+  warehouseProductId?: string | null;
+  quantityChange: number;
+  previousStock: number;
+  newStock: number;
+  reason?: string | null;
+  referenceId?: string | null;
+  performedBy?: any; // Json
+  createdAt: string | Date;
+  orderId?: string | null;
+  preOrderId?: string | null;
+  userId?: string | null;
+  branchId?: string | null;
+
+  product?: Product | null;
+  warehouseProduct?: { productName: string; sku: string } | null;
+  order?: { id: string; } | null;
+  preOrder?: { id: string; } | null;
+  user?: { name: string; email: string } | null;
+  branch?: { name: string; } | null;
 };
