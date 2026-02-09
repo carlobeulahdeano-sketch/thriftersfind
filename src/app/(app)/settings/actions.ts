@@ -2,6 +2,50 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getCurrentUser } from "@/lib/auth-server";
+import bcrypt from "bcryptjs";
+
+export async function updatePassword(formData: FormData) {
+    try {
+        const user = await getCurrentUser();
+
+        if (!user) {
+            return { success: false, error: "Not authenticated" };
+        }
+
+        const newPassword = formData.get("newPassword") as string;
+        const confirmPassword = formData.get("confirmPassword") as string;
+
+        if (!newPassword || !confirmPassword) {
+            return { success: false, error: "New password and confirm password are required" };
+        }
+
+        if (newPassword !== confirmPassword) {
+            return { success: false, error: "Passwords do not match" };
+        }
+
+        // Validate password strength (basic check, could be more robust)
+        if (newPassword.length < 6) {
+            return { success: false, error: "Password must be at least 6 characters long" };
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+            },
+        });
+
+        revalidatePath("/settings");
+        return { success: true, message: "Password updated successfully" };
+    } catch (error) {
+        console.error("Failed to update password:", error);
+        return { success: false, error: "Failed to update password" };
+    }
+}
+
 
 export async function getDatabaseOperations() {
     try {

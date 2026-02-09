@@ -14,9 +14,10 @@ interface BatchesChartProps {
     width?: string | number;
     height?: string | number;
     className?: string;
+    onBatchClick?: (batch: Batch) => void;
 }
 
-export default function BatchesChart({ batches, width, height, className }: BatchesChartProps) {
+export default function BatchesChart({ batches, width, height, className, onBatchClick }: BatchesChartProps) {
     const series = useMemo(() => {
         if (!batches || batches.length === 0) return [];
         return batches.map(b => b.totalSales || 0);
@@ -32,6 +33,13 @@ export default function BatchesChart({ batches, width, height, className }: Batc
             type: 'pie',
             toolbar: {
                 show: false
+            },
+            events: {
+                dataPointSelection: function (event, chartContext, config) {
+                    if (onBatchClick && batches && batches[config.dataPointIndex]) {
+                        onBatchClick(batches[config.dataPointIndex]);
+                    }
+                }
             }
         },
         labels: labels,
@@ -54,7 +62,8 @@ export default function BatchesChart({ batches, width, height, className }: Batc
         },
         plotOptions: {
             pie: {
-                expandOnClick: false
+                expandOnClick: false,
+                customScale: 1
             }
         }
     };

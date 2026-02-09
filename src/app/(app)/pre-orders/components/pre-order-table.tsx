@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ShoppingBag, Truck, Calendar, Filter, Archive, User, Package, PlusCircle, CircleDollarSign, Banknote } from "lucide-react";
+import { Search, ShoppingBag, Truck, Calendar, Filter, Archive, User, Package, PlusCircle, PhilippinePeso, Banknote } from "lucide-react";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -98,7 +98,7 @@ export default function PreOrderTable({ orders, customers, stations, batches }: 
                     <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
                         <SelectTrigger className="w-full sm:w-[150px]">
                             <div className="flex items-center gap-2">
-                                <CircleDollarSign className="h-4 w-4" />
+                                <PhilippinePeso className="h-4 w-4" />
                                 <SelectValue placeholder="Payment" />
                             </div>
                         </SelectTrigger>

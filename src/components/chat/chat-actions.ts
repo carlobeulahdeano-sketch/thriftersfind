@@ -25,9 +25,9 @@ export async function sendMessage(receiverId: string, content: string) {
         revalidatePath("/");
 
         return { success: true, message };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Failed to send message:", error);
-        return { success: false, error: "Failed to send message" };
+        return { success: false, error: error.message || "Failed to send message" };
     }
 }
 
@@ -230,7 +230,7 @@ export async function transferStock(
                     `Transferred from Warehouse Product`,
                     transferQty,
                     null,
-                    0,
+                    10,
                     warehouseProduct.cost || 0,
                     warehouseProduct.retailPrice || 0,
                     JSON.stringify(images),
@@ -379,7 +379,7 @@ export async function bulkTransferStock(
                         `Transferred from Warehouse Product`,
                         transferQty,
                         null,
-                        0,
+                        10,
                         warehouseProduct.cost || 0,
                         warehouseProduct.retailPrice || 0,
                         JSON.stringify(images),
@@ -426,12 +426,24 @@ export async function bulkTransferStock(
     }
 }
 
-export async function getProductBySku(sku: string) {
+export async function getProductBySku(sku: string, targetUserId?: string) {
     try {
-        const product = await prisma.product.findUnique({
-            where: { sku }
-        });
-        return product;
+        let userId = targetUserId;
+
+        if (!userId) {
+            const currentUser = await getCurrentUser();
+            if (!currentUser) return null;
+            userId = currentUser.id;
+        }
+
+        // Use raw query to match branch-specific product ownership (createdBy.uid)
+        const products: any[] = await prisma.$queryRawUnsafe(
+            `SELECT * FROM products WHERE sku = ? AND JSON_EXTRACT(createdBy, '$.uid') = ? LIMIT 1`,
+            sku,
+            userId
+        );
+
+        return products[0] || null;
     } catch (error) {
         console.error("Error fetching product by SKU:", error);
         return null;

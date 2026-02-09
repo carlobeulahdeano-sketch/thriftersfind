@@ -51,8 +51,11 @@ export async function checkPermission(permission: keyof UserPermissions): Promis
     const user = await getCurrentUser();
     if (!user) return false;
 
-    // Super admin bypass REMOVED to respect granular permissions
-    // if (user.role?.name === 'Super Admin') return true;
+    // Explicitly deny Dashboard and Sales for Staff role
+    const isStaff = user.role?.name?.toLowerCase() === 'staff';
+    if (isStaff && (permission === 'dashboard' || permission === 'sales')) {
+        return false;
+    }
 
     return !!user.permissions?.[permission];
 }

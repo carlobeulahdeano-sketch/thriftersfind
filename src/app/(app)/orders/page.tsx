@@ -11,7 +11,7 @@ export default async function OrdersPage() {
   const customers = await getCustomers();
   const products = await getProducts();
   const stations = await getStations();
-  const batches = await getBatches();
+  const { batches } = await getBatches();
 
   return (
     <div className="flex flex-col gap-8">

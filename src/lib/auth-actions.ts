@@ -132,3 +132,10 @@ export async function stopImpersonating() {
     console.log("[Stop Impersonating] Session restored to admin. Redirecting...");
     redirect("/users");
 }
+
+export async function logout() {
+    const cookieStore = await cookies();
+    cookieStore.delete("session");
+    cookieStore.delete("impersonator_id");
+    redirect("/login");
+}

@@ -23,7 +23,7 @@ import { Customer, Order, PaymentStatus, ShippingStatus, PaymentMethod, Batch, O
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { ChevronsUpDown, Check, Copy, Package, Trash2, Plus } from "lucide-react";
+import { ChevronsUpDown, Check, Copy, Package, Trash2, Plus, PhilippinePeso } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SelectProductDialog } from "./select-product-dialog";
@@ -122,93 +122,76 @@ export function CreateOrderDialog({
 
   const copyInvoice = () => {
     if (!lastCreatedOrder) return;
-    const itemsList = selectedItems.map(item => `- ${item.product.name} (x${item.quantity})`).join('\n');
+
+    const itemsList = lastCreatedOrder.items?.map((item: any) =>
+      `${item.product.name} (x${item.quantity}) - ₱${(item.product.retailPrice * item.quantity).toFixed(2)}`
+    ).join('\n') || '';
+
     const invoiceText = `
-      Order ID: ${lastCreatedOrder.id.substring(0, 7)}
-      Customer: ${lastCreatedOrder.customerName}
-      Items:
-      ${itemsList}
-      Total: PHP ${lastCreatedOrder.totalAmount.toFixed(2)}
-      Payment: ${lastCreatedOrder.paymentMethod}
-      Status: ${lastCreatedOrder.paymentStatus}
-    `;
-    navigator.clipboard.writeText(invoiceText.trim());
+ORDER CONFIRMATION
+Order ID: ${lastCreatedOrder.id.substring(0, 7)}
+Date: ${format(new Date(lastCreatedOrder.createdAt || new Date()), 'MMM d, yyyy h:mm a')}
+
+CUSTOMER DETAILS
+Name: ${lastCreatedOrder.customerName}
+Contact: ${lastCreatedOrder.contactNumber || 'N/A'}
+Address: ${lastCreatedOrder.address || 'N/A'}
+
+ITEMS
+${itemsList}
+
+PAYMENT & DELIVERY
+Payment Method: ${lastCreatedOrder.paymentMethod}
+Payment Status: ${lastCreatedOrder.paymentStatus}
+Shipping Status: ${lastCreatedOrder.shippingStatus}
+Courier: ${lastCreatedOrder.courierName || 'N/A'}
+Tracking No: ${lastCreatedOrder.trackingNumber || 'N/A'}
+
+SUMMARY
+Subtotal: ₱${(lastCreatedOrder.totalAmount - lastCreatedOrder.shippingFee).toFixed(2)}
+Shipping Fee: ₱${lastCreatedOrder.shippingFee.toFixed(2)}
+Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}
+    `.trim();
+
+    navigator.clipboard.writeText(invoiceText).then(() => {
+      toast({
+        title: "Copied to Clipboard",
+        description: "Invoice details have been copied securely.",
+      });
+    });
   };
 
-  const handlePrintReceipt = () => {
+  const handlePrintReceipt = async () => {
     if (!lastCreatedOrder) return;
 
-    // Simple print function using a hidden iframe or new window
-    // For now, let's use window.print logic or a specific print style
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+    const element = document.getElementById('receipt-content');
+    if (!element) return;
 
-    const itemsHtml = selectedItems.map(item => `
-      <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.product.name}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${item.quantity}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">₱${item.product.retailPrice.toFixed(2)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">₱${(item.product.retailPrice * (typeof item.quantity === 'string' ? 0 : item.quantity)).toFixed(2)}</td>
-      </tr>
-    `).join('');
+    const opt = {
+      margin: 10,
+      filename: `receipt-${lastCreatedOrder.id.substring(0, 7)}.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+    };
 
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Receipt - ${lastCreatedOrder.id.substring(0, 7)}</title>
-          <style>
-            body { font-family: sans-serif; padding: 20px; }
-            .header { text-align: center; margin-bottom: 20px; }
-            .details { margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; }
-            .total { text-align: right; margin-top: 20px; font-weight: bold; font-size: 1.2em; }
-            @media print {
-              .no-print { display: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>ThriftersFind</h1>
-            <p>Official Receipt</p>
-          </div>
-          <div class="details">
-            <p><strong>Order ID:</strong> ${lastCreatedOrder.id}</p>
-            <p><strong>Date:</strong> ${new Date(lastCreatedOrder.createdAt).toLocaleString()}</p>
-            <p><strong>Customer:</strong> ${lastCreatedOrder.customerName}</p>
-            <p><strong>Address:</strong> ${lastCreatedOrder.address || 'N/A'}</p>
-            <p><strong>Contact:</strong> ${lastCreatedOrder.contactNumber || 'N/A'}</p>
-          </div>
-          <table>
-            <thead>
-              <tr style="background: #f4f4f4;">
-                <th style="padding: 8px; text-align: left;">Item</th>
-                <th style="padding: 8px; text-align: center;">Qty</th>
-                <th style="padding: 8px; text-align: right;">Price</th>
-                <th style="padding: 8px; text-align: right;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-          </table>
-          <div class="total">
-            <p>Shipping Fee: ₱${lastCreatedOrder.shippingFee.toFixed(2)}</p>
-            <p>Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}</p>
-          </div>
-          <div style="margin-top: 40px; text-align: center;">
-            <p>Thank you for your purchase!</p>
-          </div>
-          <script>
-            window.onload = () => {
-              window.print();
-              setTimeout(() => { window.close(); }, 500);
-            };
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+    try {
+      toast({
+        title: "Generating PDF...",
+        description: "Please wait while we prepare your receipt.",
+      });
+      // @ts-ignore
+      const html2pdf = (await import('html2pdf.js')).default;
+      const pdfBlobUrl = await html2pdf().set(opt).from(element).output('bloburl');
+      window.open(pdfBlobUrl, '_blank');
+    } catch (error) {
+      console.error("PDF generation failed", error);
+      toast({
+        variant: "destructive",
+        title: "PDF Error",
+        description: "Failed to generate receipt PDF.",
+      });
+    }
   };
 
 
@@ -373,9 +356,7 @@ export function CreateOrderDialog({
                     <Copy className="mr-2 h-4 w-4" />
                     Copy Invoice Details
                   </Button>
-                  <Button onClick={handleClose} variant="secondary" size="lg" className="w-full">
-                    OK / Close
-                  </Button>
+
                 </div>
               </div>
             </div>
@@ -441,7 +422,7 @@ export function CreateOrderDialog({
                                   {customers.filter(c => c.name.toLowerCase() !== "walk in customer").map((customer) => (
                                     <CommandItem
                                       key={customer.id}
-                                      value={customer.name}
+                                      value={`${customer.name}-${customer.id}`}
                                       onSelect={() => handleCustomerSelect(customer)}
                                     >
                                       <Check
@@ -552,15 +533,24 @@ export function CreateOrderDialog({
                     <div className="grid md:grid-cols-2 gap-4">
                       {customerName !== "Walk In Customer" && (
                         <div className="grid gap-2">
-                          <Label htmlFor="shippingFee">Shipping Fee</Label>
-                          <Input
-                            id="shippingFee"
-                            type="number"
-                            value={shippingFee}
-                            onChange={(e) => setShippingFee(e.target.value)}
-                            placeholder="0.00"
-                            disabled={isPickup}
-                          />
+                          <Label htmlFor="shippingFee" className="flex items-center gap-2">
+                            <PhilippinePeso className="h-4 w-4" />
+                            Shipping Fee
+                          </Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                              ₱
+                            </span>
+                            <Input
+                              id="shippingFee"
+                              type="number"
+                              value={shippingFee}
+                              onChange={(e) => setShippingFee(e.target.value)}
+                              placeholder="0.00"
+                              className="pl-7"
+                              disabled={isPickup}
+                            />
+                          </div>
                         </div>
                       )}
                       <div className={cn("grid gap-2", customerName === "Walk In Customer" && "col-span-2")}>
@@ -778,6 +768,57 @@ export function CreateOrderDialog({
         onProductSelect={handleProductSelect}
         products={products}
       />
+
+      {/* Hidden Receipt Content for PDF Generation */}
+      {lastCreatedOrder && (
+        <div className="hidden">
+          <div id="receipt-content" style={{ padding: '20px', fontFamily: 'sans-serif', color: '#333' }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <h1 style={{ margin: '0', fontSize: '24px' }}>ThriftersFind</h1>
+              <p style={{ margin: '5px 0', color: '#666' }}>Official Receipt</p>
+            </div>
+
+            <div style={{ marginBottom: '20px', fontSize: '14px' }}>
+              <p><strong>Order ID:</strong> {lastCreatedOrder.id}</p>
+              <p><strong>Date:</strong> {new Date(lastCreatedOrder.createdAt).toLocaleString()}</p>
+              <p><strong>Customer:</strong> {lastCreatedOrder.customerName}</p>
+              <p><strong>Address:</strong> {lastCreatedOrder.address || 'N/A'}</p>
+              <p><strong>Contact:</strong> {lastCreatedOrder.contactNumber || 'N/A'}</p>
+            </div>
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', fontSize: '14px' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f9f9f9', borderBottom: '2px solid #eee' }}>
+                  <th style={{ padding: '10px', textAlign: 'left' }}>Item</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>Qty</th>
+                  <th style={{ padding: '10px', textAlign: 'right' }}>Price</th>
+                  <th style={{ padding: '10px', textAlign: 'right' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lastCreatedOrder.items?.map((item: any, idx: number) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '10px' }}>{item.product?.name || item.productName || 'Unknown Product'}</td>
+                    <td style={{ padding: '10px', textAlign: 'center' }}>{item.quantity}</td>
+                    <td style={{ padding: '10px', textAlign: 'right' }}>₱{(item.product?.retailPrice || 0).toFixed(2)}</td>
+                    <td style={{ padding: '10px', textAlign: 'right' }}>₱{((item.product?.retailPrice || 0) * item.quantity).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div style={{ textAlign: 'right', fontSize: '14px' }}>
+              <p style={{ margin: '5px 0' }}>Shipping Fee: ₱{lastCreatedOrder.shippingFee.toFixed(2)}</p>
+              <p style={{ margin: '10px 0', fontSize: '18px', fontWeight: 'bold' }}>Total Amount: ₱{lastCreatedOrder.totalAmount.toFixed(2)}</p>
+            </div>
+
+            <div style={{ marginTop: '50px', textAlign: 'center', fontSize: '12px', color: '#999' }}>
+              <p>Thank you for your purchase!</p>
+              <p>ThriftersFind Analytics Engine Generated Receipt</p>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

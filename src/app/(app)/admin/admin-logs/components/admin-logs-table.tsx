@@ -40,7 +40,7 @@ export default function AdminLogsTable() {
     const fetchLogs = async (page: number) => {
         setLoading(true);
         try {
-            const result = await getAdminLogs(page);
+            const result = await getAdminLogs(page, 10);
             setLogsData(result);
         } catch (error) {
             console.error("Failed to fetch logs", error);

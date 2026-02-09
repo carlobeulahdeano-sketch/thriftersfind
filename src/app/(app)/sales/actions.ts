@@ -5,12 +5,18 @@ import { Order } from "@/lib/types";
 import { startOfWeek, startOfMonth, startOfYear, endOfDay } from "date-fns";
 import { getCurrentUser } from "@/lib/auth-server";
 
-export async function getSalesData(timeframe: "week" | "month" | "year"): Promise<Order[]> {
+export async function getSalesData(timeframe: "week" | "month" | "year"): Promise<{ orders: Order[], isAuthorized: boolean }> {
     try {
         const user = await getCurrentUser();
 
         if (!user) {
-            return [];
+            return { orders: [], isAuthorized: false };
+        }
+
+        const isAuthorized = user.role?.name.toLowerCase() !== 'staff';
+
+        if (!isAuthorized) {
+            return { orders: [], isAuthorized: false };
         }
 
         const now = new Date();
@@ -26,8 +32,6 @@ export async function getSalesData(timeframe: "week" | "month" | "year"): Promis
 
         const endDate = endOfDay(now);
 
-        const isSuperAdmin = user.role?.name === 'Super Admin';
-
         const orders = await prisma.order.findMany({
             where: {
                 orderDate: {
@@ -41,16 +45,7 @@ export async function getSalesData(timeframe: "week" | "month" | "year"): Promis
             },
         });
 
-        // Filter orders based on user role
-        const filteredOrders = isSuperAdmin
-            ? orders
-            : orders.filter(order => {
-                if (!(order as any).createdBy) return false;
-                const createdByData = (order as any).createdBy as any;
-                return createdByData?.uid === user.id;
-            });
-
-        return filteredOrders.map((order: any) => ({
+        const mappedOrders = orders.map((order: any) => ({
             id: order.id,
             customerName: order.customerName,
             contactNumber: order.contactNumber || "",
@@ -71,10 +66,14 @@ export async function getSalesData(timeframe: "week" | "month" | "year"): Promis
             courierName: order.courierName || "",
             trackingNumber: order.trackingNumber || "",
             remarks: order.remarks as any,
+            items: order.items as any,
         }));
+
+        return { orders: mappedOrders, isAuthorized: true };
+
     } catch (error) {
         console.error("Error fetching sales data:", error);
-        return [];
+        return { orders: [], isAuthorized: false };
     }
 }
 
@@ -98,10 +97,15 @@ export type BatchAnalytics = {
     }[];
 };
 
-export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promise<BatchAnalytics[]> {
+export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promise<{ batchAnalytics: BatchAnalytics[], isAuthorized: boolean }> {
     try {
         const user = await getCurrentUser();
-        if (!user) return [];
+        if (!user) return { batchAnalytics: [], isAuthorized: false };
+
+        const isAuthorized = user.role?.name.toLowerCase() !== 'staff';
+        if (!isAuthorized) {
+            return { batchAnalytics: [], isAuthorized: false };
+        }
 
         const dateFilter: any = {};
         if (startDate && endDate) {
@@ -116,7 +120,7 @@ export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promi
             include: {
                 orders: {
                     where: {
-                        paymentStatus: 'Paid'
+                        shippingStatus: 'Delivered'
                     }
                 }
             },
@@ -173,10 +177,10 @@ export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promi
             };
         });
 
-        return analytics;
+        return { batchAnalytics: analytics, isAuthorized: true };
 
     } catch (error) {
         console.error("Error fetching batch analytics:", error);
-        return [];
+        return { batchAnalytics: [], isAuthorized: false };
     }
 }

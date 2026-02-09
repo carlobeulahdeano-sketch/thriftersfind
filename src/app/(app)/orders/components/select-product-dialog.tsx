@@ -43,7 +43,11 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
   useEffect(() => {
     async function loadBatches() {
       const data = await getBatches();
-      setBatches(data);
+      if (data && Array.isArray(data.batches)) {
+        setBatches(data.batches);
+      } else {
+        setBatches([]);
+      }
     }
     loadBatches();
   }, []);

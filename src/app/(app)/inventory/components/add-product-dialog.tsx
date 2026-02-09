@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@/lib/types";
-import { Image as ImageIcon, X, RefreshCw } from "lucide-react";
+import { Image as ImageIcon, X, RefreshCw, PhilippinePeso } from "lucide-react";
 import { createProduct } from "../actions";
 
 import { useEffect } from "react";
@@ -199,12 +199,40 @@ export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = fals
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="cost">Cost (PHP)</Label>
-              <Input id="cost" type="number" value={cost} onChange={(e) => setCost(e.target.value)} />
+              <Label htmlFor="cost" className="flex items-center gap-2">
+                <PhilippinePeso className="w-4 h-4" />
+                Cost
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                  ₱
+                </span>
+                <Input
+                  id="cost"
+                  type="number"
+                  value={cost}
+                  onChange={(e) => setCost(e.target.value)}
+                  className="pl-7"
+                />
+              </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="retailPrice">Retail Price (PHP)</Label>
-              <Input id="retailPrice" type="number" value={retailPrice} onChange={(e) => setRetailPrice(e.target.value)} />
+              <Label htmlFor="retailPrice" className="flex items-center gap-2">
+                <PhilippinePeso className="w-4 h-4" />
+                Retail Price
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                  ₱
+                </span>
+                <Input
+                  id="retailPrice"
+                  type="number"
+                  value={retailPrice}
+                  onChange={(e) => setRetailPrice(e.target.value)}
+                  className="pl-7"
+                />
+              </div>
             </div>
           </div>
           <div className="grid gap-2">

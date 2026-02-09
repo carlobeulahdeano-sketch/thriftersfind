@@ -121,14 +121,32 @@ export async function updateStation(
 
 export async function deleteStation(id: string): Promise<{ success: boolean; error?: string }> {
     try {
-        await prisma.station.delete({
+        if (!id) {
+            return { success: false, error: "Station ID is required" };
+        }
+
+        // Use deleteMany to avoid throwing P2025 error if the record is already deleted
+        const result = await prisma.station.deleteMany({
             where: { id },
         });
+
+        if (result.count === 0) {
+            return { success: false, error: "Station not found or already deleted" };
+        }
 
         revalidatePath("/stations");
         return { success: true };
     } catch (error: any) {
         console.error("Error deleting station:", error);
+
+        // Handle common Prisma error for foreign key constraints
+        if (error.code === 'P2003') {
+            return {
+                success: false,
+                error: "Cannot delete station because it is being used by other records (e.g., orders or logs)."
+            };
+        }
+
         return { success: false, error: error.message || "Failed to delete station" };
     }
 }

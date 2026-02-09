@@ -37,7 +37,7 @@ export default function SalesLogsTable() {
     const fetchLogs = async (page: number) => {
         setLoading(true);
         try {
-            const result = await getSalesLogs(page);
+            const result = await getSalesLogs(page, 10);
             setLogsData(result);
         } catch (error) {
             console.error("Failed to fetch logs", error);

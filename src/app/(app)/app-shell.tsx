@@ -32,7 +32,7 @@ interface AppShellProps {
 export function AppShell({ children, user, isImpersonating }: AppShellProps) {
     return (
         <SidebarProvider suppressHydrationWarning>
-            <Sidebar collapsible="icon" className="border-r border-sidebar-border">
+            <Sidebar collapsible="icon" className="border-r border-sidebar-border print:hidden">
                 <SidebarRail />
                 <SidebarHeader>
                     <Logo className="text-sidebar-foreground" />
@@ -44,8 +44,8 @@ export function AppShell({ children, user, isImpersonating }: AppShellProps) {
                     {/* Footer content if any */}
                 </SidebarFooter>
             </Sidebar>
-            <SidebarInset>
-                <header className="flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
+            <SidebarInset className="print:m-0">
+                <header className="flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 print:hidden">
                     <SidebarTrigger />
                     <div className="flex-1">
                         <Breadcrumbs />
@@ -68,7 +68,7 @@ export function AppShell({ children, user, isImpersonating }: AppShellProps) {
                     )}
                     <UserNav user={user} />
                 </header>
-                <main className="flex-1 overflow-auto p-4 md:p-8">
+                <main className="flex-1 overflow-auto p-4 md:p-8 print:p-0 print:overflow-visible">
                     {children}
                 </main>
             </SidebarInset>

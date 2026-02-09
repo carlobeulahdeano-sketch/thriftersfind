@@ -15,6 +15,7 @@ export type UserPermissions = {
   stations: boolean;
   preOrders: boolean;
   warehouses: boolean;
+  sales: boolean;
 };
 
 export type User = {
@@ -51,6 +52,8 @@ export type OrderHistoryItem = {
   amount: number;
   items: string;
   year: number;
+  paymentMethod: string;
+  shippingStatus: string;
 };
 
 export type YearlyOrderSummary = {

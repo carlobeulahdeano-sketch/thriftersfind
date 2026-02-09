@@ -14,6 +14,7 @@ export async function createWarehouseProduct(data: {
     location?: string | null;
     retailPrice?: number | null;
     batchId?: string | null;
+    productId?: string | null;
 }): Promise<{ success: boolean; error?: string }> {
     try {
         // Validate required fields
@@ -32,6 +33,7 @@ export async function createWarehouseProduct(data: {
                 location: data.location,
                 retailPrice: data.retailPrice,
                 batchId: data.batchId || null,
+                productId: data.productId || null,
             },
         });
 

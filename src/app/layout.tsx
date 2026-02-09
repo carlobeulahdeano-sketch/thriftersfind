@@ -10,6 +10,9 @@ const lobster = Lobster({ subsets: ['latin'], weight: '400', variable: '--font-v
 export const metadata: Metadata = {
   title: 'ThriftersFind OMS',
   description: 'Order Management System for ThriftersFind',
+  icons: {
+    icon: '/images/logo.png',
+  },
 };
 
 export default function RootLayout({

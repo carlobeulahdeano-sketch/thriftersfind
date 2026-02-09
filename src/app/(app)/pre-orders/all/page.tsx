@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getPreOrders } from "../actions";
 import { getCustomers } from "../../customers/actions";
 import { getStations } from "../../stations/actions";
@@ -13,7 +15,7 @@ export default async function PreOrdersPage() {
     const preOrders = await getPreOrders();
     const customers = await getCustomers();
     const stations = await getStations();
-    const batches = await getBatches();
+    const { batches } = await getBatches();
 
     return (
         <div className="flex flex-col gap-8 p-2">

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getPreOrderItems } from "../actions";
 // import { getProducts } from "../../inventory/actions";
 // import { getBatches } from "../../batches/actions";

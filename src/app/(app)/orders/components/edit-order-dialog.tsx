@@ -377,7 +377,7 @@ export function EditOrderDialog({
                                 {customers.filter(c => c.name.toLowerCase() !== "walk in customer").map((customer) => (
                                   <CommandItem
                                     key={customer.id}
-                                    value={customer.name}
+                                    value={`${customer.name}-${customer.id}`}
                                     onSelect={() => handleCustomerSelect(customer)}
                                   >
                                     <Check

@@ -18,11 +18,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MoreHorizontal, PlusCircle, Search, X, Package } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search, X, Package, PhilippinePeso, Plus, Minus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AddWarehouseDialog } from "./add-warehouse-dialog";
 import { ViewWarehouseDialog } from "./view-warehouse-dialog";
 import { EditWarehouseDialog } from "./edit-warehouse-dialog";
+import { StockAdjustmentDialog } from "./stock-adjustment-dialog";
 import type { WarehouseProduct } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { deleteWarehouseProduct } from "../actions";
@@ -48,6 +49,11 @@ export default function WarehouseProductsTable({ products: initialProducts }: { 
     const [isAddDialogOpen, setAddDialogOpen] = React.useState(false);
     const [editingProduct, setEditingProduct] = React.useState<WarehouseProduct | null>(null);
     const [viewingProduct, setViewingProduct] = React.useState<WarehouseProduct | null>(null);
+    const [stockAdjustment, setStockAdjustment] = React.useState<{
+        isOpen: boolean;
+        product: WarehouseProduct | null;
+        mode: "add" | "deduct";
+    }>({ isOpen: false, product: null, mode: "add" });
 
     const refreshProducts = () => {
         router.refresh();
@@ -177,9 +183,9 @@ export default function WarehouseProductsTable({ products: initialProducts }: { 
                                     </TableCell>
                                     <TableCell>{product.location || "—"}</TableCell>
                                     <TableCell>{product.quantity}</TableCell>
-                                    <TableCell>${product.cost.toFixed(2)}</TableCell>
+                                    <TableCell>₱{product.cost.toFixed(2)}</TableCell>
                                     <TableCell>
-                                        {product.retailPrice ? `$${product.retailPrice.toFixed(2)}` : "—"}
+                                        {product.retailPrice ? `₱${product.retailPrice.toFixed(2)}` : "—"}
                                     </TableCell>
                                     <TableCell>
                                         <AlertDialog>
@@ -196,6 +202,14 @@ export default function WarehouseProductsTable({ products: initialProducts }: { 
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => setEditingProduct(product)}>
                                                         Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => setStockAdjustment({ isOpen: true, product, mode: "add" })}>
+                                                        <Plus className="mr-2 h-4 w-4" />
+                                                        Add Stock
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => setStockAdjustment({ isOpen: true, product, mode: "deduct" })}>
+                                                        <Minus className="mr-2 h-4 w-4" />
+                                                        Deduct Stock
                                                     </DropdownMenuItem>
                                                     <AlertDialogTrigger asChild>
                                                         <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
@@ -275,6 +289,15 @@ export default function WarehouseProductsTable({ products: initialProducts }: { 
                     isOpen={!!viewingProduct}
                     onClose={() => setViewingProduct(null)}
                     product={viewingProduct}
+                />
+            )}
+            {stockAdjustment.isOpen && stockAdjustment.product && (
+                <StockAdjustmentDialog
+                    isOpen={stockAdjustment.isOpen}
+                    onClose={() => setStockAdjustment({ ...stockAdjustment, isOpen: false })}
+                    product={stockAdjustment.product}
+                    mode={stockAdjustment.mode}
+                    onSuccess={refreshProducts}
                 />
             )}
         </>

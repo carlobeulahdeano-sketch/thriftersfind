@@ -87,7 +87,10 @@ export default function StationsTable({ stations: initialStations }: { stations:
         setCurrentPage(1);
     }, [searchTerm, typeFilter, initialStations]);
 
+    const [isDeleting, setIsDeleting] = React.useState(false);
+
     const handleDelete = async (stationId: string) => {
+        setIsDeleting(true);
         try {
             const result = await deleteStation(stationId);
 
@@ -107,6 +110,8 @@ export default function StationsTable({ stations: initialStations }: { stations:
                 title: "Error",
                 description: error instanceof Error ? error.message : "Failed to delete station. Please try again.",
             });
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -247,8 +252,9 @@ export default function StationsTable({ stations: initialStations }: { stations:
                                                             <AlertDialogAction
                                                                 onClick={() => handleDelete(station.id)}
                                                                 className="bg-destructive hover:bg-destructive/90"
+                                                                disabled={isDeleting}
                                                             >
-                                                                Delete
+                                                                {isDeleting ? "Deleting..." : "Delete"}
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>

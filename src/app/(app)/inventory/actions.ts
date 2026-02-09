@@ -129,6 +129,53 @@ export async function searchProducts(query: string): Promise<Product[]> {
   }
 }
 
+export async function searchProductsSimple(query: string): Promise<{ id: string; name: string; sku: string; images: string[] }[]> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return [];
+
+    const products = await prisma.product.findMany({
+      where: {
+        OR: [
+          { name: { contains: query } },
+          { sku: { contains: query } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        images: true
+      },
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return products.map(product => {
+      let images: string[] = [];
+      try {
+        if (Array.isArray(product.images)) {
+          images = product.images as unknown as string[];
+        } else if (typeof product.images === 'string') {
+          const parsed = JSON.parse(product.images);
+          if (Array.isArray(parsed)) images = parsed;
+        }
+      } catch (e) {
+        // ignore
+      }
+      return {
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+        images
+      };
+    });
+  } catch (error) {
+    console.error("Error searching products simple:", error);
+    return [];
+  }
+}
+
 export async function createProduct(productData: Omit<Product, 'id' | 'totalStock'>): Promise<Product> {
   try {
     const user = await getCurrentUser();
@@ -295,14 +342,18 @@ export async function deleteProduct(id: string): Promise<void> {
     }
 
     // 2. Check if there's a linked warehouse product or match by SKU
-    // We prefer SKU match because warehouseId might be null in some transfer cases
-    const warehouseProducts: any[] = await prisma.$queryRaw`SELECT * FROM warehouse_products WHERE sku = ${product.sku} LIMIT 1`;
+    const warehouseProducts: any[] = await prisma.$queryRaw`
+        SELECT * FROM warehouse_products 
+        WHERE productId = ${id} 
+           OR sku = ${product.sku} 
+        LIMIT 1
+    `;
     const warehouseProduct = warehouseProducts[0];
 
     if (warehouseProduct) {
-      // 3. Return stock to warehouse
+      // 3. Return stock to warehouse and clear the link since the product is deleted
       await prisma.$executeRawUnsafe(
-        `UPDATE warehouse_products SET quantity = quantity + ?, updatedAt = NOW(3) WHERE id = ?`,
+        `UPDATE warehouse_products SET quantity = quantity + ?, productId = NULL, updatedAt = NOW(3) WHERE id = ?`,
         product.quantity,
         warehouseProduct.id
       );

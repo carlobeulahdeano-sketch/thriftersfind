@@ -350,7 +350,7 @@ export function CreatePreOrderDialog({
                                                         <CommandEmpty>No customer found.</CommandEmpty>
                                                         <CommandGroup>
                                                             {customers.map((customer) => (
-                                                                <CommandItem key={customer.id} value={customer.name} onSelect={() => handleCustomerSelect(customer)}>
+                                                                <CommandItem key={customer.id} value={`${customer.name}-${customer.id}`} onSelect={() => handleCustomerSelect(customer)}>
                                                                     <Check className={cn("mr-2 h-4 w-4", customerName.toLowerCase() === customer.name.toLowerCase() ? "opacity-100" : "opacity-0")} />
                                                                     {customer.name}
                                                                 </CommandItem>

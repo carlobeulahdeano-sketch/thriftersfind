@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Package } from "lucide-react";
-import type { WarehouseProduct } from "../actions";
+import { Package, PhilippinePeso } from "lucide-react";
+import type { WarehouseProduct } from "@/lib/types";
 
 interface ViewWarehouseDialogProps {
     isOpen: boolean;
@@ -78,14 +78,14 @@ export function ViewWarehouseDialog({ isOpen, onClose, product }: ViewWarehouseD
                         </div>
                         <div>
                             <Label className="text-muted-foreground">Cost</Label>
-                            <p className="font-medium">${product.cost.toFixed(2)}</p>
+                            <p className="font-medium">₱{product.cost.toFixed(2)}</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label className="text-muted-foreground">Retail Price</Label>
                             <p className="font-medium">
-                                {product.retailPrice ? `$${product.retailPrice.toFixed(2)}` : "—"}
+                                {product.retailPrice ? `₱${product.retailPrice.toFixed(2)}` : "—"}
                             </p>
                         </div>
                         <div>

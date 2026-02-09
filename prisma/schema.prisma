@@ -8,9 +8,9 @@ datasource db {
 }
 
 model Customer {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   name         String
-  email        String   @unique
+  email        String     @unique
   phone        String?
   avatar       String?
   street       String?
@@ -18,11 +18,11 @@ model Customer {
   state        String?
   zip          String?
   orderHistory Json?
-  totalSpent   Float?   @default(0)
+  totalSpent   Float?     @default(0)
   role         String?
-  createdBy    Json?    // { uid: string, name: string }
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now()) @updatedAt
+  createdBy    Json?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
   orders       Order[]
   preOrders    PreOrder[]
 
@@ -30,13 +30,13 @@ model Customer {
 }
 
 model Order {
-  id             String    @id @default(cuid())
+  id             String         @id @default(cuid())
   customerName   String
   contactNumber  String?
   address        String?
   orderDate      DateTime?
-  itemName       String    // Legacy field for display
-  items          Json?     // New field for detailed inventory tracking
+  itemName       String
+  items          Json?
   quantity       Int
   price          Float
   shippingFee    Float
@@ -45,20 +45,19 @@ model Order {
   paymentStatus  String?
   shippingStatus String?
   batchId        String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @default(now()) @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now()) @updatedAt
   customerId     String
   customerEmail  String?
   courierName    String?
   trackingNumber String?
   remarks        String?
-  rushShip       Boolean   @default(false)
+  rushShip       Boolean        @default(false)
   createdBy      Json?
-  batch          Batch?    @relation(fields: [batchId], references: [id])
-  customer       Customer  @relation(fields: [customerId], references: [id])
-
+  inventoryLogs  InventoryLog[]
+  batch          Batch?         @relation(fields: [batchId], references: [id])
+  customer       Customer       @relation(fields: [customerId], references: [id])
   salesLogs      SalesLog[]
-  inventoryLogs InventoryLog[]
 
   @@index([batchId], map: "orders_batchId_fkey")
   @@index([customerId], map: "orders_customerId_fkey")
@@ -69,11 +68,10 @@ model Notification {
   id        String   @id @default(cuid())
   title     String
   message   String
-  type      String   // 'low_stock' | 'out_of_stock' | 'new_order'
+  type      String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
 
@@ -81,49 +79,43 @@ model Notification {
   @@map("notifications")
 }
 
-
 model Batch {
-  id              String    @id @default(cuid())
-  batchName       String
-  manufactureDate DateTime  @default(now())
-  status          String
-  totalOrders  Int?
-  totalSales   Float?
-  createdBy    Json?     // { uid: string, name: string }
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  orders       Order[]
-  preOrders    PreOrder[]
-  products     Product[]
+  id                String             @id @default(cuid())
+  batchName         String
+  status            String
+  totalOrders       Int?
+  totalSales        Float?
+  createdBy         Json?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  manufactureDate   DateTime           @default(now())
+  orders            Order[]
+  preOrders         PreOrder[]
+  products          Product[]
   warehouseProducts WarehouseProduct[]
 
   @@map("batches")
 }
 
 model Product {
-  id                 String            @id @default(cuid())
-  name               String
-  sku                String
-  description        String?
-  quantity           Int               @default(0)
-  alertStock         Int               @default(0)
-  cost               Float
-  retailPrice        Float?
-  images             Json?
-
-  warehouseId        String?           // Reference to warehouse_products
-  createdBy          Json?             // { uid: string, name: string }
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @default(now()) @updatedAt
-
-  warehouseProduct   WarehouseProduct? @relation(fields: [warehouseId], references: [id])
-  inventoryLogs      InventoryLog[]
-
-
-
-  batchId            String?           // Reference to batches
-  batch              Batch?            @relation(fields: [batchId], references: [id])
-  preOrders          PreOrder[]
+  id               String            @id @default(cuid())
+  name             String
+  sku              String
+  description      String?
+  quantity         Int               @default(0)
+  alertStock       Int               @default(0)
+  cost             Float
+  retailPrice      Float?
+  images           Json?
+  warehouseId      String?
+  createdBy        Json?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @default(now()) @updatedAt
+  batchId          String?
+  inventoryLogs    InventoryLog[]
+  preOrders        PreOrder[]
+  batch            Batch?            @relation(fields: [batchId], references: [id])
+  warehouseProduct WarehouseProduct? @relation(fields: [warehouseId], references: [id])
 
   @@index([warehouseId], map: "products_warehouseId_fkey")
   @@index([batchId], map: "products_batchId_fkey")
@@ -131,52 +123,50 @@ model Product {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  password    String
-  role        String?
-  roleId      String?
-  branchId    String?
-  permissions Json?    @default("{\"dashboard\":true,\"orders\":true,\"batches\":true,\"inventory\":true,\"customers\":true,\"reports\":true,\"users\":false,\"settings\":false,\"adminManage\":false,\"stations\":false,\"preOrders\":false,\"warehouses\":false}")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
-  branch      Branch?  @relation(fields: [branchId], references: [id])
-  role_rel    Role?    @relation("UserRole", fields: [roleId], references: [id])
-
-  sentMessages     Message[] @relation("SentMessages")
-  receivedMessages Message[] @relation("ReceivedMessages")
+  id               String         @id @default(cuid())
+  name             String
+  email            String         @unique
+  password         String
+  role             String?
+  roleId           String?
+  branchId         String?
+  permissions      Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @default(now()) @updatedAt
+  inventoryLogs    InventoryLog[]
+  receivedMessages Message[]      @relation("ReceivedMessages")
+  sentMessages     Message[]      @relation("SentMessages")
+  notifications    Notification[]
+  branch           Branch?        @relation(fields: [branchId], references: [id])
+  role_rel         Role?          @relation("UserRole", fields: [roleId], references: [id])
 
   @@index([branchId], map: "users_branchId_fkey")
   @@index([roleId], map: "users_roleId_fkey")
   @@map("users")
-  inventoryLogs InventoryLog[]
-  notifications Notification[]
 }
 
 model Message {
-  id        String   @id @default(cuid())
-  content   String
-  senderId  String
+  id         String   @id @default(cuid())
+  content    String   @db.LongText
+  senderId   String
   receiverId String
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  
-  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
-  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+
   @@index([senderId])
   @@index([receiverId])
   @@map("messages")
 }
 
 model Branch {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  users     User[]
+  id            String         @id @default(cuid())
+  name          String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
   inventoryLogs InventoryLog[]
+  users         User[]
 
   @@map("branches")
 }
@@ -205,7 +195,7 @@ model Station {
   id            String   @id @default(cuid())
   name          String
   location      String
-  type          String   // "courier" or "pickup"
+  type          String
   contactNumber String?
   latitude      Float?
   longitude     Float?
@@ -217,54 +207,57 @@ model Station {
 }
 
 model WarehouseProduct {
-  id           String    @id @default(cuid())
-  productName  String
-  sku          String
-  quantity     Int       @default(0)
-  alertStock   Int       @default(0)
-  manufacture_date DateTime? // New field replacing manufacturer
-  image        String?   @db.LongText // New image field
-  location     String?   // Location within warehouse
-  cost         Float
-  retailPrice  Float?
-  images       Json?     // Keep for legacy or extra images if needed, but primary is 'image'
-  createdBy    Json?     // { uid: string, name: string }
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @default(now()) @updatedAt
-  batchId      String?           // Reference to batches
-  batch        Batch?            @relation(fields: [batchId], references: [id])
-  products     Product[] // Products that reference this warehouse product
-  inventoryLogs InventoryLog[]
+  id               String         @id @default(cuid())
+  productName      String
+  sku              String
+  quantity         Int            @default(0)
+  manufacture_date DateTime?
+  image            String?        @db.LongText
+  location         String?
+  cost             Float
+  retailPrice      Float?
+  images           Json?
+  createdBy        Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @default(now()) @updatedAt
+  batchId          String?
+  alertStock       Int            @default(0)
+  productId        String?        // Reference to products table
+  inventoryLogs    InventoryLog[]
+  products         Product[]
+  batch            Batch?         @relation(fields: [batchId], references: [id])
 
+  @@index([batchId], map: "warehouse_products_batchId_fkey")
+  @@index([productId], map: "warehouse_products_productId_fkey")
   @@map("warehouse_products")
 }
 
 model DatabaseOperation {
   id        String   @id @default(cuid())
-  type      String   // 'IMPORT' or 'EXPORT'
+  type      String
   fileName  String
   fileSize  String
-  status    String   // 'SUCCESS', 'FAILED', 'PENDING'
-  details   Json?    // For import: records count, etc. For export: tables included, format
+  status    String
+  details   Json?
   createdAt DateTime @default(now())
 
   @@map("database_operations")
 }
 
 model SalesLog {
-  id             String   @id @default(cuid())
-  orderId        String?
-  preOrderId     String?
-  products       String?  // Renamed from action
-  description    String?
-  orders         Json?    // Renamed from performedBy
-  customerName   String?
-  totalAmount    Float?
-  shipments      Json?    // Renamed from previousData
-  order_items    Json?    // Renamed from newData
-  createdAt      DateTime @default(now())
-  order          Order?   @relation(fields: [orderId], references: [id])
-  preOrder       PreOrder? @relation(fields: [preOrderId], references: [id])
+  id           String    @id @default(cuid())
+  orderId      String?
+  preOrderId   String?
+  products     String?
+  description  String?
+  orders       Json?
+  customerName String?
+  totalAmount  Float?
+  shipments    Json?
+  order_items  Json?
+  createdAt    DateTime  @default(now())
+  order        Order?    @relation(fields: [orderId], references: [id])
+  preOrder     PreOrder? @relation(fields: [preOrderId], references: [id])
 
   @@index([orderId])
   @@index([preOrderId])
@@ -274,14 +267,14 @@ model SalesLog {
 
 model AdminLog {
   id           String   @id @default(cuid())
-  action       String   // 'USER_CREATED', 'USER_UPDATED', 'USER_DELETED', 'SETTINGS_CHANGED', 'DATABASE_EXPORT', etc.
-  module       String?  // 'USERS', 'SETTINGS', 'DATABASE', 'INVENTORY', 'CUSTOMERS', etc.
+  action       String
+  module       String?
   description  String?
-  performedBy  Json?    // { uid: string, name: string, role: string }
-  targetId     String?  // ID of the affected resource
-  targetType   String?  // Type of the affected resource (e.g., 'USER', 'PRODUCT', 'BATCH')
-  previousData Json?    // Store previous state for updates
-  newData      Json?    // Store new state for updates
+  performedBy  Json?
+  targetId     String?
+  targetType   String?
+  previousData Json?
+  newData      Json?
   ipAddress    String?
   createdAt    DateTime @default(now())
 
@@ -292,30 +285,29 @@ model AdminLog {
 }
 
 model PreOrder {
-  id            String          @id @default(cuid())
+  id            String         @id @default(cuid())
   customerName  String
   contactNumber String?
   address       String?
   orderDate     DateTime?
   totalAmount   Float
   paymentMethod String?
-  paymentStatus String?         @default("Unpaid")
-  depositAmount Float?          @default(0)
+  paymentStatus String?        @default("Unpaid")
+  depositAmount Float?         @default(0)
   customerId    String
   customerEmail String?
   remarks       String?
-  createdBy     Json?           // { uid: string, name: string }
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @default(now()) @updatedAt
-  customer      Customer        @relation(fields: [customerId], references: [id])
-  items         PreOrderItem[]
+  createdBy     Json?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
   batchId       String?
-  batch         Batch?          @relation(fields: [batchId], references: [id])
   productId     String?
-  product       Product?        @relation(fields: [productId], references: [id])
-
-  salesLogs     SalesLog[]
   inventoryLogs InventoryLog[]
+  items         PreOrderItem[]
+  batch         Batch?         @relation(fields: [batchId], references: [id])
+  customer      Customer       @relation(fields: [customerId], references: [id])
+  product       Product?       @relation(fields: [productId], references: [id])
+  salesLogs     SalesLog[]
 
   @@index([customerId], map: "pre_orders_customerId_fkey")
   @@index([batchId], map: "pre_orders_batchId_fkey")
@@ -324,50 +316,43 @@ model PreOrder {
 }
 
 model PreOrderItem {
-  id                String          @id @default(cuid())
-  preOrderId        String
-  productName       String
-  quantity          Int
-  pricePerUnit      Float
-  totalPrice        Float
-  images            Json?           // [NEW] To store images directly on the item
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @default(now()) @updatedAt
-  preOrder          PreOrder        @relation(fields: [preOrderId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  preOrderId   String
+  productName  String
+  quantity     Int
+  pricePerUnit Float
+  totalPrice   Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  images       Json?
+  preOrder     PreOrder @relation(fields: [preOrderId], references: [id], onDelete: Cascade)
 
   @@index([preOrderId], map: "pre_order_items_preOrderId_fkey")
   @@map("pre_order_items")
 }
 
-// REMOVED PreOrderProduct model
-
-
 model InventoryLog {
   id                 String            @id @default(cuid())
-  action             String            // e.g., 'STOCK_IN', 'ADJUSTMENT', 'TRANSFER'
+  action             String
   productId          String?
   warehouseProductId String?
   quantityChange     Int
   previousStock      Int
   newStock           Int
   reason             String?
-  referenceId        String?           // ID of related Order, Transfer, etc.
-  performedBy        Json?             // { uid: string, name: string }
+  referenceId        String?
+  performedBy        Json?
   createdAt          DateTime          @default(now())
-
-  // Relations
   orderId            String?
   preOrderId         String?
   userId             String?
   branchId           String?
-
-  product            Product?          @relation(fields: [productId], references: [id])
-  warehouseProduct   WarehouseProduct? @relation(fields: [warehouseProductId], references: [id])
-  
+  branch             Branch?           @relation(fields: [branchId], references: [id])
   order              Order?            @relation(fields: [orderId], references: [id])
   preOrder           PreOrder?         @relation(fields: [preOrderId], references: [id])
+  product            Product?          @relation(fields: [productId], references: [id])
   user               User?             @relation(fields: [userId], references: [id])
-  branch             Branch?           @relation(fields: [branchId], references: [id])
+  warehouseProduct   WarehouseProduct? @relation(fields: [warehouseProductId], references: [id])
 
   @@index([productId])
   @@index([warehouseProductId])

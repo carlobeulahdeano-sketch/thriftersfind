@@ -14,7 +14,7 @@ import {
   ShieldCheck,
   Package,
   Boxes,
-  DollarSign,
+  PhilippinePeso,
   ChevronDown,
   Database,
   Download,
@@ -39,6 +39,7 @@ import { UserPermissions } from "@/lib/types";
 import { stopImpersonating } from "@/lib/auth-actions";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { hasPermission } from "@/lib/permissions";
 
 const links = [
   {
@@ -104,7 +105,7 @@ const links = [
     href: "/sales",
     label: "Sales",
     icon: <TrendingUp />,
-    permission: "reports",
+    permission: "sales",
   },
 
   {
@@ -173,18 +174,14 @@ export function NavLinks({ permissions, role, isImpersonating }: NavLinksProps) 
   if (!isMounted) return null;
 
   const isSuperAdmin = role?.toLowerCase() === 'super admin';
+  const isStaff = role?.toLowerCase() === 'staff';
 
   // Debug logging
   console.log('NavLinks - Role:', role);
   console.log('NavLinks - isSuperAdmin:', isSuperAdmin);
 
   const filteredLinks = links.filter(link => {
-    if (link.permission === null) return true; // Always visible
-    // if (isSuperAdmin) return true; // REMOVED: Super Admin sees all associated permissions
-
-    // Check strict permission
-    const permKey = link.permission as keyof UserPermissions;
-    return !!permissions?.[permKey];
+    return hasPermission(link.href, permissions, role);
   });
 
   return (

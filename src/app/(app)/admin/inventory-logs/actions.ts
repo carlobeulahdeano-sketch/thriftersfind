@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 
 export async function getInventoryLogs(
     page: number = 1,
-    pageSize: number = 20,
+    pageSize: number = 10,
     filters?: {
         branchId?: string;
         action?: string;

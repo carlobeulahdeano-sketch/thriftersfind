@@ -2,8 +2,9 @@ import { getBatchAnalytics } from "../actions";
 import { BatchAnalyticsTable } from "./components/batch-analytics-table";
 import { BatchSalesChart } from "./components/batch-sales-chart";
 import { BatchAnalyticsFilter } from "./components/batch-analytics-filter";
+import { PrintButton } from "./components/print-button";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 interface BatchAnalyticsPageProps {
@@ -17,7 +18,17 @@ export default async function BatchAnalyticsPage({ searchParams }: BatchAnalytic
     const fromDate = searchParams.from ? new Date(searchParams.from) : undefined;
     const toDate = searchParams.to ? new Date(searchParams.to) : undefined;
 
-    const analyticsData = await getBatchAnalytics(fromDate, toDate);
+    const { batchAnalytics, isAuthorized } = await getBatchAnalytics(fromDate, toDate);
+
+    if (!isAuthorized) {
+        return (
+            <div className="flex h-[50vh] flex-col items-center justify-center gap-4 text-center">
+                <ShieldAlert className="h-16 w-16 text-destructive" />
+                <h1 className="text-2xl font-bold">Access Denied</h1>
+                <p className="text-muted-foreground">You do not have permission to view this page.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-8 p-2">
@@ -37,12 +48,15 @@ export default async function BatchAnalyticsPage({ searchParams }: BatchAnalytic
                         </p>
                     </div>
                 </div>
-                <BatchAnalyticsFilter />
+                <div className="flex items-center gap-2">
+                    <PrintButton />
+                    <BatchAnalyticsFilter />
+                </div>
             </div>
 
-            <BatchSalesChart data={analyticsData} />
+            <BatchSalesChart data={batchAnalytics} />
 
-            <BatchAnalyticsTable data={analyticsData} />
+            <BatchAnalyticsTable data={batchAnalytics} />
         </div>
     );
 }

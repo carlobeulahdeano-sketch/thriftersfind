@@ -19,11 +19,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MoreHorizontal, PlusCircle, Search, X, Image as ImageIcon, AlertTriangle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search, X, Image as ImageIcon, AlertTriangle, MinusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AddProductDialog } from "./add-product-dialog";
 import { AddQuantityDialog } from "./add-quantity-dialog";
+import { DeductQuantityDialog } from "./deduct-quantity-dialog";
 import type { Product } from "@/lib/types";
 import { EditProductDialog } from "./edit-product-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -52,6 +53,7 @@ export default function InventoryTable({ products: initialProducts }: { products
   const [isAddDialogOpen, setAddDialogOpen] = React.useState(false);
   const [editingProduct, setEditingProduct] = React.useState<Product | null>(null);
   const [addingQuantityProduct, setAddingQuantityProduct] = React.useState<Product | null>(null);
+  const [deductingQuantityProduct, setDeductingQuantityProduct] = React.useState<Product | null>(null);
 
   const refreshProducts = () => {
     router.refresh();
@@ -172,7 +174,7 @@ export default function InventoryTable({ products: initialProducts }: { products
                         Out of Stock
                       </Badge>
                     ) : product.totalStock <= product.alertStock ? (
-                      <Badge variant="destructive" className="flex items-center gap-1">
+                      <Badge variant="destructive" className="w-fit mx-auto flex items-center justify-center gap-1">
                         <AlertTriangle className="h-3 w-3" />
                         Low Stock
                       </Badge>
@@ -195,6 +197,10 @@ export default function InventoryTable({ products: initialProducts }: { products
                           <DropdownMenuItem onClick={() => setAddingQuantityProduct(product)}>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Add Stock
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setDeductingQuantityProduct(product)}>
+                            <MinusCircle className="mr-2 h-4 w-4" />
+                            Deduct Stock
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setEditingProduct(product)}>Edit</DropdownMenuItem>
                           <AlertDialogTrigger asChild>
@@ -266,6 +272,12 @@ export default function InventoryTable({ products: initialProducts }: { products
         isOpen={!!addingQuantityProduct}
         onClose={() => setAddingQuantityProduct(null)}
         product={addingQuantityProduct}
+        onSuccess={refreshProducts}
+      />
+      <DeductQuantityDialog
+        isOpen={!!deductingQuantityProduct}
+        onClose={() => setDeductingQuantityProduct(null)}
+        product={deductingQuantityProduct}
         onSuccess={refreshProducts}
       />
     </>

@@ -1,5 +1,4 @@
-import { getWarehouse } from "../actions";
-import { getWarehouseProducts } from "./actions";
+import { getWarehouse, getWarehouseProducts } from "../actions";
 import WarehouseProductsTable from "./components/warehouse-products-table";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";

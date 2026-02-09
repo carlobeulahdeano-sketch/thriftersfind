@@ -165,12 +165,12 @@ export default function BodegaInventoryTable({ products: initialProducts }: { pr
                                     <TableCell className="text-right">{product.totalStock}</TableCell>
                                     <TableCell className="text-center">
                                         {product.totalStock === 0 ? (
-                                            <Badge variant="destructive" className="flex items-center gap-1">
+                                            <Badge variant="destructive" className="w-fit mx-auto flex items-center justify-center gap-1">
                                                 <X className="h-3 w-3" />
                                                 Out of Stock
                                             </Badge>
                                         ) : product.totalStock <= product.alertStock ? (
-                                            <Badge variant="destructive" className="flex items-center gap-1">
+                                            <Badge variant="destructive" className="w-fit mx-auto flex items-center justify-center gap-1">
                                                 <AlertTriangle className="h-3 w-3" />
                                                 Low Stock
                                             </Badge>

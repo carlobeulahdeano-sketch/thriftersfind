@@ -40,7 +40,7 @@ export function InventoryLogsTable({ branches }: InventoryLogsTableProps) {
     const fetchLogs = async () => {
         setLoading(true);
         try {
-            const res = await getInventoryLogs(page, 20, {
+            const res = await getInventoryLogs(page, 10, {
                 search,
                 branchId: branchId === "all" ? undefined : branchId,
                 action: action === "all" ? undefined : action,

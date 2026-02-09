@@ -1,4 +1,6 @@
 
+export const dynamic = 'force-dynamic';
+
 import InventoryTable from "./components/inventory-table";
 import { getProducts } from "./actions";
 

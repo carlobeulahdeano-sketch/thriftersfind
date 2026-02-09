@@ -50,14 +50,20 @@ export async function getCustomers(): Promise<Customer[]> {
       state: "",
       zip: "",
     },
-    orderHistory: customer.orders.map(order => ({
-      orderId: order.id,
-      date: order.createdAt.toISOString(),
-      amount: order.totalAmount,
-      items: order.itemName,
-      year: order.createdAt.getFullYear()
-    })),
-    totalSpent: customer.orders.reduce((sum, order) => sum + order.totalAmount, 0),
+    orderHistory: customer.orders
+      .filter(order => order.shippingStatus === 'Delivered')
+      .map(order => ({
+        orderId: order.id,
+        date: order.createdAt.toISOString(),
+        amount: order.totalAmount,
+        items: order.itemName,
+        year: order.createdAt.getFullYear(),
+        paymentMethod: order.paymentMethod || 'N/A',
+        shippingStatus: order.shippingStatus || 'N/A'
+      })),
+    totalSpent: customer.orders
+      .filter(order => order.shippingStatus === 'Delivered')
+      .reduce((sum, order) => sum + order.totalAmount, 0),
     role: customer.role as UserRole | undefined,
   }));
 }
@@ -89,14 +95,20 @@ export async function createCustomer(customerData: Omit<Customer, 'id'>): Promis
         state: existingByEmail.state || "",
         zip: existingByEmail.zip || "",
       },
-      orderHistory: existingByEmail.orders.map(order => ({
-        orderId: order.id,
-        date: order.createdAt.toISOString(),
-        amount: order.totalAmount,
-        items: order.itemName,
-        year: order.createdAt.getFullYear()
-      })),
-      totalSpent: existingByEmail.orders.reduce((sum, order) => sum + order.totalAmount, 0),
+      orderHistory: existingByEmail.orders
+        .filter(order => order.shippingStatus === 'Delivered')
+        .map(order => ({
+          orderId: order.id,
+          date: order.createdAt.toISOString(),
+          amount: order.totalAmount,
+          items: order.itemName,
+          year: order.createdAt.getFullYear(),
+          paymentMethod: order.paymentMethod || 'N/A',
+          shippingStatus: order.shippingStatus || 'N/A'
+        })),
+      totalSpent: existingByEmail.orders
+        .filter(order => order.shippingStatus === 'Delivered')
+        .reduce((sum, order) => sum + order.totalAmount, 0),
       role: existingByEmail.role as UserRole | undefined,
     };
   }
@@ -151,10 +163,11 @@ export async function getCustomerOrdersByYear(
     return [];
   }
 
-  // Filter by year if provided
+  // Filter by Delivered shipping status and year if provided
+  const baseFilteredOrders = customer.orders.filter(order => order.shippingStatus === 'Delivered');
   const filteredOrders = year
-    ? customer.orders.filter(order => order.createdAt.getFullYear() === year)
-    : customer.orders;
+    ? baseFilteredOrders.filter(order => order.createdAt.getFullYear() === year)
+    : baseFilteredOrders;
 
   // Group orders by year
   const ordersByYear = filteredOrders.reduce((acc, order) => {
@@ -167,7 +180,9 @@ export async function getCustomerOrdersByYear(
       date: order.createdAt.toISOString(),
       amount: order.totalAmount,
       items: order.itemName,
-      year: orderYear
+      year: orderYear,
+      paymentMethod: order.paymentMethod || 'N/A',
+      shippingStatus: order.shippingStatus || 'N/A'
     });
     return acc;
   }, {} as Record<number, OrderHistoryItem[]>);

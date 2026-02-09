@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { updateWarehouseProduct } from "../actions";
 import type { WarehouseProduct } from "../actions";
+import { PhilippinePeso } from "lucide-react";
 
 interface EditWarehouseProductDialogProps {
     isOpen: boolean;
@@ -161,30 +162,46 @@ export function EditWarehouseProductDialog({ isOpen, onClose, product, onSuccess
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="edit-cost">
+                        <Label htmlFor="edit-cost" className="flex items-center gap-2">
+                            <PhilippinePeso className="w-4 h-4" />
                             Cost <span className="text-red-500">*</span>
                         </Label>
-                        <Input
-                            id="edit-cost"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={cost}
-                            onChange={(e) => setCost(e.target.value)}
-                            placeholder="e.g. 1500.00"
-                        />
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                                ₱
+                            </span>
+                            <Input
+                                id="edit-cost"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={cost}
+                                onChange={(e) => setCost(e.target.value)}
+                                placeholder="0.00"
+                                className="pl-7"
+                            />
+                        </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="edit-retailPrice">Retail Price</Label>
-                        <Input
-                            id="edit-retailPrice"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={retailPrice}
-                            onChange={(e) => setRetailPrice(e.target.value)}
-                            placeholder="e.g. 2500.00"
-                        />
+                        <Label htmlFor="edit-retailPrice" className="flex items-center gap-2">
+                            <PhilippinePeso className="w-4 h-4" />
+                            Retail Price
+                        </Label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                                ₱
+                            </span>
+                            <Input
+                                id="edit-retailPrice"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={retailPrice}
+                                onChange={(e) => setRetailPrice(e.target.value)}
+                                placeholder="0.00"
+                                className="pl-7"
+                            />
+                        </div>
                     </div>
                 </div>
                 <DialogFooter>

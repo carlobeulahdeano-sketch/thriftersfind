@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Printer } from "lucide-react";
+import { Printer, ShieldAlert } from "lucide-react";
 import CourierChart from "./components/courier-chart";
 import SalesChart from "./components/sales-chart";
 import TopCustomersChart from "./components/top-customers-chart";
@@ -20,21 +20,27 @@ export default function ReportsPage() {
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
     const fetchData = async () => {
       // For reports, we might want a larger range of data initially
-      const ordersData = await getSalesData("year");
+      const { orders, isAuthorized } = await getSalesData("year");
+      if (!isAuthorized) {
+        setIsAuthorized(false);
+        return;
+      }
+      setIsAuthorized(true);
       const customersData = await getCustomers();
-      setAllOrders(ordersData);
+      setAllOrders(orders);
       setAllCustomers(customersData);
     };
     fetchData();
   }, []);
 
   const filteredOrders = useMemo(() => {
-    if (!allOrders) return [];
+    if (!allOrders) return { salesOrders: [], courierOrders: [] };
 
     const now = new Date();
     let startDate: Date;
@@ -48,14 +54,31 @@ export default function ReportsPage() {
     }
     const endDate = endOfToday();
 
-    return allOrders.filter(order => {
+    const salesOrders = allOrders.filter(order => {
       const orderDate = (order.createdAt as any)?.seconds ? new Date((order.createdAt as any).seconds * 1000) : new Date(order.orderDate);
-      return isWithinInterval(orderDate, { start: startDate, end: endDate });
+      return isWithinInterval(orderDate, { start: startDate, end: endDate }) && order.shippingStatus === 'Delivered';
     });
+
+    const courierOrders = allOrders.filter(order => {
+      const orderDate = (order.createdAt as any)?.seconds ? new Date((order.createdAt as any).seconds * 1000) : new Date(order.orderDate);
+      return isWithinInterval(orderDate, { start: startDate, end: endDate }) && order.shippingStatus !== 'Cancelled';
+    });
+
+    return { salesOrders, courierOrders };
   }, [allOrders, timeframe]);
 
-  const orders = filteredOrders || [];
+  const { salesOrders = [], courierOrders = [] } = filteredOrders || {};
   const customers = allCustomers || [];
+
+  if (isAuthorized === false) {
+    return (
+      <div className="flex h-[50vh] flex-col items-center justify-center gap-4 text-center">
+        <ShieldAlert className="h-16 w-16 text-destructive" />
+        <h1 className="text-2xl font-bold">Access Denied</h1>
+        <p className="text-muted-foreground">You do not have permission to view this page. Restricted to Super Admins only.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8 p-2" suppressHydrationWarning>
@@ -103,7 +126,7 @@ export default function ReportsPage() {
                     </TabsList>
                   </Tabs>
                 </div>
-                <SalesChart orders={orders} timeframe={timeframe} />
+                <SalesChart orders={salesOrders} timeframe={timeframe} />
               </>
             )}
           </CardContent>
@@ -125,7 +148,7 @@ export default function ReportsPage() {
               <CardDescription>Distribution of couriers used for shipments.</CardDescription>
             </CardHeader>
             <CardContent>
-              {isMounted && <CourierChart orders={allOrders || []} />}
+              {isMounted && <CourierChart orders={courierOrders} />}
             </CardContent>
           </Card>
         </div>

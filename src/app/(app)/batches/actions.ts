@@ -5,45 +5,36 @@ import { Batch } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth-server";
 
-export async function getBatches(): Promise<Batch[]> {
+export async function getBatches(): Promise<{ batches: Batch[], isAuthorized: boolean }> {
     try {
         const user = await getCurrentUser();
 
         if (!user) {
-            return [];
+            return { batches: [], isAuthorized: false };
         }
 
-        const isSuperAdmin = user.role?.name === 'Super Admin';
+        // Batches access is controlled by the 'batches' permission toggle
+        // which is checked in the layout and in the UI components.
+        // We removed the hardcoded staff block here.
 
         const batches = await prisma.batch.findMany({
             orderBy: {
                 createdAt: 'desc'
             },
             include: {
-                _count: {
-                    select: { orders: true }
-                },
                 orders: {
-                    select: { totalAmount: true }
+                    select: {
+                        totalAmount: true,
+                        shippingStatus: true
+                    }
                 }
             }
         });
 
-        // Filter batches based on user role - Relaxed for now to debug
-        const filteredBatches = batches;
-        /*
-        const filteredBatches = isSuperAdmin
-            ? batches
-            : batches.filter(batch => {
-                if (!(batch as any).createdBy) return false;
-                const createdByData = (batch as any).createdBy as any;
-                return createdByData?.uid === user.id;
-            });
-        */
-
-        return filteredBatches.map((batch: any) => {
-            const calculatedTotalOrders = batch._count?.orders ?? 0;
-            const calculatedTotalSales = batch.orders?.reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0) ?? 0;
+        const mappedBatches = batches.map((batch: any) => {
+            const deliveredOrders = batch.orders?.filter((order: any) => order.shippingStatus === 'Delivered') || [];
+            const calculatedTotalOrders = deliveredOrders.length;
+            const calculatedTotalSales = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
 
             return {
                 id: batch.id,
@@ -54,9 +45,12 @@ export async function getBatches(): Promise<Batch[]> {
                 totalSales: calculatedTotalSales,
             };
         });
+
+        return { batches: mappedBatches, isAuthorized: true };
+
     } catch (error) {
         console.error("Error fetching batches:", error);
-        return [];
+        return { batches: [], isAuthorized: false };
     }
 }
 

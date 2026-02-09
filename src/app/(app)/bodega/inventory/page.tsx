@@ -1,4 +1,6 @@
 
+export const dynamic = 'force-dynamic';
+
 import BodegaInventoryTable from "./components/bodega-inventory-table";
 import { getBodegaProducts } from "./actions";
 

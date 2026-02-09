@@ -217,7 +217,7 @@ export function AddPreOrderProductDialog({ isOpen, onClose, onSuccess }: AddPreO
                                             {searchResults.map((product) => (
                                                 <CommandItem
                                                     key={product.id}
-                                                    value={product.name}
+                                                    value={`${product.name}-${product.id}`}
                                                     onSelect={() => {
                                                         setLinkedProductId(product.id === linkedProductId ? null : product.id);
                                                         setLinkedProductName(product.id === linkedProductId ? "" : product.name);

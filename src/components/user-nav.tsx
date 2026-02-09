@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { logout } from "@/lib/auth-actions";
 import { User } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 interface UserNavProps {
   user: User | null;
@@ -25,16 +26,13 @@ export function UserNav({ user }: UserNavProps) {
   const router = useRouter();
 
   const handleLogout = async () => {
-    // Basic cookie clear for demo, ideally call a server action or api to clear cookie
-    document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    router.push("/login");
-    router.refresh();
+    await logout();
   };
 
   const initials = user?.name
     ? user.name
       .split(" ")
-      .map((n) => n[0])
+      .map((n: string) => n[0])
       .join("")
       .toUpperCase()
       .slice(0, 2)

@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { updateWarehouseProduct } from "../actions";
-import { Package, MapPin, Calendar, Image as ImageIcon, DollarSign, Hash, X, RefreshCw } from "lucide-react";
+import { Package, MapPin, Calendar, Image as ImageIcon, PhilippinePeso, Hash, X, RefreshCw } from "lucide-react";
 import type { WarehouseProduct } from "../actions";
 
 interface EditWarehouseDialogProps {
@@ -292,12 +292,12 @@ export function EditWarehouseDialog({ isOpen, onClose, onSuccess, product }: Edi
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
                                 <Label htmlFor="edit-cost" className="flex items-center gap-2">
-                                    <DollarSign className="w-4 h-4" />
+                                    <PhilippinePeso className="w-4 h-4" />
                                     Cost
                                 </Label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                                        $
+                                        ₱
                                     </span>
                                     <Input
                                         id="edit-cost"
@@ -313,13 +313,13 @@ export function EditWarehouseDialog({ isOpen, onClose, onSuccess, product }: Edi
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="edit-retailPrice" className="flex items-center gap-2">
-                                    <DollarSign className="w-4 h-4" />
+                                    <PhilippinePeso className="w-4 h-4" />
                                     Retail Price
                                     <span className="text-xs text-gray-500 font-normal">(Optional)</span>
                                 </Label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                                        $
+                                        ₱
                                     </span>
                                     <Input
                                         id="edit-retailPrice"

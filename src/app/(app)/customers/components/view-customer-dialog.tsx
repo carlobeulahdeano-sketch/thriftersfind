@@ -171,6 +171,8 @@ export function ViewCustomerDialog({
                           <TableRow>
                             <TableHead>Order ID</TableHead>
                             <TableHead>Items</TableHead>
+                            <TableHead>Payment</TableHead>
+                            <TableHead>Status</TableHead>
                             <TableHead>Amount</TableHead>
                             <TableHead>Date</TableHead>
                           </TableRow>
@@ -180,6 +182,8 @@ export function ViewCustomerDialog({
                             <TableRow key={order.orderId}>
                               <TableCell className="font-mono text-xs">{order.orderId.substring(0, 7)}...</TableCell>
                               <TableCell className="max-w-[300px] truncate" title={order.items}>{order.items}</TableCell>
+                              <TableCell>{order.paymentMethod}</TableCell>
+                              <TableCell>{order.shippingStatus}</TableCell>
                               <TableCell>₱{order.amount.toFixed(2)}</TableCell>
                               <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                             </TableRow>

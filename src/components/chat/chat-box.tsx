@@ -62,47 +62,55 @@ export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const { toast } = useToast();
 
-    // Fetch messages on mount and when user changes
+    // Fetch messages on mount and poll for updates
     useEffect(() => {
         let isMounted = true;
+        let firstLoad = true;
 
         async function fetchMessages() {
-            setLoading(true);
+            if (firstLoad) setLoading(true);
             try {
-                // Dynamically import markMessagesAsRead as well
+                // Dynamically import to keep client bundle smaller 
                 const { getMessages, markMessagesAsRead } = await import("./chat-actions");
 
-                // Mark messages as read immediately when opening chat
-                markMessagesAsRead(user.id).catch(err => console.error("Failed to mark read", err));
+                // Mark messages as read while chat is open and NOT minimized
+                if (!isMinimized) {
+                    markMessagesAsRead(user.id).catch(err => console.error("Failed to mark read", err));
+                }
 
                 const result = await getMessages(user.id);
                 if (isMounted) {
                     if (result.success && Array.isArray(result.data)) {
-                        setMessages(result.data as unknown as Message[]);
-                    } else {
-                        console.error("Failed to load messages:", result.error);
-                        toast({
-                            variant: "destructive",
-                            title: "Error",
-                            description: "Failed to load history.",
+                        const newMsgs = result.data as unknown as Message[];
+                        setMessages((prev) => {
+                            // Only update state if message count or last message changed to avoid unnecessary re-renders
+                            const hasChanges = newMsgs.length !== prev.length ||
+                                (newMsgs.length > 0 && prev.length > 0 && newMsgs[newMsgs.length - 1].id !== prev[prev.length - 1].id);
+
+                            return hasChanges ? newMsgs : prev;
                         });
                     }
                 }
             } catch (error) {
                 console.error("Failed to load messages", error);
             } finally {
-                if (isMounted) {
+                if (isMounted && firstLoad) {
                     setLoading(false);
+                    firstLoad = false;
                 }
             }
         }
 
         fetchMessages();
 
+        // Polling interval - 2 seconds for pseudo-realtime (quicker response)
+        const interval = setInterval(fetchMessages, 2000);
+
         return () => {
             isMounted = false;
+            clearInterval(interval);
         };
-    }, [user.id, toast]);
+    }, [user.id, isMinimized, toast]);
 
     // Scroll to bottom when messages change
     useEffect(() => {
@@ -173,13 +181,22 @@ export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
 
     const handleProductSelect = async (product: any) => {
         setIsProductModalOpen(false);
+
+        let imageUrl = "";
+        if (product.image) {
+            imageUrl = product.image;
+        } else if (product.images) {
+            if (Array.isArray(product.images) && product.images.length > 0) {
+                imageUrl = product.images[0];
+            } else if (typeof product.images === 'string') {
+                imageUrl = product.images;
+            }
+        }
+
         const prefix = product.isRequest ? "📢 REQUESTING Product from Warehouse:" : "📦 Shared Product:";
-        const productMessage = `${prefix}\nName: ${product.productName}\nSKU: ${product.sku}${product.isRequest ? "" : `\nCost: ₱${product.cost}`}`;
+        const imageTag = imageUrl ? `\n[[IMAGE:${imageUrl}]]` : "";
+        const productMessage = `${prefix}\nName: ${product.productName}\nSKU: ${product.sku}${product.isRequest ? "" : `\nCost: ₱${product.cost}`}${imageTag}`;
         setNewMessage(productMessage);
-        // Optionally auto-send:
-        // await sendMessage(user.id, productMessage);
-        // const updatedMessages = await getMessages(user.id);
-        // setMessages(updatedMessages as unknown as Message[]);
     };
 
     // Content to render
@@ -272,7 +289,29 @@ export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
                                                     : "bg-muted text-foreground rounded-2xl rounded-tl-md"
                                                     }`}
                                             >
-                                                {msg.content}
+                                                {(() => {
+                                                    const imageMatch = msg.content.match(/\[\[IMAGE:(.*?)\]\]/);
+                                                    const imageUrl = imageMatch ? imageMatch[1] : null;
+                                                    const textContent = msg.content.replace(/\[\[IMAGE:.*?\]\]/, '').trim();
+
+                                                    return (
+                                                        <>
+                                                            {imageUrl && (
+                                                                <div className="mb-2 mt-1">
+                                                                    <img
+                                                                        src={imageUrl}
+                                                                        alt="Shared Image"
+                                                                        className="rounded-lg max-h-48 w-full object-cover border border-white/20"
+                                                                        onError={(e) => {
+                                                                            (e.target as HTMLImageElement).style.display = 'none';
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                            {textContent}
+                                                        </>
+                                                    );
+                                                })()}
                                             </div>
                                             <span className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity px-1">
                                                 {new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric' }).format(new Date(msg.createdAt))}
@@ -417,6 +456,15 @@ function ProductSelectorModal({
                     title: "Bulk Transfer Successful",
                     description: `${selectedProductIds.size} products transferred to Main Inventory.`,
                 });
+
+                // Send confirmation message
+                try {
+                    const { sendMessage } = await import("./chat-actions");
+                    await sendMessage(targetUser.id, `✅ Bulk Transfer Successful: ${selectedProductIds.size} products transferred to your inventory.`);
+                } catch (err) {
+                    console.error("Failed to send confirmation msg", err);
+                }
+
                 setSelectedProductIds(new Set());
                 loadProducts();
             } else {
@@ -560,6 +608,24 @@ function ProductSelectorModal({
                                                                         title: "Transfer Successful",
                                                                         description: `Entire product transferred to Main Inventory.`
                                                                     });
+
+                                                                    // Send confirmation message with image
+                                                                    try {
+                                                                        const { sendMessage } = await import("./chat-actions");
+
+                                                                        let imageUrl = "";
+                                                                        if (product.image) imageUrl = product.image;
+                                                                        else if (product.images) {
+                                                                            if (Array.isArray(product.images)) imageUrl = product.images[0] || "";
+                                                                            else if (typeof product.images === 'string') imageUrl = product.images;
+                                                                        }
+                                                                        const imageTag = imageUrl ? `\n[[IMAGE:${imageUrl}]]` : "";
+
+                                                                        await sendMessage(targetUser.id, `✅ Transfer Successful: All stock of ${product.productName}\nSKU: ${product.sku}\ntransferred to your inventory.${imageTag}`);
+                                                                    } catch (err) {
+                                                                        console.error("Failed to send confirmation msg", err);
+                                                                    }
+
                                                                     loadProducts();
                                                                 } else {
                                                                     toast({
@@ -645,7 +711,7 @@ function TransferStockModal({
     const checkExistingStock = async () => {
         try {
             const { getProductBySku } = await import("./chat-actions");
-            const existing = await getProductBySku(product.sku);
+            const existing = await getProductBySku(product.sku, targetUser?.id);
             if (existing) {
                 setExistingStock({ quantity: existing.quantity });
             } else {
@@ -686,6 +752,23 @@ function TransferStockModal({
                 setQuantity("");
                 onClose();
                 onSuccess();
+
+                // Send confirmation message with image
+                try {
+                    const { sendMessage } = await import("./chat-actions");
+
+                    let imageUrl = "";
+                    if (product.image) imageUrl = product.image;
+                    else if (product.images) {
+                        if (Array.isArray(product.images)) imageUrl = product.images[0] || "";
+                        else if (typeof product.images === 'string') imageUrl = product.images;
+                    }
+                    const imageTag = imageUrl ? `\n[[IMAGE:${imageUrl}]]` : "";
+
+                    await sendMessage(targetUser.id, `✅ Transfer Successful: ${transferQty} unit(s) of ${product.productName}\nSKU: ${product.sku}\ntransferred to your inventory.${imageTag}`);
+                } catch (err) {
+                    console.error("Failed to send confirmation msg", err);
+                }
             } else {
                 toast({
                     variant: "destructive",

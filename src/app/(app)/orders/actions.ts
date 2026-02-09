@@ -54,7 +54,7 @@ export async function getOrders(): Promise<Order[]> {
     customerEmail: order.customerEmail || "",
     courierName: order.courierName || "",
     trackingNumber: order.trackingNumber || "",
-    remarks: (order.remarks as OrderRemark) || "",
+    remarks: ((order.remarks || "") as OrderRemark),
     rushShip: order.rushShip,
     batch: order.batch ? {
       ...order.batch,
@@ -66,11 +66,17 @@ export async function getOrders(): Promise<Order[]> {
   }));
 }
 
-export async function getAllOrders(): Promise<Order[]> {
+export async function getAllOrders(): Promise<{ orders: Order[], isAuthorized: boolean }> {
   const user = await getCurrentUser();
 
   if (!user) {
-    return [];
+    return { orders: [], isAuthorized: false };
+  }
+
+  // Restrict only Staff role
+  const isStaff = user.role?.name.toLowerCase() === 'staff';
+  if (isStaff) {
+    return { orders: [], isAuthorized: false };
   }
 
   // Fetch ALL orders regardless of creator
@@ -82,7 +88,7 @@ export async function getAllOrders(): Promise<Order[]> {
     }
   });
 
-  return orders.map(order => ({
+  const mapOrders = orders.map(order => ({
     id: order.id,
     customerName: order.customerName,
     contactNumber: order.contactNumber || "",
@@ -104,7 +110,7 @@ export async function getAllOrders(): Promise<Order[]> {
     customerEmail: order.customerEmail || "",
     courierName: order.courierName || "",
     trackingNumber: order.trackingNumber || "",
-    remarks: (order.remarks as OrderRemark) || "",
+    remarks: ((order.remarks || "") as OrderRemark),
     rushShip: order.rushShip,
     batch: order.batch ? {
       ...order.batch,
@@ -114,6 +120,8 @@ export async function getAllOrders(): Promise<Order[]> {
       totalSales: order.batch.totalSales || 0,
     } : undefined,
   }));
+
+  return { orders: mapOrders, isAuthorized: true };
 }
 
 export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & { items?: any[] }): Promise<Order> {
@@ -207,9 +215,9 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
         }
       }
 
-      // Update Batch Totals for non-cancelled orders
+      // Update Batch Totals for Delivered orders
       const isValidBatchId = (bid: string | null | undefined) => bid && bid !== 'none' && bid !== 'hold';
-      if (orderData.shippingStatus !== 'Cancelled' && isValidBatchId(orderData.batchId)) {
+      if (orderData.shippingStatus === 'Delivered' && isValidBatchId(orderData.batchId)) {
         const targetBatchId = orderData.batchId!;
         const batch = await tx.batch.findUnique({ where: { id: targetBatchId } });
         if (batch) {
@@ -287,9 +295,9 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
       const existingOrder = await tx.order.findUnique({ where: { id } });
       if (!existingOrder) throw new Error("Order not found");
 
-      // 2. Manage Batch Totals based on shippingStatus (excluding Cancelled)
-      const wasCountable = existingOrder.shippingStatus !== 'Cancelled';
-      const isNowCountable = data.shippingStatus !== 'Cancelled' && (data.shippingStatus !== undefined || wasCountable);
+      // 2. Manage Batch Totals based on shippingStatus (Delivered only)
+      const wasCountable = existingOrder.shippingStatus === 'Delivered';
+      const isNowCountable = data.shippingStatus === 'Delivered';
 
       const oldBatchId = existingOrder.batchId;
       const newBatchId = data.batchId !== undefined ? data.batchId : oldBatchId;
@@ -570,9 +578,9 @@ export async function cancelOrder(orderId: string): Promise<void> {
         }
       }
 
-      // Update Batch Totals (Decrement) if it was countable
+      // Update Batch Totals (Decrement) if it was countable (Delivered)
       const isValidBatchId = (bid: string | null | undefined) => bid && bid !== 'none' && bid !== 'hold';
-      if (order.shippingStatus !== 'Cancelled' && isValidBatchId(order.batchId)) {
+      if (order.shippingStatus === 'Delivered' && isValidBatchId(order.batchId)) {
         const targetBatchId = order.batchId!;
         const batch = await tx.batch.findUnique({ where: { id: targetBatchId } });
         if (batch) {
