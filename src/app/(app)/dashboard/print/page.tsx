@@ -7,17 +7,9 @@ import { getAllOrders } from "../../orders/actions";
 import { getBatches } from "../../batches/actions";
 import { getCustomers } from "../../customers/actions";
 import { startOfWeek, startOfMonth, startOfYear, endOfToday, isWithinInterval, format } from "date-fns";
-import { PhilippinePeso, Users, ShoppingCart, Archive, Package } from "lucide-react";
+// Icons removed as they are unused
 
-const shippingStatusStyles: Record<ShippingStatus, string> = {
-    Pending: "bg-gray-100 text-gray-800",
-    Ready: "bg-cyan-100 text-cyan-800",
-    Shipped: "bg-blue-100 text-blue-800",
-    Delivered: "bg-purple-100 text-purple-800",
-    Cancelled: "bg-red-100 text-red-800",
-    Claimed: "bg-green-100 text-green-800",
-    "Rush Ship": "bg-orange-100 text-orange-800",
-};
+// shippingStatusStyles removed as it is no longer used
 
 function DashboardPrintContent() {
     const searchParams = useSearchParams();
@@ -90,8 +82,15 @@ function DashboardPrintContent() {
     const newCustomersCount = filteredCustomers.length;
     const heldOrdersCount = allOrders.filter(order => order.paymentStatus === 'Hold').length;
 
-    const salesOverview = useMemo(() => {
-        const periodMap: Record<string, { key: string, period: string, count: number, amount: number }> = {};
+    const summaryData = useMemo(() => {
+        const dataMap: Record<string, {
+            period: string,
+            dateObj: Date,
+            orders: number,
+            revenue: number,
+            productIncomes: Record<string, number>,
+            batchIds: Set<string>
+        }> = {};
 
         filteredOrders.forEach(order => {
             const date = new Date(order.orderDate);
@@ -106,100 +105,69 @@ function DashboardPrintContent() {
                 periodLabel = format(date, "MMM dd, yyyy");
             }
 
-            if (!periodMap[periodKey]) {
-                periodMap[periodKey] = { key: periodKey, period: periodLabel, count: 0, amount: 0 };
+            if (!dataMap[periodKey]) {
+                dataMap[periodKey] = {
+                    period: periodLabel,
+                    dateObj: date,
+                    orders: 0,
+                    revenue: 0,
+                    productIncomes: {},
+                    batchIds: new Set()
+                };
             }
-            periodMap[periodKey].count += 1;
-            periodMap[periodKey].amount += order.totalAmount;
-        });
 
-        return Object.values(periodMap).sort((a, b) => b.key.localeCompare(a.key));
-    }, [filteredOrders, timeframe]);
+            const entry = dataMap[periodKey];
+            entry.orders += 1;
+            entry.revenue += order.totalAmount;
 
-    const topSales = useMemo(() => {
-        const salesByProduct: Record<string, { id: string, itemName: string, quantity: number, totalAmount: number }> = {};
+            if (order.batchId && order.batchId !== 'none') {
+                entry.batchIds.add(order.batchId);
+            }
 
-        filteredOrders.forEach(order => {
             if (order.items && order.items.length > 0) {
                 order.items.forEach((item: any) => {
                     const name = item.product?.name || item.productName || "Unknown Item";
-                    const price = item.product?.retailPrice || item.product?.cost || 0;
-                    const amount = item.quantity * price;
-
-                    if (!salesByProduct[name]) {
-                        salesByProduct[name] = { id: name, itemName: name, quantity: 0, totalAmount: 0 };
-                    }
-                    salesByProduct[name].quantity += item.quantity;
-                    salesByProduct[name].totalAmount += amount;
+                    const val = item.quantity * (item.product?.retailPrice || item.product?.cost || 0);
+                    entry.productIncomes[name] = (entry.productIncomes[name] || 0) + val;
                 });
             } else {
                 const name = order.itemName;
-                if (!salesByProduct[name]) {
-                    salesByProduct[name] = { id: name, itemName: name, quantity: 0, totalAmount: 0 };
-                }
-                salesByProduct[name].quantity += order.quantity;
-                salesByProduct[name].totalAmount += order.totalAmount;
+                entry.productIncomes[name] = (entry.productIncomes[name] || 0) + order.totalAmount;
             }
         });
 
-        return Object.values(salesByProduct)
-            .sort((a, b) => b.totalAmount - a.totalAmount)
-            .slice(0, 5);
-    }, [filteredOrders]);
+        return Object.values(dataMap)
+            .sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime())
+            .map(item => {
+                // Find Top Product
+                let topProduct = "N/A";
+                let maxRev = -1;
+                Object.entries(item.productIncomes).forEach(([name, rev]) => {
+                    if (rev > maxRev) {
+                        maxRev = rev;
+                        topProduct = name;
+                    }
+                });
 
-    const topBatches = useMemo(() => {
-        const batchMap: Record<string, { id: string, batchName: string, status: string, totalOrders: number, totalSales: number }> = {};
+                // Format Batches
+                const batchNames = Array.from(item.batchIds).map(id => {
+                    const b = allBatches.find(bg => bg.id === id);
+                    return b ? b.batchName : id;
+                });
 
-        filteredOrders.forEach(order => {
-            if (order.batchId && order.batchId !== 'none' && order.batchId !== 'hold') {
-                if (!batchMap[order.batchId]) {
-                    const batchInfo = allBatches.find(b => b.id === order.batchId);
-                    batchMap[order.batchId] = {
-                        id: order.batchId,
-                        batchName: batchInfo?.batchName || `Batch ${order.batchId.substring(0, 5)}`,
-                        status: batchInfo?.status || "Unknown",
-                        totalOrders: 0,
-                        totalSales: 0
-                    };
-                }
-                batchMap[order.batchId].totalOrders += 1;
-                batchMap[order.batchId].totalSales += order.totalAmount;
-            }
-        });
+                const batchDisplay = batchNames.length > 0
+                    ? (batchNames.length > 3 ? `${batchNames.slice(0, 3).join(", ")} +${batchNames.length - 3} more` : batchNames.join(", "))
+                    : "-";
 
-        return Object.values(batchMap)
-            .sort((a, b) => b.totalSales - a.totalSales)
-            .slice(0, 5);
-    }, [filteredOrders, allBatches]);
-
-    const recentSales = useMemo(() => {
-        return allOrders
-            .flatMap(order => {
-                if (order.items && order.items.length > 0) {
-                    return order.items.map((item: any, index: number) => ({
-                        id: `${order.id}-${index}`,
-                        itemName: item.product?.name || item.productName || "Unknown Item",
-                        quantity: item.quantity,
-                        totalAmount: item.quantity * (item.product?.retailPrice || item.product?.cost || 0),
-                        shippingStatus: order.shippingStatus,
-                        customerName: order.customerName,
-                        orderDate: order.orderDate
-                    }));
-                } else {
-                    return [{
-                        id: order.id,
-                        itemName: order.itemName,
-                        quantity: order.quantity,
-                        totalAmount: order.totalAmount,
-                        shippingStatus: order.shippingStatus,
-                        customerName: order.customerName,
-                        orderDate: order.orderDate
-                    }];
-                }
-            })
-            .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
-            .slice(0, 10);
-    }, [allOrders]);
+                return {
+                    period: item.period,
+                    orders: item.orders,
+                    revenue: item.revenue,
+                    topProduct,
+                    batches: batchDisplay
+                };
+            });
+    }, [filteredOrders, timeframe, allBatches]);
 
     useEffect(() => {
         if (isLoaded && status === 'loading') {
@@ -275,114 +243,34 @@ function DashboardPrintContent() {
                     </div>
                 </div>
 
-                {/* Top Sales By Item Table */}
+                {/* Consolidated Summary Table */}
                 <div className="mb-8">
-                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-l-4 border-purple-500 pl-3">Top Performing Products</h3>
+                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-l-4 border-slate-800 pl-3">Comprehensive Performance Summary</h3>
                     <table className="w-full text-sm border-collapse">
                         <thead>
-                            <tr className="bg-slate-700 text-white">
-                                <th className="py-2 px-4 text-left font-semibold rounded-tl-lg">Rank</th>
-                                <th className="py-2 px-4 text-left font-semibold">Product Name</th>
-                                <th className="py-2 px-4 text-right font-semibold">Qty Sold</th>
-                                <th className="py-2 px-4 text-right font-semibold rounded-tr-lg">Total Revenue</th>
+                            <tr className="bg-slate-800 text-white">
+                                <th className="py-3 px-4 text-left font-semibold rounded-tl-lg">Period</th>
+                                <th className="py-3 px-4 text-left font-semibold">Top Product</th>
+                                <th className="py-3 px-4 text-left font-semibold">Active Batches</th>
+                                <th className="py-3 px-4 text-right font-semibold">Orders</th>
+                                <th className="py-3 px-4 text-right font-semibold rounded-tr-lg">Revenue</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {topSales.map((item, index) => (
-                                <tr key={item.id} className={index % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
-                                    <td className="py-3 px-4 text-slate-400 font-bold"># {index + 1}</td>
-                                    <td className="py-3 px-4 font-bold text-slate-700">{item.itemName}</td>
-                                    <td className="py-3 px-4 text-right">{item.quantity}</td>
-                                    <td className="py-3 px-4 text-right font-bold text-slate-800">₱{item.totalAmount.toLocaleString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Top Performing Batches Table */}
-                <div className="mb-8">
-                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-l-4 border-pink-500 pl-3">Top Performing Batches</h3>
-                    <table className="w-full text-sm border-collapse">
-                        <thead>
-                            <tr className="bg-slate-700 text-white">
-                                <th className="py-2 px-4 text-left font-semibold rounded-tl-lg">Batch Name</th>
-                                <th className="py-2 px-4 text-left font-semibold">Status</th>
-                                <th className="py-2 px-4 text-right font-semibold">Orders</th>
-                                <th className="py-2 px-4 text-right font-semibold rounded-tr-lg">Total Sales</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {topBatches.map((batch, index) => (
-                                <tr key={batch.id} className={index % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
-                                    <td className="py-3 px-4 font-bold text-slate-700">{batch.batchName}</td>
-                                    <td className="py-3 px-4 text-slate-500 text-xs">{batch.status}</td>
-                                    <td className="py-3 px-4 text-right">{batch.totalOrders || 0}</td>
-                                    <td className="py-3 px-4 text-right font-bold text-slate-800">₱{(batch.totalSales || 0).toLocaleString()}</td>
-                                </tr>
-                            ))}
-                            {topBatches.length === 0 && (
-                                <tr>
-                                    <td colSpan={4} className="py-4 text-center text-slate-400 italic">No batch data available</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Sales Overview Table */}
-                <div className="mb-8">
-                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-l-4 border-blue-500 pl-3">Sales Performance Overview</h3>
-                    <table className="w-full text-sm border-collapse">
-                        <thead>
-                            <tr className="bg-slate-700 text-white">
-                                <th className="py-2 px-4 text-left font-semibold rounded-tl-lg">Date / Period</th>
-                                <th className="py-2 px-4 text-right font-semibold">Orders</th>
-                                <th className="py-2 px-4 text-right font-semibold rounded-tr-lg">Total Sales</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {salesOverview.map((item, index) => (
+                            {summaryData.map((row, index) => (
                                 <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
-                                    <td className="py-3 px-4 font-bold text-slate-700">{item.period}</td>
-                                    <td className="py-3 px-4 text-right">{item.count}</td>
-                                    <td className="py-3 px-4 text-right font-bold text-slate-800">₱{item.amount.toLocaleString()}</td>
+                                    <td className="py-3 px-4 font-bold text-slate-700 align-top">{row.period}</td>
+                                    <td className="py-3 px-4 text-slate-600 align-top">{row.topProduct}</td>
+                                    <td className="py-3 px-4 text-slate-600 text-xs align-top">{row.batches}</td>
+                                    <td className="py-3 px-4 text-right align-top">{row.orders}</td>
+                                    <td className="py-3 px-4 text-right font-bold text-slate-800 align-top">₱{row.revenue.toLocaleString()}</td>
                                 </tr>
                             ))}
-                            {salesOverview.length === 0 && (
+                            {summaryData.length === 0 && (
                                 <tr>
-                                    <td colSpan={3} className="py-4 text-center text-slate-400 italic">No sales data available for this period</td>
+                                    <td colSpan={5} className="py-6 text-center text-slate-400 italic">No consolidated data available for this timeframe</td>
                                 </tr>
                             )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Recent Sales Table */}
-                <div className="mb-8">
-                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 border-l-4 border-emerald-500 pl-3">Recent Transaction Activity</h3>
-                    <table className="w-full text-[11px] border-collapse">
-                        <thead className="border-b-2 border-slate-200">
-                            <tr>
-                                <th className="py-2 text-left text-slate-400 uppercase tracking-tighter">Product</th>
-                                <th className="py-2 text-left text-slate-400 uppercase tracking-tighter">Customer</th>
-                                <th className="py-2 text-center text-slate-400 uppercase tracking-tighter">Status</th>
-                                <th className="py-2 text-right text-slate-400 uppercase tracking-tighter">Revenue</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {recentSales.map((item) => (
-                                <tr key={item.id}>
-                                    <td className="py-3 font-semibold text-slate-700">{item.itemName} <span className="text-slate-300 font-normal">({item.quantity}x)</span></td>
-                                    <td className="py-3 text-slate-500">{item.customerName}</td>
-                                    <td className="py-3 text-center">
-                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${shippingStatusStyles[item.shippingStatus as ShippingStatus]}`}>
-                                            {item.shippingStatus}
-                                        </span>
-                                    </td>
-                                    <td className="py-3 text-right font-black text-slate-800">₱{item.totalAmount.toLocaleString()}</td>
-                                </tr>
-                            ))}
                         </tbody>
                     </table>
                 </div>

@@ -51,11 +51,12 @@ export async function checkPermission(permission: keyof UserPermissions): Promis
     const user = await getCurrentUser();
     if (!user) return false;
 
-    // Explicitly deny Dashboard and Sales for Staff role
-    const isStaff = user.role?.name?.toLowerCase() === 'staff';
-    if (isStaff && (permission === 'dashboard' || permission === 'sales')) {
-        return false;
+    // Safety net: Super admins always have access to critical features to prevent lockout
+    const isSuperAdmin = user.role?.name?.toLowerCase() === 'super admin';
+    if (isSuperAdmin && (permission === 'users' || permission === 'settings' || permission === 'adminManage')) {
+        return true;
     }
 
+    // Access is controlled by the user's permissions JSON
     return !!user.permissions?.[permission];
 }

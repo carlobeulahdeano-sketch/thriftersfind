@@ -1,4 +1,30 @@
+export type SalesData = {
+  date: string;
+  totalAmount: number;
+};
 
+export type TopCustomerData = {
+  name: string;
+  totalSpent: number;
+};
+
+export type CourierData = {
+  name: string;
+  count: number;
+};
+
+export type InventoryItem = {
+  id: string;
+  name: string;
+  sku: string;
+  description: string;
+  quantity: number;
+  totalStock: number;
+  alertStock: number;
+  cost: number;
+  retailPrice: number;
+  images: string[];
+};
 
 export type UserRole = 'admin' | 'super admin' | 'overseer' | 'packer' | 'user' | 'staff';
 
@@ -232,6 +258,7 @@ export type InventoryLog = {
 
 export type WarehouseProduct = {
   id: string;
+  warehouseId?: string | null;
   productName: string;
   sku: string;
   quantity: number;
@@ -245,4 +272,7 @@ export type WarehouseProduct = {
   createdBy?: any;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  alertStock?: number;
+  manufacturer?: string | null;
+  productId?: string | null;
 };

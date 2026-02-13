@@ -4,12 +4,18 @@ import { Product } from "@/lib/types";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-server";
 import { createInventoryLog } from "@/lib/inventory-log-helper";
+import { checkAndNotifyStock } from "./notifications-actions";
 
 export async function getProducts(): Promise<Product[]> {
   try {
     const user = await getCurrentUser();
 
     if (!user) {
+      return [];
+    }
+
+    const hasPermission = !!user.permissions?.inventory;
+    if (!hasPermission) {
       return [];
     }
 
@@ -179,11 +185,14 @@ export async function searchProductsSimple(query: string): Promise<{ id: string;
 export async function createProduct(productData: Omit<Product, 'id' | 'totalStock'>): Promise<Product> {
   try {
     const user = await getCurrentUser();
-    const createdBy = user ? {
+    if (!user || !user.permissions?.inventory) {
+      throw new Error("Permission denied");
+    }
+    const createdBy = {
       uid: user.id,
       name: user.name,
       email: user.email
-    } : { uid: "system", name: "System" };
+    };
 
     // Check if SKU already exists using raw query
     const existingProducts: any[] = await prisma.$queryRaw`SELECT id FROM products WHERE sku = ${productData.sku} LIMIT 1`;
@@ -251,6 +260,10 @@ export async function createProduct(productData: Omit<Product, 'id' | 'totalStoc
 
 export async function updateProduct(id: string, productData: Partial<Omit<Product, 'id' | 'totalStock'>>): Promise<Product> {
   try {
+    const user = await getCurrentUser();
+    if (!user || !user.permissions?.inventory) {
+      throw new Error("Permission denied");
+    }
     // If SKU is being updated, check if it already exists (but not for the current product)
     if (productData.sku) {
       const existingProducts: any[] = await prisma.$queryRaw`SELECT id FROM products WHERE sku = ${productData.sku} AND id != ${id} LIMIT 1`;
@@ -307,6 +320,14 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
         reason: "Manual adjustment",
         referenceId: id,
       });
+
+      // Check for low stock notification
+      await checkAndNotifyStock({
+        productName: updatedProduct.name,
+        sku: updatedProduct.sku,
+        quantity: (updatedProduct as any).quantity,
+        alertStock: updatedProduct.alertStock,
+      });
     }
 
     return {
@@ -331,6 +352,9 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
 export async function deleteProduct(id: string): Promise<void> {
   try {
     const user = await getCurrentUser();
+    if (!user || !user.permissions?.inventory) {
+      throw new Error("Permission denied");
+    }
 
     // 1. Get product details before deletion
     const products: any[] = await prisma.$queryRaw`SELECT * FROM products WHERE id = ${id} LIMIT 1`;

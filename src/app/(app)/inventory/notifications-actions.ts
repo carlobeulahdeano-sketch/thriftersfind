@@ -12,11 +12,19 @@ export async function getNotifications() {
         const user = await getCurrentUser();
         if (!user) return [];
 
-        const notifications = await prisma.$queryRawUnsafe(
-            `SELECT * FROM notifications WHERE userId = ? OR userId IS NULL ORDER BY createdAt DESC LIMIT 20`,
-            user.id
-        );
-        return notifications as any[];
+        const notifications = await prisma.notification.findMany({
+            where: {
+                OR: [
+                    { userId: user.id },
+                    { userId: null }
+                ]
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            take: 20
+        });
+        return notifications;
     } catch (error) {
         console.error("Error fetching notifications:", error);
         return [];
@@ -25,9 +33,21 @@ export async function getNotifications() {
 
 export async function markAllNotificationsAsRead() {
     try {
-        await prisma.$executeRawUnsafe(
-            `UPDATE notifications SET \`read\` = 1 WHERE \`read\` = 0`
-        );
+        const user = await getCurrentUser();
+        if (!user) return { success: false, error: "Not authenticated" };
+
+        await prisma.notification.updateMany({
+            where: {
+                OR: [
+                    { userId: user.id },
+                    { userId: null }
+                ],
+                read: false
+            },
+            data: {
+                read: true
+            }
+        });
         revalidatePath("/");
         return { success: true };
     } catch (error) {
@@ -36,19 +56,38 @@ export async function markAllNotificationsAsRead() {
     }
 }
 
-export async function createNotification(data: { title: string; message: string; type: string }) {
+export async function createNotification(data: { title: string; message: string; type: string; userId?: string | null }) {
     try {
-        const id = `n${Math.random().toString(36).substring(2, 15)}`;
-        const now = new Date();
-        await prisma.$executeRawUnsafe(
-            `INSERT INTO notifications (id, title, message, type, \`read\`, createdAt, updatedAt) VALUES (?, ?, ?, ?, 0, ?, ?)`,
-            id, data.title, data.message, data.type, now, now
-        );
+        const notification = await prisma.notification.create({
+            data: {
+                title: data.title,
+                message: data.message,
+                type: data.type,
+                userId: data.userId || null,
+                read: false,
+            }
+        });
         revalidatePath("/");
-        return { id, ...data, read: false, createdAt: now, updatedAt: now };
+        return notification;
     } catch (error) {
         console.error("Error creating notification:", error);
         throw new Error("Failed to create notification");
+    }
+}
+
+export async function checkAndNotifyStock(data: { productName: string; sku: string; quantity: number; alertStock: number; userId?: string | null }) {
+    try {
+        if (data.alertStock > 0 && data.quantity <= data.alertStock) {
+            const isOutOfStock = data.quantity <= 0;
+            await createNotification({
+                title: isOutOfStock ? "Out of Stock Alert" : "Low Stock Alert",
+                message: `Product ${data.productName} (SKU: ${data.sku}) is ${isOutOfStock ? "out of stock" : "running low"}. Current stock: ${data.quantity}.`,
+                type: isOutOfStock ? "out_of_stock" : "low_stock",
+                userId: data.userId
+            });
+        }
+    } catch (error) {
+        console.error("Error checking and notifying stock:", error);
     }
 }
 

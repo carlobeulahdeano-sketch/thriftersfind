@@ -36,9 +36,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { UserPermissions } from "@/lib/types";
-import { stopImpersonating } from "@/lib/auth-actions";
-import { LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { hasPermission } from "@/lib/permissions";
 
 const links = [
@@ -48,13 +45,6 @@ const links = [
     icon: <LayoutDashboard />,
     permission: "dashboard",
   },
-  {
-    href: "/orders",
-    label: "Orders",
-    icon: <ShoppingCart />,
-    permission: "orders",
-  },
-
   {
     href: "/batches",
     label: "Batches",
@@ -67,6 +57,13 @@ const links = [
     icon: <Boxes />,
     permission: "inventory",
   },
+  {
+    href: "/orders",
+    label: "Orders",
+    icon: <ShoppingCart />,
+    permission: "orders",
+  },
+
   {
     href: "/customers",
     label: "Customers",
@@ -132,17 +129,16 @@ const links = [
 interface NavLinksProps {
   permissions?: UserPermissions;
   role?: string;
-  isImpersonating?: boolean;
 }
 
-export function NavLinks({ permissions, role, isImpersonating }: NavLinksProps) {
+export function NavLinks({ permissions, role }: NavLinksProps) {
   const pathname = usePathname();
   const [isMounted, setIsMounted] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [adminManageOpen, setAdminManageOpen] = React.useState(false);
   const [preOrdersOpen, setPreOrdersOpen] = React.useState(false);
 
-  console.log("[NavLinks] Props - Role:", role, "IsImpersonating:", isImpersonating);
+
 
   React.useEffect(() => {
     setIsMounted(true);
@@ -176,9 +172,7 @@ export function NavLinks({ permissions, role, isImpersonating }: NavLinksProps) 
   const isSuperAdmin = role?.toLowerCase() === 'super admin';
   const isStaff = role?.toLowerCase() === 'staff';
 
-  // Debug logging
-  console.log('NavLinks - Role:', role);
-  console.log('NavLinks - isSuperAdmin:', isSuperAdmin);
+
 
   const filteredLinks = links.filter(link => {
     return hasPermission(link.href, permissions, role);
@@ -216,7 +210,7 @@ export function NavLinks({ permissions, role, isImpersonating }: NavLinksProps) 
                         tooltip="All Pre-orders"
                       >
                         <Link href="/pre-orders/all">
-                          <span>orders</span>
+                          <span>Orders</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

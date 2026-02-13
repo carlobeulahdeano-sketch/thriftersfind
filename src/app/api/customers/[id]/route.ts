@@ -5,10 +5,10 @@ import { UserRole } from '@/lib/types';
 // GET /api/customers/[id] - Get a specific customer
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const customerId = params.id;
+    const { id: customerId } = await params;
 
     const customer = await prisma.customer.findUnique({
       where: { id: customerId },
@@ -57,10 +57,10 @@ export async function GET(
 // PUT /api/customers/[id] - Update a specific customer
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const customerId = params.id;
+    const { id: customerId } = await params;
     const body = await request.json();
 
     // Check if customer exists
@@ -135,10 +135,10 @@ export async function PUT(
 // DELETE /api/customers/[id] - Delete a specific customer
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const customerId = params.id;
+    const { id: customerId } = await params;
 
     // Check if customer exists
     const existingCustomer = await prisma.customer.findUnique({

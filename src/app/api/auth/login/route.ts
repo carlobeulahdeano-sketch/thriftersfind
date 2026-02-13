@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     cookieStore.set('session', user.id, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_APP_URL?.startsWith('https') === true,
       maxAge: 60 * 60 * 24 * 7, // 1 week
       path: '/',
     });

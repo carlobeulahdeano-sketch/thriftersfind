@@ -106,7 +106,7 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Select value={activityFilter} onValueChange={(value) => setActivityFilter(value as ActivityFilter)}>
+            <Select value={activityFilter} onValueChange={(value: string) => setActivityFilter(value as ActivityFilter)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by activity" />
               </SelectTrigger>
@@ -152,7 +152,7 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">{customer.phone}</TableCell>
-                  <TableCell className="hidden sm:table-cell font-medium">₱{customer.totalSpent?.toFixed(2) || '0.00'}</TableCell>
+                  <TableCell className="hidden sm:table-cell font-medium">₱{customer.totalSpent?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

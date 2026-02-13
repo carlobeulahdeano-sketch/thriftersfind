@@ -5,10 +5,10 @@ import bcrypt from 'bcryptjs';
 // GET /api/users/[id] - Get a specific user
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
 
     // Check if relations are available in the current client
     const canInclude = (prisma.user as any).fields?.role?.isRelation;
@@ -66,10 +66,10 @@ export async function GET(
 // PUT /api/users/[id] - Update a specific user
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
     const body = await request.json();
     const { name, email, password, roleId, branchId, permissions } = body;
 
@@ -167,10 +167,10 @@ export async function PUT(
 // DELETE /api/users/[id] - Delete a specific user
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({

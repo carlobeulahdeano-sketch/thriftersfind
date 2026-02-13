@@ -26,17 +26,34 @@ export function MessengerNav({ currentUser }: MessengerNavProps) {
     const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
+        if (!currentUser) return;
+
+        setIsMounted(true);
         async function fetchUsersAndCounts() {
             try {
                 const usersData = await getUsers();
-                setUsers(usersData);
+                if (Array.isArray(usersData)) {
+                    setUsers(usersData);
+                } else {
+                    console.warn("[MessengerNav] Received invalid users data:", usersData);
+                    setUsers([]);
+                }
 
                 const counts = await getUnreadCounts();
-                setUnreadCounts(counts);
+                if (counts && typeof counts === 'object') {
+                    setUnreadCounts(counts);
+                } else {
+                    console.warn("[MessengerNav] Received invalid unread counts:", counts);
+                    setUnreadCounts({});
+                }
             } catch (error) {
-                console.error("Failed to fetch messenger data", error);
+                // Only log if it's not a fetch error which we now handle gracefully at the server level
+                if (error instanceof Error && !error.message.includes("unexpected response")) {
+                    console.error("Failed to fetch messenger data", error);
+                }
             } finally {
                 setLoading(false);
             }
@@ -48,9 +65,18 @@ export function MessengerNav({ currentUser }: MessengerNavProps) {
         // Poll for new messages every 2 seconds for pseudo-realtime
         const interval = setInterval(fetchUsersAndCounts, 2000);
         return () => clearInterval(interval);
-    }, []);
+    }, [currentUser]);
 
-    const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
+    const totalUnread = unreadCounts ? Object.values(unreadCounts).reduce((a, b) => a + b, 0) : 0;
+
+    if (!isMounted) {
+        return (
+            <Button variant="ghost" size="icon" className="relative">
+                <MessageCircle className="h-5 w-5" />
+                <span className="sr-only">Messenger</span>
+            </Button>
+        );
+    }
 
     const handleUserSelect = (user: User) => {
         setSelectedUser(user);

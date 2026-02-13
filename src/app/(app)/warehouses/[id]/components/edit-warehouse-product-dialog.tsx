@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { updateWarehouseProduct } from "../actions";
-import type { WarehouseProduct } from "../actions";
+import { WarehouseProduct } from "@/lib/types";
 import { PhilippinePeso } from "lucide-react";
 
 interface EditWarehouseProductDialogProps {

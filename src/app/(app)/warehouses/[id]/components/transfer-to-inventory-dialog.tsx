@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { transferToInventory } from "../actions";
-import type { WarehouseProduct } from "../actions";
+import { WarehouseProduct } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 
 interface TransferToInventoryDialogProps {

@@ -87,7 +87,6 @@ interface OrderTableProps {
 
 export default function OrderTable({ orders, customers, products, stations, batches }: OrderTableProps) {
   const router = useRouter();
-  const [filteredOrders, setFilteredOrders] = React.useState<Order[]>(orders);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [paymentStatusFilter, setPaymentStatusFilter] = React.useState<string>("all");
   const [shippingStatusFilter, setShippingStatusFilter] = React.useState<string>("all");
@@ -107,7 +106,7 @@ export default function OrderTable({ orders, customers, products, stations, batc
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
+  const filteredOrders = React.useMemo(() => {
     let newFilteredOrders = orders;
 
     if (paymentStatusFilter !== "all") {
@@ -131,12 +130,11 @@ export default function OrderTable({ orders, customers, products, stations, batc
       newFilteredOrders = newFilteredOrders.filter(order => {
         const orderDate = new Date(order.orderDate);
         if (dateFilter.to) {
-          return orderDate >= dateFilter.from! && orderDate <= dateFilter.to;
+          return orderDate >= dateFilter!.from! && orderDate <= dateFilter!.to!;
         }
-        return orderDate.toDateString() === dateFilter.from!.toDateString();
+        return orderDate.toDateString() === dateFilter!.from!.toDateString();
       });
     }
-
 
     if (searchTerm) {
       newFilteredOrders = newFilteredOrders.filter(
@@ -146,9 +144,12 @@ export default function OrderTable({ orders, customers, products, stations, batc
       );
     }
 
-    setFilteredOrders(newFilteredOrders);
-    setCurrentPage(1);
+    return newFilteredOrders;
   }, [searchTerm, paymentStatusFilter, shippingStatusFilter, batchFilter, dateFilter, orders]);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, paymentStatusFilter, shippingStatusFilter, batchFilter, dateFilter]);
 
   const paginatedOrders = filteredOrders.slice(
     (currentPage - 1) * itemsPerPage,
@@ -218,6 +219,7 @@ export default function OrderTable({ orders, customers, products, stations, batc
     setOrderToCancel(order);
     setCancelDialogOpen(true);
   };
+
 
   return (
     <>

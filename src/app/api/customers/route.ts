@@ -26,10 +26,19 @@ export async function POST(request: NextRequest) {
       { success: true, data: newCustomer },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating customer:', error);
+
+    // Handle specific error types
+    if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT') {
+      return NextResponse.json(
+        { success: false, error: 'Database connection error. Please try again.' },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
-      { success: false, error: 'Failed to create customer' },
+      { success: false, error: error.message || 'Failed to create customer' },
       { status: 500 }
     );
   }

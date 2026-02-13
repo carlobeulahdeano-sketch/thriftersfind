@@ -8,15 +8,16 @@ import { ArrowLeft, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 interface BatchAnalyticsPageProps {
-    searchParams: {
+    searchParams: Promise<{
         from?: string;
         to?: string;
-    }
+    }>
 }
 
 export default async function BatchAnalyticsPage({ searchParams }: BatchAnalyticsPageProps) {
-    const fromDate = searchParams.from ? new Date(searchParams.from) : undefined;
-    const toDate = searchParams.to ? new Date(searchParams.to) : undefined;
+    const { from, to } = await searchParams;
+    const fromDate = from ? new Date(from) : undefined;
+    const toDate = to ? new Date(to) : undefined;
 
     const { batchAnalytics, isAuthorized } = await getBatchAnalytics(fromDate, toDate);
 

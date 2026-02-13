@@ -149,7 +149,7 @@ export default function PreOrderTable({ orders, customers, stations, batches }: 
                                 filteredOrders.map((order) => {
                                     // Use depositAmount from DB
                                     const amountPaid = order.depositAmount || 0;
-                                    const remainingBalance = order.totalAmount - amountPaid;
+                                    const remainingBalance = Math.max(0, order.totalAmount - amountPaid);
 
                                     return (
                                         <motion.tr
@@ -270,7 +270,7 @@ export default function PreOrderTable({ orders, customers, stations, batches }: 
                                             </TableCell>
 
                                             {/* Balance Column */}
-                                            <TableCell className="align-top text-right py-4 font-medium tabular-nums text-red-600">
+                                            <TableCell className={`align-top text-right py-4 font-medium tabular-nums ${remainingBalance > 0 ? 'text-red-600' : 'text-zinc-500'}`}>
                                                 ₱{remainingBalance.toLocaleString()}
                                             </TableCell>
 

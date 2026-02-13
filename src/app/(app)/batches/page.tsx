@@ -1,12 +1,52 @@
+"use client";
+
 import * as React from "react";
+import { useEffect, useState } from "react";
 import BatchesTable from "./components/batches-table";
 import { getBatches } from "./actions";
 import { ShieldAlert } from "lucide-react";
+import type { Batch } from "@/lib/types";
 
-export const dynamic = 'force-dynamic';
+export default function BatchesPage() {
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [isAuthorized, setIsAuthorized] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-export default async function BatchesPage() {
-  const { batches, isAuthorized } = await getBatches();
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (!response.ok) throw new Error('Auth failed');
+        const { user } = await response.json();
+
+        if (!user?.permissions?.batches) {
+          setIsAuthorized(false);
+        } else {
+          const { batches: batchesData, isAuthorized: authorized } = await getBatches();
+          setBatches(batchesData);
+          setIsAuthorized(authorized);
+        }
+      } catch (error) {
+        console.error("Error fetching batches:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent w-fit">Batch Management</h1>
+        </div>
+        <div className="flex items-center justify-center p-8">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthorized) {
     return (
@@ -21,7 +61,7 @@ export default async function BatchesPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Batch Management</h1>
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent w-fit">Batch Management</h1>
       </div>
       <BatchesTable
         batches={batches}

@@ -34,16 +34,16 @@ export function ViewWarehouseDialog({ isOpen, onClose, product }: ViewWarehouseD
                 <div className="grid gap-4 py-4">
                     {/* Image Display */}
                     <div className="flex justify-center mb-4">
-                        <div className="h-32 w-32 overflow-hidden rounded-md border bg-muted">
+                        <div className="h-40 w-40 overflow-hidden rounded-xl border-2 border-white/10 bg-muted/50 shadow-inner group">
                             {product.image ? (
                                 <img
                                     src={product.image}
                                     alt={product.productName}
-                                    className="h-full w-full object-cover"
+                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
                             ) : (
                                 <div className="flex h-full w-full items-center justify-center">
-                                    <Package className="h-12 w-12 text-muted-foreground" />
+                                    <Package className="h-16 w-16 text-muted-foreground/30" />
                                 </div>
                             )}
                         </div>

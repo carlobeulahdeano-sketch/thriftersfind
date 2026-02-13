@@ -25,7 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AddProductDialog } from "./add-product-dialog";
 import { AddQuantityDialog } from "./add-quantity-dialog";
 import { DeductQuantityDialog } from "./deduct-quantity-dialog";
-import type { Product } from "@/lib/types";
+import type { Product, InventoryItem } from "@/lib/types";
 import { EditProductDialog } from "./edit-product-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { deleteProduct } from "../actions";
@@ -137,10 +137,10 @@ export default function InventoryTable({ products: initialProducts }: { products
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px]">Image</TableHead>
+                <TableHead className="w-[80px] font-semibold">Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>SKU</TableHead>
-                <TableHead className="text-right">Total Qty</TableHead>
+                <TableHead className="text-center">Total Qty</TableHead>
                 <TableHead className="text-center">Status</TableHead>
                 <TableHead className="text-right">Retail Price</TableHead>
                 <TableHead>
@@ -155,18 +155,25 @@ export default function InventoryTable({ products: initialProducts }: { products
                   className={product.totalStock === 0 ? "bg-red-50 dark:bg-red-950/20" : ""}
                 >
                   <TableCell>
-                    <Avatar className="h-10 w-10 rounded-md">
-                      <AvatarImage src={product.images?.[0]} alt={product.name} />
-                      <AvatarFallback className="rounded-md bg-muted">
-                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="h-12 w-12 overflow-hidden rounded-xl border-2 border-white/10 bg-muted/50 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:border-pink-500/50 cursor-pointer group">
+                      {product.images?.[0] ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.name}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <ImageIcon className="h-6 w-6 text-muted-foreground/50" />
+                        </div>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{product.sku}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">{product.totalStock}</TableCell>
+                  <TableCell className="text-center">{product.totalStock}</TableCell>
                   <TableCell className="text-center">
                     {product.totalStock === 0 ? (
                       <Badge variant="outline" className="w-fit mx-auto flex items-center justify-center gap-1 border-red-500 text-red-500">
@@ -182,7 +189,7 @@ export default function InventoryTable({ products: initialProducts }: { products
                       <Badge variant="secondary">In Stock</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">₱{product.retailPrice.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">₱{product.retailPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
 
                   <TableCell>
                     <AlertDialog>

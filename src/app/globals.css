@@ -51,37 +51,41 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 4.8% 9.8%;
     --popover-foreground: 0 0% 98%;
-    --primary: 174 70% 60%;
-    /* Lighter Teal for Dark Mode */
-    --primary-foreground: 174 83% 10%;
+    --primary: 189 94% 48%;
+    /* Cyan from Logo */
+    --primary-foreground: 189 94% 10%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 330 85% 65%;
-    /* Pink */
+    --accent: 330 81% 70%;
+    /* Pink from Logo */
     --accent-foreground: 330 84% 10%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 174 70% 60%;
-    /* Teal */
+    --ring: 189 94% 48%;
+    /* Cyan */
 
-    --chart-1: 174 70% 60%;
-    --chart-2: 330 85% 65%;
+    --chart-1: 189 94% 48%;
+    /* Cyan */
+    --chart-2: 330 81% 70%;
+    /* Pink */
     --chart-3: 262 80% 60%;
     --chart-4: 330, 80%, 65%;
     --chart-5: 262 70% 55%;
 
-    --sidebar-background: 240 4.8% 9.8%;
-    --sidebar-foreground: 270 20% 90%;
-    --sidebar-primary: 330 90% 70%;
-    --sidebar-primary-foreground: 330 84% 10%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 330 90% 70%;
+    --sidebar-background: 262 60% 12%;
+    /* Deep Purple */
+    --sidebar-foreground: 262 10% 90%;
+    --sidebar-primary: 189 94% 48%;
+    /* Cyan */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 262 60% 20%;
+    --sidebar-accent-foreground: 262 10% 95%;
+    --sidebar-border: 262 60% 20%;
+    --sidebar-ring: 189 94% 48%;
   }
 }
 

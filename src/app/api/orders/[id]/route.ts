@@ -4,10 +4,10 @@ import { prisma } from '@/lib/prisma';
 // GET /api/orders/[id] - Get a specific order
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const orderId = params.id;
+    const { id: orderId } = await params;
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -63,10 +63,10 @@ export async function GET(
 // PUT /api/orders/[id] - Update a specific order
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const orderId = params.id;
+    const { id: orderId } = await params;
     const body = await request.json();
 
     // Check if order exists
@@ -155,10 +155,10 @@ export async function PUT(
 // DELETE /api/orders/[id] - Delete a specific order
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const orderId = params.id;
+    const { id: orderId } = await params;
 
     // Check if order exists
     const existingOrder = await prisma.order.findUnique({

@@ -88,7 +88,7 @@ export function InventoryLogsTable({ branches }: InventoryLogsTableProps) {
                 </div>
 
                 <div className="flex gap-2 w-full md:w-auto">
-                    <Select value={branchId} onValueChange={(val) => { setBranchId(val); setPage(1); }}>
+                    <Select value={branchId} onValueChange={(val: string) => { setBranchId(val); setPage(1); }}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Filter by Branch" />
                         </SelectTrigger>
@@ -102,7 +102,7 @@ export function InventoryLogsTable({ branches }: InventoryLogsTableProps) {
                         </SelectContent>
                     </Select>
 
-                    <Select value={action} onValueChange={(val) => { setAction(val); setPage(1); }}>
+                    <Select value={action} onValueChange={(val: string) => { setAction(val); setPage(1); }}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Filter by Action" />
                         </SelectTrigger>

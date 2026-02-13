@@ -177,7 +177,7 @@ export default function BatchesTable({ batches: initialBatches }: BatchesTablePr
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">{batch.totalOrders}</TableCell>
-                  <TableCell className="text-right">₱{batch.totalSales.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">₱{batch.totalSales.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

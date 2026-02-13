@@ -6,20 +6,20 @@ const prisma = new PrismaClient();
 async function main() {
     const admins = await prisma.user.findMany({
         where: {
-            role: {
+            role_rel: {
                 name: {
                     in: ['Super Admin', 'super admin', 'Admin', 'admin']
                 }
             }
         },
         include: {
-            role: true
+            role_rel: true
         }
     });
 
     console.log('Found Admins:');
-    admins.forEach(admin => {
-        console.log(`Email: ${admin.email}, Name: ${admin.name}, Role: ${admin.role?.name}`);
+    admins.forEach((admin: any) => {
+        console.log(`Email: ${admin.email}, Name: ${admin.name}, Role: ${admin.role_rel?.name}`);
     });
 }
 

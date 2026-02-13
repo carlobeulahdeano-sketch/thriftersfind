@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { createNotification, checkAndNotifyStock } from "@/app/(app)/inventory/notifications-actions";
 
 export async function createWarehouseProduct(data: {
     productName: string;
@@ -35,6 +36,14 @@ export async function createWarehouseProduct(data: {
                 batchId: data.batchId || null,
                 productId: data.productId || null,
             },
+        });
+
+        // Check for low stock notification
+        await checkAndNotifyStock({
+            productName: data.productName,
+            sku: data.sku,
+            quantity: data.quantity || 0,
+            alertStock: data.alertStock || 0,
         });
 
         revalidatePath("/warehouses");

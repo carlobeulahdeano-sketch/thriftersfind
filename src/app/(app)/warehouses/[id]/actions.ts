@@ -3,28 +3,11 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { createInventoryLog } from "@/lib/inventory-log-helper";
-
-export interface WarehouseProduct {
-    id: string;
-    warehouseId: string;
-    productName: string;
-    sku: string;
-    quantity: number;
-    manufacturer?: string | null;
-    location?: string | null;
-    cost: number;
-    retailPrice?: number | null;
-    images?: any;
-    createdBy?: any;
-    productId?: string | null;
-    createdAt: Date | string;
-    updatedAt: Date | string;
-}
+import { WarehouseProduct } from "@/lib/types";
 
 export async function getWarehouseProducts(warehouseId: string): Promise<WarehouseProduct[]> {
     try {
         const products = await prisma.warehouseProduct.findMany({
-            where: { warehouseId },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -53,10 +36,9 @@ export async function createWarehouseProduct(data: {
             return { success: false, error: "Product name, SKU, quantity, and cost are required" };
         }
 
-        // Check if SKU already exists in this warehouse
+        // Check if SKU already exists
         const existing = await prisma.warehouseProduct.findFirst({
             where: {
-                warehouseId: data.warehouseId,
                 sku: data.sku
             }
         });
@@ -77,11 +59,9 @@ export async function createWarehouseProduct(data: {
 
         await prisma.warehouseProduct.create({
             data: {
-                warehouseId: data.warehouseId,
                 productName: data.productName,
                 sku: data.sku,
                 quantity: data.quantity,
-                manufacturer: data.manufacturer,
                 location: data.location,
                 cost: data.cost,
                 retailPrice: data.retailPrice,
@@ -91,7 +71,7 @@ export async function createWarehouseProduct(data: {
             },
         });
 
-        revalidatePath(`/warehouses/${data.warehouseId}`);
+        revalidatePath(`/warehouses`);
         return { success: true };
     } catch (error: any) {
         console.error("Error creating warehouse product:", error);
@@ -123,7 +103,6 @@ export async function updateWarehouseProduct(
         if (data.sku && data.sku !== product.sku) {
             const existing = await prisma.warehouseProduct.findFirst({
                 where: {
-                    warehouseId: product.warehouseId,
                     sku: data.sku,
                     NOT: { id }
                 }
@@ -140,7 +119,6 @@ export async function updateWarehouseProduct(
                 ...(data.productName !== undefined && { productName: data.productName }),
                 ...(data.sku !== undefined && { sku: data.sku }),
                 ...(data.quantity !== undefined && { quantity: data.quantity }),
-                ...(data.manufacturer !== undefined && { manufacturer: data.manufacturer }),
                 ...(data.location !== undefined && { location: data.location }),
                 ...(data.cost !== undefined && { cost: data.cost }),
                 ...(data.retailPrice !== undefined && { retailPrice: data.retailPrice }),
@@ -149,7 +127,7 @@ export async function updateWarehouseProduct(
             },
         });
 
-        revalidatePath(`/warehouses/${product.warehouseId}`);
+        revalidatePath(`/warehouses`);
         return { success: true };
     } catch (error: any) {
         console.error("Error updating warehouse product:", error);
@@ -168,7 +146,7 @@ export async function deleteWarehouseProduct(id: string): Promise<{ success: boo
             where: { id },
         });
 
-        revalidatePath(`/warehouses/${product.warehouseId}`);
+        revalidatePath(`/warehouses`);
         return { success: true };
     } catch (error: any) {
         console.error("Error deleting warehouse product:", error);
@@ -299,7 +277,7 @@ export async function transferToInventory(
             });
         }
 
-        revalidatePath(`/warehouses/${(warehouseProduct as any).warehouseId}`);
+        revalidatePath(`/warehouses`);
         revalidatePath('/inventory');
         return { success: true };
     } catch (error: any) {

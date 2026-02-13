@@ -61,6 +61,7 @@ export function EditOrderDialog({
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Form State
   const [customerName, setCustomerName] = useState("");
@@ -344,18 +345,31 @@ export function EditOrderDialog({
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                          <Command>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+                          <Command shouldFilter={false}>
                             <CommandInput
+                              autoFocus
                               placeholder="Search or type new customer..."
-                              onValueChange={(value) => {
-                                if (value) {
-                                  setCustomerName(value);
-                                }
-                              }}
+                              onValueChange={(value: string) => setSearchQuery(value)}
                             />
                             <CommandList>
-                              <CommandEmpty>No customer found. Type name to create.</CommandEmpty>
+                              <CommandEmpty>
+                                {searchQuery && (
+                                  <div className="flex flex-col items-center gap-2">
+                                    <span>No customer found.</span>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setCustomerName(searchQuery);
+                                        setComboboxOpen(false);
+                                      }}
+                                    >
+                                      Use "{searchQuery}"
+                                    </Button>
+                                  </div>
+                                )}
+                              </CommandEmpty>
                               <CommandGroup>
                                 <CommandItem
                                   value="Walk In Customer"
@@ -374,21 +388,24 @@ export function EditOrderDialog({
                                   />
                                   Walk In Customer
                                 </CommandItem>
-                                {customers.filter(c => c.name.toLowerCase() !== "walk in customer").map((customer) => (
-                                  <CommandItem
-                                    key={customer.id}
-                                    value={`${customer.name}-${customer.id}`}
-                                    onSelect={() => handleCustomerSelect(customer)}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        customerName.toLowerCase() === customer.name.toLowerCase() ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    {customer.name}
-                                  </CommandItem>
-                                ))}
+                                {customers
+                                  .filter(c => c.name.toLowerCase() !== "walk in customer")
+                                  .filter(c => c.name.toLowerCase().includes((searchQuery || "").toLowerCase()))
+                                  .map((customer) => (
+                                    <CommandItem
+                                      key={customer.id}
+                                      value={`${customer.name}-${customer.id}`}
+                                      onSelect={() => handleCustomerSelect(customer)}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          customerName.toLowerCase() === customer.name.toLowerCase() ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {customer.name}
+                                    </CommandItem>
+                                  ))}
                               </CommandGroup>
                             </CommandList>
                           </Command>
@@ -503,7 +520,7 @@ export function EditOrderDialog({
                     <Label htmlFor="rushShip-edit">Rush Ship</Label>
                     <Select
                       value={rushShip ? "yes" : "no"}
-                      onValueChange={(value) => setRushShip(value === "yes")}
+                      onValueChange={(value: string) => setRushShip(value === "yes")}
                       disabled={customerName === "Walk In Customer"}
                     >
                       <SelectTrigger id="rushShip-edit">
@@ -520,7 +537,7 @@ export function EditOrderDialog({
                     <Label htmlFor="pickup-station">Pickup Options</Label>
                     <Select
                       value={selectedStationId ? selectedStationId : "delivery"}
-                      onValueChange={(value) => {
+                      onValueChange={(value: string) => {
                         if (value === "delivery") {
                           setIsPickup(false);
                           setSelectedStationId(null);
@@ -590,7 +607,7 @@ export function EditOrderDialog({
                     <div className="grid gap-2">
                       <Label htmlFor="batchId">Delivery Batch</Label>
                       <Select
-                        onValueChange={(value) => setBatchId(value)}
+                        onValueChange={(value: string) => setBatchId(value)}
                         value={batchId || ''}
                         disabled={customerName === "Walk In Customer"}
                       >

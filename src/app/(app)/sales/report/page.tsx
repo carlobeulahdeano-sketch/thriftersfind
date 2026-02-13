@@ -23,7 +23,7 @@ export default function SalesReportPage() {
     useEffect(() => {
         const fetchData = async () => {
             const data = await getSalesData(timeframe);
-            setOrders(data);
+            setOrders(data.orders);
             setIsLoading(false);
         };
         fetchData();

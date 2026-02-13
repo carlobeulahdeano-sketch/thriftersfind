@@ -25,13 +25,13 @@ export default function ReportsPage() {
   useEffect(() => {
     setIsMounted(true);
     const fetchData = async () => {
-      // For reports, we might want a larger range of data initially
-      const { orders, isAuthorized } = await getSalesData("year");
-      if (!isAuthorized) {
+      const { user } = await (await fetch('/api/auth/me')).json();
+      if (!user?.permissions?.reports) {
         setIsAuthorized(false);
         return;
       }
       setIsAuthorized(true);
+      const { orders } = await getSalesData("year");
       const customersData = await getCustomers();
       setAllOrders(orders);
       setAllCustomers(customersData);
@@ -75,7 +75,7 @@ export default function ReportsPage() {
       <div className="flex h-[50vh] flex-col items-center justify-center gap-4 text-center">
         <ShieldAlert className="h-16 w-16 text-destructive" />
         <h1 className="text-2xl font-bold">Access Denied</h1>
-        <p className="text-muted-foreground">You do not have permission to view this page. Restricted to Super Admins only.</p>
+        <p className="text-muted-foreground">You do not have permission to view reports and analytics.</p>
       </div>
     );
   }

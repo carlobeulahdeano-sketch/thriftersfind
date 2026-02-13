@@ -19,7 +19,7 @@ export default async function ProfilePage() {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-cyan-500 flex items-center justify-center shadow-lg">
               <User className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-cyan-600 via-pink-600 to-cyan-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
               Profile
             </h1>
           </div>

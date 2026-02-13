@@ -5,10 +5,10 @@ import { updateProduct, deleteProduct } from '@/app/(app)/inventory/actions';
 // GET /api/inventory/[id] - Get a specific product
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const productId = params.id;
+    const { id: productId } = await params;
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -28,8 +28,8 @@ export async function GET(
       sku: product.sku,
       description: product.description || "",
       quantity: product.quantity,
-      warehouse: product.warehouse,
-      totalStock: product.quantity + (product.warehouse || 0),
+      warehouseId: product.warehouseId,
+      totalStock: product.quantity,
       alertStock: product.alertStock,
       cost: product.cost,
       retailPrice: product.retailPrice || 0,
@@ -49,10 +49,10 @@ export async function GET(
 // PUT /api/inventory/[id] - Update a specific product
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const productId = params.id;
+    const { id: productId } = await params;
     const body = await request.json();
 
     const updatedProduct = await updateProduct(productId, body);
@@ -70,10 +70,10 @@ export async function PUT(
 // DELETE /api/inventory/[id] - Delete a specific product
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const productId = params.id;
+    const { id: productId } = await params;
 
     await deleteProduct(productId);
     return NextResponse.json({

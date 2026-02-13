@@ -205,144 +205,183 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="text-2xl font-semibold">Add Warehouse Product</DialogTitle>
-                    <DialogDescription>
-                        Fill in the details below to add a new product to your warehouse inventory.
-                    </DialogDescription>
-                </DialogHeader>
+            <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-hidden p-0 bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950">
+                {/* Enhanced Gradient Header */}
+                <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 px-8 py-6 overflow-hidden">
+                    {/* Decorative elements */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"></div>
 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-4">
-                        <TabsTrigger value="new">New Product</TabsTrigger>
-                        <TabsTrigger value="existing">Existing Product</TabsTrigger>
-                    </TabsList>
+                    <div className="relative flex items-center gap-4 text-white">
+                        <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                            <Package className="h-7 w-7" />
+                        </div>
+                        <div>
+                            <DialogTitle className="text-white text-2xl font-bold tracking-tight">Add Warehouse Product</DialogTitle>
+                            <DialogDescription className="text-blue-100 text-sm mt-1 font-medium">
+                                Fill in the details below to add a new product to your warehouse inventory
+                            </DialogDescription>
+                        </div>
+                    </div>
+                </div>
 
-                    <TabsContent value="new" className="space-y-6">
-                        {/* Basic Information Section */}
-                        <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                                Basic Information
-                            </h3>
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-2">
-                                    <Label htmlFor="productName" className="flex items-center gap-2">
-                                        <Package className="w-4 h-4" />
-                                        Product Name <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Input
-                                        id="productName"
-                                        value={productName}
-                                        onChange={(e) => setProductName(e.target.value)}
-                                        placeholder="e.g. Vintage Shirt"
-                                        className="w-full"
-                                    />
+                {/* Scrollable Content */}
+                <div className="overflow-y-auto max-h-[calc(95vh-200px)] px-8 py-6">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 mb-6 p-1.5 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50 h-12 rounded-xl shadow-sm">
+                            <TabsTrigger
+                                value="new"
+                                className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 font-semibold transition-all duration-200"
+                            >
+                                New Product
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="existing"
+                                className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-purple-600 font-semibold transition-all duration-200"
+                            >
+                                Existing Product
+                            </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="new" className="space-y-6">
+                            {/* Basic Information Section */}
+                            <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl p-6 space-y-5 border border-blue-200/50 dark:border-blue-800/50 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-sm">
+                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">Basic Information</h3>
+                                </div>
+                                <div className="grid gap-5 sm:grid-cols-2">
+                                    <div className="space-y-2.5">
+                                        <Label htmlFor="productName" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            <Package className="w-4 h-4 text-blue-600" />
+                                            Product Name <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="productName"
+                                            value={productName}
+                                            onChange={(e) => setProductName(e.target.value)}
+                                            placeholder="e.g. Vintage Shirt"
+                                            className="w-full bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-500 rounded-lg shadow-sm transition-all duration-200 h-11"
+                                        />
+                                    </div>
+
+
+                                    <div className="space-y-2.5">
+                                        <Label htmlFor="sku" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            <Hash className="w-4 h-4 text-blue-600" />
+                                            SKU <span className="text-red-500">*</span>
+                                        </Label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <Input
+                                                value={baseSku}
+                                                readOnly
+                                                className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-200 dark:border-gray-700 font-mono font-semibold text-center rounded-lg h-11"
+                                            />
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    placeholder="Variant Color"
+                                                    value={variantColor}
+                                                    onChange={(e) => setVariantColor(e.target.value)}
+                                                    className="bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-500 rounded-lg shadow-sm transition-all duration-200 h-11"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    onClick={regenerateSku}
+                                                    size="icon"
+                                                    variant="outline"
+                                                    className="w-11 h-11 shrink-0 border-2 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-500 transition-all duration-200 rounded-lg"
+                                                >
+                                                    <RefreshCw className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="sku" className="flex items-center gap-2">
-                                        <Hash className="w-4 h-4" />
-                                        SKU <span className="text-red-500">*</span>
+                                <div className="space-y-2.5">
+                                    <Label htmlFor="image" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <ImageIcon className="w-4 h-4 text-blue-600" />
+                                        Product Image
                                     </Label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Input
-                                            value={baseSku}
-                                            readOnly
-                                            className="bg-muted"
-                                        />
-                                        <div className="flex gap-2">
+
+                                    {!imagePreview ? (
+                                        <div className="relative border-3 border-dashed border-blue-300 dark:border-blue-700 rounded-2xl p-8 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-950/30 dark:hover:to-indigo-950/30 transition-all duration-300 text-center cursor-pointer group overflow-hidden">
+                                            {/* Animated background gradient */}
+                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
                                             <Input
-                                                placeholder="Variant Color"
-                                                value={variantColor}
-                                                onChange={(e) => setVariantColor(e.target.value)}
+                                                id="image"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                            />
+                                            <div className="relative flex flex-col items-center gap-3">
+                                                <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
+                                                    <ImageIcon className="w-8 h-8 text-white" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-base font-semibold text-blue-600 dark:text-blue-400 mb-1">
+                                                        Click to upload image
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        PNG, JPG up to 10MB
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="relative w-full h-56 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-900 dark:to-gray-950 rounded-2xl overflow-hidden border-2 border-blue-300 dark:border-blue-700 shadow-md hover:shadow-lg transition-shadow duration-200">
+                                            <img
+                                                src={imagePreview}
+                                                alt="Preview"
+                                                className="w-full h-full object-contain p-2"
                                             />
                                             <Button
-                                                type="button"
-                                                onClick={regenerateSku}
+                                                variant="destructive"
                                                 size="icon"
-                                                variant="outline"
-                                                className="w-10 shrink-0"
+                                                onClick={handleRemoveImage}
+                                                className="absolute top-3 right-3 h-9 w-9 shadow-lg hover:scale-110 transition-transform duration-200 rounded-xl"
                                             >
-                                                <RefreshCw className="h-4 w-4" />
+                                                <X className="w-4 h-4" />
                                             </Button>
+                                            <div className="absolute bottom-3 right-3 flex gap-2">
+                                                <label htmlFor="change-image" className="cursor-pointer">
+                                                    <div className="inline-flex items-center justify-center rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 h-9 px-4 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
+                                                        Change Image
+                                                    </div>
+                                                    <Input
+                                                        id="change-image"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleImageChange}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
+                        </TabsContent>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="image" className="flex items-center gap-2">
-                                    <ImageIcon className="w-4 h-4" />
-                                    Product Image
-                                </Label>
-
-                                {!imagePreview ? (
-                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:bg-gray-50 transition-colors text-center cursor-pointer relative group">
-                                        <Input
-                                            id="image"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                        />
-                                        <div className="flex flex-col items-center gap-2">
-                                            <div className="p-3 bg-gray-100 rounded-full group-hover:bg-gray-200 transition-colors">
-                                                <ImageIcon className="w-6 h-6 text-gray-500" />
-                                            </div>
-                                            <p className="text-sm font-medium text-gray-600">
-                                                Click to upload image
-                                            </p>
-                                            <p className="text-xs text-gray-400">
-                                                PNG, JPG up to 10MB
-                                            </p>
-                                        </div>
+                        <TabsContent value="existing" className="space-y-6">
+                            <div className="relative bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-2xl p-6 space-y-5 border border-purple-200/50 dark:border-purple-800/50 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg shadow-sm">
+                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
                                     </div>
-                                ) : (
-                                    <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                                        <img
-                                            src={imagePreview}
-                                            alt="Preview"
-                                            className="w-full h-full object-contain"
-                                        />
-                                        <Button
-                                            variant="destructive"
-                                            size="icon"
-                                            onClick={handleRemoveImage}
-                                            className="absolute top-2 right-2 h-8 w-8 shadow-sm"
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </Button>
-                                        <div className="absolute bottom-2 right-2 flex gap-2">
-                                            <label htmlFor="change-image" className="cursor-pointer">
-                                                <div className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 py-1">
-                                                    Change
-                                                </div>
-                                                <Input
-                                                    id="change-image"
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={handleImageChange}
-                                                    className="hidden"
-                                                />
-                                            </label>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="existing" className="space-y-6">
-                        <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                                Select Existing Product
-                            </h3>
-                            <div className="grid gap-4">
-                                <div className="space-y-2">
-                                    <Label className="flex items-center gap-2">
-                                        <Package className="w-4 h-4" />
+                                    <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">Select Existing Product</h3>
+                                </div>
+                                <div className="space-y-2.5">
+                                    <Label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <Package className="w-4 h-4 text-purple-600" />
                                         Search Product <span className="text-red-500">*</span>
                                     </Label>
                                     <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
@@ -351,11 +390,13 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
                                                 variant="outline"
                                                 role="combobox"
                                                 aria-expanded={openCombobox}
-                                                className="w-full justify-between"
+                                                className="w-full justify-between bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 h-11 rounded-lg shadow-sm transition-all duration-200"
                                             >
-                                                {selectedProduct
-                                                    ? selectedProduct.name
-                                                    : "Select product..."}
+                                                <span className={selectedProduct ? "font-medium" : "text-gray-500"}>
+                                                    {selectedProduct
+                                                        ? selectedProduct.name
+                                                        : "Select product..."}
+                                                </span>
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
                                         </PopoverTrigger>
@@ -402,51 +443,62 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
                                 </div>
 
                                 {selectedProduct && (
-                                    <div className="space-y-4 p-4 border rounded-md">
+                                    <div className="space-y-4 p-5 border-2 border-purple-300 dark:border-purple-700 rounded-2xl bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-950 dark:to-purple-950/20 shadow-md">
                                         {selectedProduct.images && selectedProduct.images.length > 0 && (
                                             <div className="flex justify-center mb-4">
-                                                <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                                <div className="relative w-full h-56 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-900 dark:to-gray-950 rounded-2xl overflow-hidden border-2 border-purple-300 dark:border-purple-700 shadow-sm">
                                                     <img
                                                         src={selectedProduct.images[0]}
                                                         alt={selectedProduct.name}
-                                                        className="w-full h-full object-contain"
+                                                        className="w-full h-full object-contain p-2"
                                                     />
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="space-y-2">
-                                            <Label htmlFor="existing-name">Product Name</Label>
+                                        <div className="space-y-2.5">
+                                            <Label htmlFor="existing-name" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                <Package className="w-4 h-4 text-purple-600" />
+                                                Product Name
+                                            </Label>
                                             <Input
                                                 id="existing-name"
                                                 value={selectedProduct.name}
                                                 readOnly
-                                                className="bg-muted text-muted-foreground"
+                                                className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-200 dark:border-gray-700 font-semibold rounded-lg h-11"
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="existing-sku">SKU</Label>
+                                        <div className="space-y-2.5">
+                                            <Label htmlFor="existing-sku" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                <Hash className="w-4 h-4 text-purple-600" />
+                                                SKU
+                                            </Label>
                                             <Input
                                                 id="existing-sku"
                                                 value={selectedProduct.sku}
                                                 readOnly
-                                                className="bg-muted text-muted-foreground"
+                                                className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-200 dark:border-gray-700 font-mono font-semibold rounded-lg h-11"
                                             />
                                         </div>
                                     </div>
                                 )}
                             </div>
-                        </div>
-                    </TabsContent>
+                        </TabsContent>
+                    </Tabs>
 
                     {/* Common Fields */}
-                    <div className="space-y-4 pt-4 border-t mt-4">
-                        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                            Inventory & Pricing Details
-                        </h3>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="manufacture_date" className="flex items-center gap-2">
-                                    <Calendar className="w-4 h-4" />
+                    <div className="relative bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-2xl p-6 space-y-5 mt-6 border border-emerald-200/50 dark:border-emerald-800/50 shadow-sm hover:shadow-md transition-shadow duration-200">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg shadow-sm">
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">Inventory & Pricing Details</h3>
+                        </div>
+                        <div className="grid gap-5 sm:grid-cols-2">
+                            <div className="space-y-2.5">
+                                <Label htmlFor="manufacture_date" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    <Calendar className="w-4 h-4 text-emerald-600" />
                                     Manufacture Date
                                 </Label>
                                 <Input
@@ -454,12 +506,12 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
                                     type="date"
                                     value={manufacture_date}
                                     onChange={(e) => setManufactureDate(e.target.value)}
-                                    className="w-full"
+                                    className="w-full bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-lg shadow-sm transition-all duration-200 h-11"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="location" className="flex items-center gap-2">
-                                    <MapPin className="w-4 h-4" />
+                            <div className="space-y-2.5">
+                                <Label htmlFor="location" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    <MapPin className="w-4 h-4 text-emerald-600" />
                                     Location
                                 </Label>
                                 <Input
@@ -467,12 +519,12 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
                                     value={location}
                                     onChange={(e) => setLocation(e.target.value)}
                                     placeholder="e.g. Aisle 1, Shelf B"
-                                    className="w-full"
+                                    className="w-full bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-lg shadow-sm transition-all duration-200 h-11"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="quantity" className="flex items-center gap-2">
-                                    <Package className="w-4 h-4" />
+                            <div className="space-y-2.5">
+                                <Label htmlFor="quantity" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    <Package className="w-4 h-4 text-emerald-600" />
                                     Quantity
                                 </Label>
                                 <Input
@@ -482,12 +534,14 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
                                     value={quantity}
                                     onChange={(e) => setQuantity(e.target.value)}
                                     placeholder="0"
-                                    className="w-full"
+                                    className="w-full bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-lg shadow-sm transition-all duration-200 h-11"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="alertStock" className="flex items-center gap-2">
-                                    <Package className="w-4 h-4" />
+                            <div className="space-y-2.5">
+                                <Label htmlFor="alertStock" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
                                     Stock Alert
                                 </Label>
                                 <Input
@@ -497,16 +551,16 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
                                     value={alertStock}
                                     onChange={(e) => setAlertStock(e.target.value)}
                                     placeholder="0"
-                                    className="w-full"
+                                    className="w-full bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-lg shadow-sm transition-all duration-200 h-11"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="cost" className="flex items-center gap-2">
-                                    <PhilippinePeso className="w-4 h-4" />
+                            <div className="space-y-2.5">
+                                <Label htmlFor="cost" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    <PhilippinePeso className="w-4 h-4 text-emerald-600" />
                                     Cost
                                 </Label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
                                         ₱
                                     </span>
                                     <Input
@@ -517,17 +571,17 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
                                         value={cost}
                                         onChange={(e) => setCost(e.target.value)}
                                         placeholder="0.00"
-                                        className="pl-7"
+                                        className="pl-8 bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-lg shadow-sm transition-all duration-200 h-11"
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="retailPrice" className="flex items-center gap-2">
-                                    <PhilippinePeso className="w-4 h-4" />
+                            <div className="space-y-2.5">
+                                <Label htmlFor="retailPrice" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    <PhilippinePeso className="w-4 h-4 text-emerald-600" />
                                     Retail Price
                                 </Label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
                                         ₱
                                     </span>
                                     <Input
@@ -538,24 +592,43 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
                                         value={retailPrice}
                                         onChange={(e) => setRetailPrice(e.target.value)}
                                         placeholder="0.00"
-                                        className="pl-7"
+                                        className="pl-8 bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-lg shadow-sm transition-all duration-200 h-11"
                                     />
                                 </div>
                             </div>
                         </div>
                     </div>
-                </Tabs>
+                </div>
 
-                <DialogFooter className="gap-2 sm:gap-0 mt-6">
-                    <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+                <DialogFooter className="gap-3 sm:gap-3 px-8 py-5 border-t-2 border-gray-200 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
+                    <Button
+                        variant="outline"
+                        onClick={onClose}
+                        disabled={isSubmitting}
+                        className="h-11 px-6 border-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg font-semibold transition-all duration-200"
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={handleSave} disabled={isSubmitting}>
-                        {isSubmitting ? "Creating..." : "Add Product"}
+                    <Button
+                        onClick={handleSave}
+                        disabled={isSubmitting}
+                        className="h-11 px-8 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 hover:from-blue-700 hover:via-purple-700 hover:to-pink-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+                    >
+                        {isSubmitting ? (
+                            <span className="flex items-center gap-2">
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                                Creating...
+                            </span>
+                        ) : (
+                            <span className="flex items-center gap-2">
+                                <Package className="h-4 w-4" />
+                                Add Product
+                            </span>
+                        )}
                     </Button>
                 </DialogFooter>
             </DialogContent>
-        </Dialog >
+        </Dialog>
     );
 }
 

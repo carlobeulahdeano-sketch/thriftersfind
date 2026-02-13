@@ -1,12 +1,11 @@
 import type { NextConfig } from 'next';
 
+// Force re-compile to fix middleware cache issues
 const nextConfig: NextConfig = {
+
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
   images: {
     remotePatterns: [

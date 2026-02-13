@@ -12,28 +12,57 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getNotifications, markAllNotificationsAsRead } from "@/app/(app)/inventory/notifications-actions";
 import { formatDistanceToNow } from "date-fns";
+import { User } from "@/lib/types";
 
-export function NotificationBell() {
+export function NotificationBell({ currentUser }: { currentUser: User | null }) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
 
   const fetchNotifications = async () => {
-    const data = await getNotifications();
-    setNotifications(data);
-    setUnreadCount(data.filter((n: any) => !n.read).length);
+    try {
+      const data = await getNotifications();
+      if (Array.isArray(data)) {
+        setNotifications(data);
+        setUnreadCount(data.filter((n: any) => !n.read).length);
+      } else {
+        console.warn("[NotificationBell] Received invalid data from server:", data);
+        setNotifications([]);
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      // Ignore "unexpected response" errors as they are likely from expired sessions
+      if (error instanceof Error && !error.message.includes("unexpected response")) {
+        console.error("[NotificationBell] Failed to fetch notifications:", error);
+      }
+      setNotifications([]);
+      setUnreadCount(0);
+    }
   };
 
   useEffect(() => {
+    if (!currentUser) return;
+
+    setIsMounted(true);
     fetchNotifications();
     // Refresh notifications every 3 seconds for pseudo-realtime
     const interval = setInterval(fetchNotifications, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentUser]);
 
   const handleMarkAllRead = async () => {
     await markAllNotificationsAsRead();
     fetchNotifications();
   };
+
+  if (!isMounted) {
+    return (
+      <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+        <Bell className="h-[1.2rem] w-[1.2rem]" />
+        <span className="sr-only">Notifications</span>
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>

@@ -18,13 +18,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MoreHorizontal, PlusCircle, Search, X, Package, PhilippinePeso, Plus, Minus } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search, X, Package, PhilippinePeso, Plus, Minus, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AddWarehouseDialog } from "./add-warehouse-dialog";
 import { ViewWarehouseDialog } from "./view-warehouse-dialog";
 import { EditWarehouseDialog } from "./edit-warehouse-dialog";
 import { StockAdjustmentDialog } from "./stock-adjustment-dialog";
-import type { WarehouseProduct } from "@/lib/types";
+import { WarehouseProduct } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { deleteWarehouseProduct } from "../actions";
 import {
@@ -160,16 +160,16 @@ export default function WarehouseProductsTable({ products: initialProducts }: { 
                             {paginatedProducts.map((product) => (
                                 <TableRow key={product.id} className="hover:bg-muted/50 transition-colors">
                                     <TableCell>
-                                        <div className="h-10 w-10 overflow-hidden rounded-md border bg-muted">
+                                        <div className="h-12 w-12 overflow-hidden rounded-xl border-2 border-white/10 bg-muted/50 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:border-pink-500/50 cursor-pointer group">
                                             {product.image ? (
                                                 <img
                                                     src={product.image}
                                                     alt={product.productName}
-                                                    className="h-full w-full object-cover"
+                                                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 />
                                             ) : (
                                                 <div className="flex h-full w-full items-center justify-center">
-                                                    <Package className="h-4 w-4 text-muted-foreground" />
+                                                    <Package className="h-8 w-8 text-muted-foreground/50" />
                                                 </div>
                                             )}
                                         </div>
@@ -182,7 +182,16 @@ export default function WarehouseProductsTable({ products: initialProducts }: { 
                                         {product.manufacture_date ? new Date(product.manufacture_date).toLocaleDateString() : "—"}
                                     </TableCell>
                                     <TableCell>{product.location || "—"}</TableCell>
-                                    <TableCell>{product.quantity}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <span className={product.alertStock && product.quantity <= product.alertStock ? "text-red-600 font-bold" : ""}>
+                                                {product.quantity}
+                                            </span>
+                                            {product.alertStock && product.quantity <= product.alertStock && (
+                                                <AlertTriangle className="h-4 w-4 text-red-600" />
+                                            )}
+                                        </div>
+                                    </TableCell>
                                     <TableCell>₱{product.cost.toFixed(2)}</TableCell>
                                     <TableCell>
                                         {product.retailPrice ? `₱${product.retailPrice.toFixed(2)}` : "—"}

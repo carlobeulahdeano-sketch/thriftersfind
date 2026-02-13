@@ -64,11 +64,76 @@ export default function AdminLogsTable() {
 
     const formatJSON = (data: any) => {
         if (!data) return "N/A";
+
         try {
-            return JSON.stringify(data, null, 2);
+            let parsedData = data;
+
+            // Keep parsing if data is a string (handles multiple levels of stringification)
+            while (typeof parsedData === 'string') {
+                try {
+                    parsedData = JSON.parse(parsedData);
+                } catch {
+                    // If we can't parse anymore, break out
+                    break;
+                }
+            }
+
+            // Now stringify with formatting
+            return JSON.stringify(parsedData, null, 2);
         } catch (e) {
-            return "Invalid JSON";
+            // If anything fails, return the original data as string
+            return typeof data === 'string' ? data : String(data);
         }
+    }
+
+    const renderData = (data: any) => {
+        if (!data) return <span className="text-muted-foreground italic">N/A</span>;
+
+        let parsedData = data;
+        if (typeof data === 'string') {
+            try {
+                parsedData = JSON.parse(data);
+                // If it's still a string, try parsing again (double encoding)
+                if (typeof parsedData === 'string') {
+                    parsedData = JSON.parse(parsedData);
+                }
+            } catch (e) {
+                return <span>{data}</span>;
+            }
+        }
+
+        if (typeof parsedData !== 'object' || parsedData === null) {
+            return <span>{String(parsedData)}</span>;
+        }
+
+        return (
+            <div className="space-y-1.5 py-1">
+                {Object.entries(parsedData).map(([key, value]) => {
+                    // Skip internal and bulky fields
+                    if (key === 'uid' || key === 'id' || key === 'password' || key === 'permissions') return null;
+
+                    return (
+                        <div key={key} className="flex flex-col sm:flex-row sm:items-start gap-1">
+                            <span className="font-semibold text-xs capitalize text-muted-foreground w-24 shrink-0 mt-0.5">{key}:</span>
+                            <div className="text-sm">
+                                {typeof value === 'object' && value !== null ? (
+                                    <div className="pl-3 border-l-2 border-muted mt-1 space-y-1">
+                                        {Object.entries(value).map(([subKey, subValue]) => (
+                                            <div key={subKey} className="flex items-center gap-2">
+                                                <span className="text-xs font-medium text-muted-foreground">{subKey}:</span>
+                                                <span className="text-xs">{String(subValue)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <span>{String(value)}</span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
     }
 
     const getActionColor = (action: string) => {
@@ -174,7 +239,7 @@ export default function AdminLogsTable() {
             </Card>
 
             <Dialog open={isDetailsOpen} onOpenChange={setDetailsOpen}>
-                <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
+                <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
                     <DialogHeader>
                         <DialogTitle>Log Details</DialogTitle>
                         <DialogDescription>
@@ -207,9 +272,9 @@ export default function AdminLogsTable() {
                                     </div>
                                     <div className="col-span-2">
                                         <h4 className="font-medium mb-1">Performed By</h4>
-                                        <pre className="text-xs bg-muted p-2 rounded overflow-auto">
-                                            {formatJSON(selectedLog.performedBy)}
-                                        </pre>
+                                        <div className="bg-muted/50 p-3 rounded-md">
+                                            {renderData(selectedLog.performedBy)}
+                                        </div>
                                     </div>
                                     <div>
                                         <h4 className="font-medium mb-1">Target Type</h4>
@@ -221,18 +286,24 @@ export default function AdminLogsTable() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 border-t pt-4">
-                                    <div>
-                                        <h4 className="font-medium mb-2 text-yellow-600">Previous Data</h4>
-                                        <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-[300px]">
-                                            {formatJSON(selectedLog.previousData)}
-                                        </pre>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-yellow-600 flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-yellow-600" />
+                                            Previous Data
+                                        </h4>
+                                        <div className="bg-muted/50 p-3 rounded-md min-h-[100px]">
+                                            {renderData(selectedLog.previousData)}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 className="font-medium mb-2 text-green-600">New Data</h4>
-                                        <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-[300px]">
-                                            {formatJSON(selectedLog.newData)}
-                                        </pre>
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-green-600 flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-green-600" />
+                                            New Data
+                                        </h4>
+                                        <div className="bg-muted/50 p-3 rounded-md min-h-[100px]">
+                                            {renderData(selectedLog.newData)}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -10,7 +10,6 @@ import type { User } from "@/lib/types";
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isImpersonating, setIsImpersonating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +21,6 @@ export default function UsersPage() {
         ]);
         setUsers(userData);
         setCurrentUser(authData.user);
-        setIsImpersonating(authData.isImpersonating);
       } catch (error) {
         console.error("Failed to fetch users:", error);
       } finally {

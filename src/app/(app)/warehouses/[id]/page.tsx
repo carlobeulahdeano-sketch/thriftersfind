@@ -4,9 +4,10 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export default async function WarehouseDetailPage({ params }: { params: { id: string } }) {
-    const warehouse = await getWarehouse(params.id);
-    const products = await getWarehouseProducts(params.id);
+export default async function WarehouseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const warehouse = await getWarehouse(id);
+    const products = await getWarehouseProducts(id);
 
     if (!warehouse) {
         return (
@@ -38,7 +39,7 @@ export default async function WarehouseDetailPage({ params }: { params: { id: st
                     )}
                 </div>
             </div>
-            <WarehouseProductsTable warehouseId={params.id} products={products} />
+            <WarehouseProductsTable warehouseId={id} products={products} />
         </div>
     );
 }

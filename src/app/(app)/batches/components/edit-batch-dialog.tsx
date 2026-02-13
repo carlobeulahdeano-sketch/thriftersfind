@@ -43,7 +43,7 @@ export function EditBatchDialog({ isOpen, onClose, batch }: EditBatchDialogProps
   useEffect(() => {
     if (batch) {
       setBatchName(batch.batchName);
-      setManufactureDate(batch.manufactureDate);
+      setManufactureDate(batch.manufactureDate ? batch.manufactureDate.split('T')[0] : "");
       setStatus(batch.status);
     }
   }, [batch]);

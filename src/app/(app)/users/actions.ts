@@ -8,50 +8,50 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 
 export async function getUsers(): Promise<User[]> {
-  const users = await (prisma.user as any).findMany({
-    orderBy: {
-      createdAt: 'desc'
-    },
-    include: {
-      branch: true,
-      role_rel: true
-    }
-  });
+  try {
+    const users = await (prisma.user as any).findMany({
+      orderBy: {
+        createdAt: 'desc'
+      },
+      include: {
+        branch: true,
+        role_rel: true
+      }
+    });
 
-  return users.map((user: any) => ({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    password: user.password,
-    roleId: user.roleId,
-    role: user.role_rel ? {
-      id: user.role_rel.id,
-      name: user.role_rel.name,
-      createdAt: user.role_rel.createdAt ? user.role_rel.createdAt.toISOString() : new Date().toISOString(),
-      updatedAt: user.role_rel.updatedAt ? user.role_rel.updatedAt.toISOString() : new Date().toISOString(),
-    } : null,
-    branchId: user.branchId,
-    branch: user.branch ? {
-      id: user.branch.id,
-      name: user.branch.name,
-      createdAt: user.branch.createdAt ? user.branch.createdAt.toISOString() : new Date().toISOString(),
-      updatedAt: user.branch.updatedAt ? user.branch.updatedAt.toISOString() : new Date().toISOString(),
-    } : null,
-    permissions: user.permissions as UserPermissions | null,
-    updatedAt: user.updatedAt.toISOString(),
-  }));
+    return users.map((user: any) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      password: user.password,
+      roleId: user.roleId,
+      role: user.role_rel ? {
+        id: user.role_rel.id,
+        name: user.role_rel.name,
+        createdAt: user.role_rel.createdAt ? user.role_rel.createdAt.toISOString() : new Date().toISOString(),
+        updatedAt: user.role_rel.updatedAt ? user.role_rel.updatedAt.toISOString() : new Date().toISOString(),
+      } : null,
+      branchId: user.branchId,
+      branch: user.branch ? {
+        id: user.branch.id,
+        name: user.branch.name,
+        createdAt: user.branch.createdAt ? user.branch.createdAt.toISOString() : new Date().toISOString(),
+        updatedAt: user.branch.updatedAt ? user.branch.updatedAt.toISOString() : new Date().toISOString(),
+      } : null,
+      permissions: user.permissions as UserPermissions | null,
+      updatedAt: user.updatedAt.toISOString(),
+    }));
+  } catch (error) {
+    console.error("[getUsers] Error fetching users:", error);
+    return [];
+  }
 }
 
-export async function getAuthenticatedUser(): Promise<{ user: User | null; isImpersonating: boolean }> {
+export async function getAuthenticatedUser(): Promise<{ user: User | null }> {
   const user = await getCurrentUser();
-
-  // Check for impersonator cookie
-  const cookieStore = await cookies();
-  const impersonatorId = cookieStore.get("impersonator_id")?.value;
 
   return {
     user: user || null,
-    isImpersonating: !!impersonatorId
   };
 }
 
@@ -61,13 +61,6 @@ export async function getBranches(): Promise<Branch[]> {
     console.warn("Prisma client is out of sync: 'branch' model not found. Please run 'npx prisma generate'.");
     return [];
   }
-
-  // Ensure Main Branch exists
-  await (prisma as any).branch.upsert({
-    where: { name: 'Main Branch' },
-    update: {},
-    create: { name: 'Main Branch' }
-  });
 
   const branches = await (prisma as any).branch.findMany({
     orderBy: { name: 'asc' }
@@ -86,20 +79,6 @@ export async function getRoles(): Promise<Role[]> {
     console.warn("Prisma client is out of sync: 'role' model not found. Please run 'npx prisma generate'.");
     return [];
   }
-
-  // Ensure Super Admin role exists
-  await (prisma as any).role.upsert({
-    where: { name: 'Super Admin' },
-    update: {},
-    create: { name: 'Super Admin' }
-  });
-
-  // Ensure Staff role exists
-  await (prisma as any).role.upsert({
-    where: { name: 'Staff' },
-    update: {},
-    create: { name: 'Staff' }
-  });
 
   const roles = await (prisma as any).role.findMany({
     orderBy: { name: 'asc' }

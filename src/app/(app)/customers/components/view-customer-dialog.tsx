@@ -109,7 +109,18 @@ export function ViewCustomerDialog({
             <div className="grid grid-cols-3 items-start gap-4">
               <p className="text-sm font-medium text-muted-foreground pt-1">Order History</p>
               <div className="col-span-2">
-                <Button onClick={() => setIsOrderHistoryModalOpen(true)} variant="outline">View Order History</Button>
+                <Button
+                  onClick={() => {
+                    // Blur the button before opening nested dialog to prevent aria-hidden focus conflict
+                    if (document.activeElement instanceof HTMLElement) {
+                      document.activeElement.blur();
+                    }
+                    setIsOrderHistoryModalOpen(true);
+                  }}
+                  variant="outline"
+                >
+                  View Order History
+                </Button>
               </div>
             </div>
           </div>

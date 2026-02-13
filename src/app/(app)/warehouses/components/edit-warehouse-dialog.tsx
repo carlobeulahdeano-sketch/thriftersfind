@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { updateWarehouseProduct } from "../actions";
 import { Package, MapPin, Calendar, Image as ImageIcon, PhilippinePeso, Hash, X, RefreshCw } from "lucide-react";
-import type { WarehouseProduct } from "../actions";
+import type { WarehouseProduct } from "@/lib/types";
 
 interface EditWarehouseDialogProps {
     isOpen: boolean;
@@ -37,7 +37,9 @@ export function EditWarehouseDialog({ isOpen, onClose, onSuccess, product }: Edi
     const [location, setLocation] = useState(product.location || "");
     const [quantity, setQuantity] = useState(product.quantity.toString());
     const [cost, setCost] = useState(product.cost.toString());
+
     const [retailPrice, setRetailPrice] = useState(product.retailPrice?.toString() || "");
+    const [alertStock, setAlertStock] = useState(product.alertStock?.toString() || "");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -49,7 +51,9 @@ export function EditWarehouseDialog({ isOpen, onClose, onSuccess, product }: Edi
             setLocation(product.location || "");
             setQuantity(product.quantity.toString());
             setCost(product.cost.toString());
+
             setRetailPrice(product.retailPrice?.toString() || "");
+            setAlertStock(product.alertStock?.toString() || "");
         }
     }, [product]);
 
@@ -99,7 +103,9 @@ export function EditWarehouseDialog({ isOpen, onClose, onSuccess, product }: Edi
                 location: location || null,
                 quantity: quantity ? parseInt(quantity) : 0,
                 cost: cost ? parseFloat(cost) : 0,
+
                 retailPrice: retailPrice ? parseFloat(retailPrice) : null,
+                alertStock: alertStock ? parseInt(alertStock) : 0,
             });
 
             if (result.success) {
@@ -272,12 +278,29 @@ export function EditWarehouseDialog({ isOpen, onClose, onSuccess, product }: Edi
                                 <Package className="w-4 h-4" />
                                 Quantity
                             </Label>
+
                             <Input
                                 id="edit-quantity"
                                 type="number"
                                 min="0"
                                 value={quantity}
                                 onChange={(e) => setQuantity(e.target.value)}
+                                placeholder="0"
+                                className="w-full"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-alertStock" className="flex items-center gap-2">
+                                <Package className="w-4 h-4" />
+                                Stock Alert
+                            </Label>
+                            <Input
+                                id="edit-alertStock"
+                                type="number"
+                                min="0"
+                                value={alertStock}
+                                onChange={(e) => setAlertStock(e.target.value)}
                                 placeholder="0"
                                 className="w-full"
                             />

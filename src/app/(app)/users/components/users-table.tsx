@@ -28,14 +28,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MoreHorizontal, PlusCircle, Search, X, UserMinus } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search, X } from "lucide-react";
 import type { User } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateUserDialog } from "./create-user-dialog";
 import { EditUserDialog } from "./edit-user-dialog";
 import { deleteUser, getUsers } from "../actions";
-import { impersonateUser } from "@/lib/auth-actions";
 import { useToast } from "@/hooks/use-toast";
 
 interface UsersTableProps {
@@ -43,15 +42,12 @@ interface UsersTableProps {
   currentUser?: User | null;
   onUserAdded?: () => void;
   onUserUpdated?: () => void;
-  isImpersonating?: boolean;
 }
 
-export default function UsersTable({ users: initialUsers, currentUser, onUserAdded, onUserUpdated, isImpersonating = false }: UsersTableProps) {
+export default function UsersTable({ users: initialUsers, currentUser, onUserAdded, onUserUpdated }: UsersTableProps) {
   const [users, setUsers] = React.useState<User[]>(initialUsers);
   // ... (rest of state items are unchanged)
 
-  const isSuperAdmin = currentUser?.role?.name?.toLowerCase() === 'super admin';
-  const canImpersonate = isSuperAdmin || isImpersonating;
 
   // ... (rest of logic)
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -95,7 +91,10 @@ export default function UsersTable({ users: initialUsers, currentUser, onUserAdd
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
-    setEditDialogOpen(true);
+    // Slight delay to ensure dropdown closes and focus stabilizes
+    setTimeout(() => {
+      setEditDialogOpen(true);
+    }, 50);
   }
 
   const handleDeleteClick = (user: User) => {
@@ -206,37 +205,8 @@ export default function UsersTable({ users: initialUsers, currentUser, onUserAdd
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditUser(user)}>Edit</DropdownMenuItem>
-                        {canImpersonate && (
-                          <DropdownMenuItem
-                            onClick={async () => {
-                              try {
-                                const result = await impersonateUser(user.id);
-                                if (result && result.error) {
-                                  toast({
-                                    variant: "destructive",
-                                    title: "Error",
-                                    description: result.error,
-                                  });
-                                }
-                              } catch (error: any) {
-                                console.error("Impersonation error:", error);
-                                // Ignore redirect errors
-                                if (error?.digest === 'NEXT_REDIRECT' || error?.message === 'NEXT_REDIRECT') return;
-
-                                toast({
-                                  variant: "destructive",
-                                  title: "Error",
-                                  description: error?.message || "Failed to impersonate user",
-                                });
-                              }
-                            }}
-                          >
-                            <UserMinus className="mr-2 h-4 w-4" />
-                            Impersonate
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteClick(user)}>Delete</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleEditUser(user)}>Edit</DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600" onSelect={() => handleDeleteClick(user)}>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

@@ -109,6 +109,42 @@ export async function exportDatabase(options: {
         if (options.tables.includes("stations") || options.tables.length === 0) {
             exportData.stations = await prisma.station.findMany();
         }
+        if (options.tables.includes("notifications") || options.tables.length === 0) {
+            exportData.notifications = await prisma.notification.findMany();
+        }
+        if (options.tables.includes("messages") || options.tables.length === 0) {
+            exportData.messages = await prisma.message.findMany();
+        }
+        if (options.tables.includes("branches") || options.tables.length === 0) {
+            exportData.branches = await prisma.branch.findMany();
+        }
+        if (options.tables.includes("roles") || options.tables.length === 0) {
+            exportData.roles = await prisma.role.findMany();
+        }
+        if (options.tables.includes("archive_data") || options.tables.length === 0) {
+            exportData.archive_data = await prisma.archiveData.findMany();
+        }
+        if (options.tables.includes("warehouse_products") || options.tables.length === 0) {
+            exportData.warehouse_products = await prisma.warehouseProduct.findMany();
+        }
+        if (options.tables.includes("database_operations") || options.tables.length === 0) {
+            exportData.database_operations = await prisma.databaseOperation.findMany();
+        }
+        if (options.tables.includes("sales_logs") || options.tables.length === 0) {
+            exportData.sales_logs = await prisma.salesLog.findMany();
+        }
+        if (options.tables.includes("admin_logs") || options.tables.length === 0) {
+            exportData.admin_logs = await prisma.adminLog.findMany();
+        }
+        if (options.tables.includes("pre_orders") || options.tables.length === 0) {
+            exportData.pre_orders = await prisma.preOrder.findMany();
+        }
+        if (options.tables.includes("pre_order_items") || options.tables.length === 0) {
+            exportData.pre_order_items = await prisma.preOrderItem.findMany();
+        }
+        if (options.tables.includes("inventory_logs") || options.tables.length === 0) {
+            exportData.inventory_logs = await prisma.inventoryLog.findMany();
+        }
 
         if (options.format === 'json') {
             outputContent = JSON.stringify(exportData, null, 2);

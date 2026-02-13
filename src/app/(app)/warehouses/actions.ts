@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { WarehouseProduct } from "@/lib/types";
+import { createNotification, checkAndNotifyStock } from "@/app/(app)/inventory/notifications-actions";
 
 export async function getWarehouse(id: string) {
     // Dummy implementation to satisfy build
@@ -29,6 +30,7 @@ export async function getWarehouseProducts(id?: string): Promise<WarehouseProduc
             createdBy: product.createdBy,
             createdAt: product.createdAt,
             updatedAt: product.updatedAt,
+            alertStock: product.alertStock,
         }));
     } catch (error) {
         console.error("Error fetching warehouse products:", error);
@@ -58,6 +60,7 @@ export async function getWarehouseProduct(id: string): Promise<WarehouseProduct 
             createdBy: product.createdBy,
             createdAt: product.createdAt,
             updatedAt: product.updatedAt,
+            alertStock: product.alertStock,
         };
     } catch (error) {
         console.error("Error fetching warehouse product:", error);
@@ -115,6 +118,7 @@ export async function updateWarehouseProduct(
         location?: string | null;
         retailPrice?: number | null;
         batchId?: string | null;
+        alertStock?: number;
     }
 ): Promise<{ success: boolean; error?: string }> {
     try {
@@ -130,8 +134,26 @@ export async function updateWarehouseProduct(
                 ...(data.location !== undefined && { location: data.location }),
                 ...(data.retailPrice !== undefined && { retailPrice: data.retailPrice }),
                 ...(data.batchId !== undefined && { batchId: data.batchId }),
+                ...(data.alertStock !== undefined && { alertStock: data.alertStock }),
             },
         });
+
+        // Check for low stock notification
+        if ((data.quantity !== undefined || data.alertStock !== undefined)) {
+            const updatedProduct = await prisma.warehouseProduct.findUnique({
+                where: { id },
+                select: { productName: true, sku: true, quantity: true, alertStock: true }
+            });
+
+            if (updatedProduct) {
+                await checkAndNotifyStock({
+                    productName: updatedProduct.productName,
+                    sku: updatedProduct.sku,
+                    quantity: updatedProduct.quantity,
+                    alertStock: updatedProduct.alertStock,
+                });
+            }
+        }
 
         revalidatePath("/warehouses");
         return { success: true };
@@ -168,6 +190,21 @@ export async function adjustWarehouseStock(
                 },
             },
         });
+
+        // Check for low stock notification
+        const updatedProduct = await prisma.warehouseProduct.findUnique({
+            where: { id },
+            select: { productName: true, sku: true, quantity: true, alertStock: true }
+        });
+
+        if (updatedProduct) {
+            await checkAndNotifyStock({
+                productName: updatedProduct.productName,
+                sku: updatedProduct.sku,
+                quantity: updatedProduct.quantity,
+                alertStock: updatedProduct.alertStock,
+            });
+        }
 
         revalidatePath("/warehouses");
         return { success: true };

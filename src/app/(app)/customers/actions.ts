@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/lib/auth-server";
 export async function getCustomers(): Promise<Customer[]> {
   const user = await getCurrentUser();
 
-  if (!user) {
+  if (!user || (!user.permissions?.customers && !user.permissions?.dashboard)) {
     return [];
   }
 
@@ -69,81 +69,95 @@ export async function getCustomers(): Promise<Customer[]> {
 }
 
 export async function createCustomer(customerData: Omit<Customer, 'id'>): Promise<Customer> {
-  const user = await getCurrentUser();
-  const createdBy = user ? {
-    uid: user.id,
-    name: user.name,
-    email: user.email
-  } : { uid: "system", name: "System" };
-
-  // Check if customer with same email already exists
-  const existingByEmail = await prisma.customer.findUnique({
-    where: { email: customerData.email },
-    include: { orders: true }
-  });
-
-  if (existingByEmail) {
-    return {
-      id: existingByEmail.id,
-      name: existingByEmail.name,
-      email: existingByEmail.email,
-      phone: existingByEmail.phone || "",
-      avatar: existingByEmail.avatar || "",
-      address: {
-        street: existingByEmail.street || "",
-        city: existingByEmail.city || "",
-        state: existingByEmail.state || "",
-        zip: existingByEmail.zip || "",
-      },
-      orderHistory: existingByEmail.orders
-        .filter(order => order.shippingStatus === 'Delivered')
-        .map(order => ({
-          orderId: order.id,
-          date: order.createdAt.toISOString(),
-          amount: order.totalAmount,
-          items: order.itemName,
-          year: order.createdAt.getFullYear(),
-          paymentMethod: order.paymentMethod || 'N/A',
-          shippingStatus: order.shippingStatus || 'N/A'
-        })),
-      totalSpent: existingByEmail.orders
-        .filter(order => order.shippingStatus === 'Delivered')
-        .reduce((sum, order) => sum + order.totalAmount, 0),
-      role: existingByEmail.role as UserRole | undefined,
+  try {
+    const user = await getCurrentUser();
+    if (!user || !user.permissions?.customers) {
+      throw new Error("Permission denied");
+    }
+    const createdBy = {
+      uid: user.id,
+      name: user.name,
+      email: user.email
     };
+
+    // Check if customer with same email already exists
+    const existingByEmail = await prisma.customer.findUnique({
+      where: { email: customerData.email },
+      include: { orders: true }
+    });
+
+    if (existingByEmail) {
+      return {
+        id: existingByEmail.id,
+        name: existingByEmail.name,
+        email: existingByEmail.email,
+        phone: existingByEmail.phone || "",
+        avatar: existingByEmail.avatar || "",
+        address: {
+          street: existingByEmail.street || "",
+          city: existingByEmail.city || "",
+          state: existingByEmail.state || "",
+          zip: existingByEmail.zip || "",
+        },
+        orderHistory: existingByEmail.orders
+          .filter(order => order.shippingStatus === 'Delivered')
+          .map(order => ({
+            orderId: order.id,
+            date: order.createdAt.toISOString(),
+            amount: order.totalAmount,
+            items: order.itemName,
+            year: order.createdAt.getFullYear(),
+            paymentMethod: order.paymentMethod || 'N/A',
+            shippingStatus: order.shippingStatus || 'N/A'
+          })),
+        totalSpent: existingByEmail.orders
+          .filter(order => order.shippingStatus === 'Delivered')
+          .reduce((sum, order) => sum + order.totalAmount, 0),
+        role: existingByEmail.role as UserRole | undefined,
+      };
+    }
+
+    const newCustomer = await prisma.customer.create({
+      data: {
+        name: customerData.name,
+        email: customerData.email,
+        phone: customerData.phone,
+        avatar: customerData.avatar,
+        street: customerData.address.street,
+        city: customerData.address.city,
+        state: customerData.address.state,
+        zip: customerData.address.zip,
+        role: customerData.role,
+        createdBy: createdBy as any,
+      },
+    });
+
+    return {
+      id: newCustomer.id,
+      name: newCustomer.name,
+      email: newCustomer.email,
+      phone: newCustomer.phone || "",
+      avatar: newCustomer.avatar || "",
+      address: {
+        street: newCustomer.street || "",
+        city: newCustomer.city || "",
+        state: newCustomer.state || "",
+        zip: newCustomer.zip || "",
+      },
+      orderHistory: [],
+      totalSpent: 0,
+      role: newCustomer.role as UserRole | undefined,
+    };
+  } catch (error: any) {
+    console.error('Error in createCustomer:', error);
+
+    // Re-throw with more context
+    if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT') {
+      throw new Error('Database connection lost. Please try again.');
+    }
+
+    throw error;
   }
-
-  const newCustomer = await prisma.customer.create({
-    data: {
-      name: customerData.name,
-      email: customerData.email,
-      phone: customerData.phone,
-      avatar: customerData.avatar,
-      street: customerData.address.street,
-      city: customerData.address.city,
-      state: customerData.address.state,
-      zip: customerData.address.zip,
-      role: customerData.role,
-      createdBy: createdBy as any,
-    },
-  });
-
-  return {
-    id: newCustomer.id,
-    name: newCustomer.name,
-    email: newCustomer.email,
-    phone: newCustomer.phone || "",
-    avatar: newCustomer.avatar || "",
-    address: {
-      street: newCustomer.street || "",
-      city: newCustomer.city || "",
-      state: newCustomer.state || "",
-      zip: newCustomer.zip || "",
-    },
-    orderHistory: [],
-    totalSpent: 0,
-    role: newCustomer.role as UserRole | undefined,
-  };
 }
 
 export async function getCustomerOrdersByYear(

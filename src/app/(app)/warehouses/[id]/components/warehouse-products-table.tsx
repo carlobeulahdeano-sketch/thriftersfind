@@ -25,7 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AddWarehouseProductDialog } from "./add-warehouse-product-dialog";
 import { EditWarehouseProductDialog } from "./edit-warehouse-product-dialog";
 import { TransferToInventoryDialog } from "./transfer-to-inventory-dialog";
-import type { WarehouseProduct } from "../actions";
+import { WarehouseProduct } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { deleteWarehouseProduct } from "../actions";
 import {

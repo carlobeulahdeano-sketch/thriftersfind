@@ -70,6 +70,18 @@ export default function DownloadDatabasePage() {
         { id: "batches", name: "Batches", records: "Dynamic" },
         { id: "users", name: "Users", records: "Dynamic" },
         { id: "stations", name: "Stations", records: "Dynamic" },
+        { id: "notifications", name: "Notifications", records: "Dynamic" },
+        { id: "messages", name: "Messages", records: "Dynamic" },
+        { id: "branches", name: "Branches", records: "Dynamic" },
+        { id: "roles", name: "Roles", records: "Dynamic" },
+        { id: "archive_data", name: "Archive Data", records: "Dynamic" },
+        { id: "warehouse_products", name: "Warehouse Products", records: "Dynamic" },
+        { id: "database_operations", name: "Database Operations", records: "Dynamic" },
+        { id: "sales_logs", name: "Sales Logs", records: "Dynamic" },
+        { id: "admin_logs", name: "Admin Logs", records: "Dynamic" },
+        { id: "pre_orders", name: "Pre-Orders", records: "Dynamic" },
+        { id: "pre_order_items", name: "Pre-Order Items", records: "Dynamic" },
+        { id: "inventory_logs", name: "Inventory Logs", records: "Dynamic" },
     ];
 
     React.useEffect(() => {

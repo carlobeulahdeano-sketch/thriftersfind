@@ -7,10 +7,6 @@ export async function GET(request: NextRequest) {
     try {
         const cookieStore = await cookies();
         const sessionId = cookieStore.get("session")?.value;
-        const impersonatorId = cookieStore.get("impersonator_id")?.value;
-
-        console.log("[API/Me] Session:", sessionId, "Impersonator:", impersonatorId);
-
         if (!sessionId) {
             return NextResponse.json({ user: null }, { status: 401 });
         }
@@ -24,7 +20,7 @@ export async function GET(request: NextRequest) {
         });
 
         if (!user) {
-            return NextResponse.json({ user: null, isImpersonating: !!impersonatorId }, { status: 401 });
+            return NextResponse.json({ user: null }, { status: 401 });
         }
 
         const transformedUser: User = {
@@ -58,7 +54,6 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             user: transformedUser,
-            isImpersonating: !!impersonatorId
         }, { status: 200 });
 
     } catch (error) {

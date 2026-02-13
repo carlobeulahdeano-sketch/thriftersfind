@@ -7,15 +7,16 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
+import { ReloadButton } from "@/components/reload-button";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const sessionId = cookieStore.get("session")?.value;
-  const impersonatorId = cookieStore.get("impersonator_id")?.value;
 
   if (!sessionId) {
     redirect("/login");
   }
+
 
   let user;
   try {
@@ -34,12 +35,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <p className="text-gray-600 mb-4">
           Could not connect to the database. Please ensure your database server (MySQL/XAMPP) is running.
         </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
-        >
-          Try Again
-        </button>
+        <ReloadButton />
       </div>
     );
   }
@@ -73,9 +69,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   };
 
   const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || "/";
+  const pathname = headersList.get("x-pathname");
+  // Detect if this is a Server Action request
+  const isServerAction = headersList.get("next-action");
 
-  if (!hasPermission(pathname, transformedUser.permissions, transformedUser.role?.name)) {
+  if (isServerAction) {
+    return <AppShell user={transformedUser}>{children}</AppShell>;
+  }
+
+  if (pathname && !hasPermission(pathname, transformedUser.permissions, transformedUser.role?.name)) {
     // If it's the root path and they don't have dashboard access, we should find a path they DO have access to
     // or just show an error. For now, let's redirect to profile as it's always accessible.
     if (pathname === "/" || pathname === "/dashboard") {
@@ -103,11 +105,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     }
 
     return (
-      <AppShell user={transformedUser} isImpersonating={!!impersonatorId}>
+      <AppShell user={transformedUser}>
         <AccessDenied />
       </AppShell>
     );
   }
 
-  return <AppShell user={transformedUser} isImpersonating={!!impersonatorId}>{children}</AppShell>;
+  return <AppShell user={transformedUser}>{children}</AppShell>;
 }

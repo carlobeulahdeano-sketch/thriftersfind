@@ -9,11 +9,11 @@ import { createInventoryLog } from "@/lib/inventory-log-helper";
 export async function getOrders(): Promise<Order[]> {
   const user = await getCurrentUser();
 
-  if (!user) {
+  if (!user || !user.permissions?.orders) {
     return [];
   }
 
-  const isSuperAdmin = user.role?.name === 'Super Admin';
+  const isSuperAdmin = user.role?.name?.toLowerCase() === 'super admin';
 
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: 'desc' },
@@ -73,9 +73,12 @@ export async function getAllOrders(): Promise<{ orders: Order[], isAuthorized: b
     return { orders: [], isAuthorized: false };
   }
 
-  // Restrict only Staff role
-  const isStaff = user.role?.name.toLowerCase() === 'staff';
-  if (isStaff) {
+  // Check permission via utility instead of hardcoded role name
+  // This allows any role with the 'orders' or 'dashboard' permission to see all orders
+  const hasOrdersPermission = !!user.permissions?.orders;
+  const hasDashboardPermission = !!user.permissions?.dashboard;
+
+  if (!hasOrdersPermission && !hasDashboardPermission) {
     return { orders: [], isAuthorized: false };
   }
 
@@ -127,6 +130,9 @@ export async function getAllOrders(): Promise<{ orders: Order[], isAuthorized: b
 export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & { items?: any[] }): Promise<Order> {
   try {
     const user = await getCurrentUser();
+    if (!user || !user.permissions?.orders) {
+      throw new Error("Permission denied");
+    }
     const createdBy = user ? {
       uid: user.id, // Match the 'uid' expected by types and filter
       id: user.id,  // Also store 'id' for clarity

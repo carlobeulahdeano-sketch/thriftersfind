@@ -23,17 +23,10 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table";
+import { RecentSalesTable } from "./components/recent-sales-table";
 import { Badge } from "@/components/ui/badge";
-import { Order, ShippingStatus } from "@/lib/types";
-import { getSalesData } from "./actions";
+import { Order, ShippingStatus, PreOrder } from "@/lib/types";
+import { getSalesData, getPreOrderSalesData } from "./actions";
 import { format } from "date-fns";
 
 // Dynamically import charts to disable SSR
@@ -47,66 +40,149 @@ const SalesChart = dynamic(() => import("../reports/components/sales-chart"), {
 });
 
 type Timeframe = "week" | "month" | "year";
+type ViewType = "regular" | "preorder";
 
 export default function SalesPage() {
   const [timeframe, setTimeframe] = useState<Timeframe>("month");
+  const [viewType, setViewType] = useState<ViewType>("regular");
   const [allOrders, setAllOrders] = useState<Order[]>([]);
+  const [allPreOrders, setAllPreOrders] = useState<PreOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const { orders, isAuthorized } = await getSalesData(timeframe);
-      if (!isAuthorized) {
-        setIsAuthorized(false);
-        setIsLoading(false);
-        return;
+
+      if (viewType === "regular") {
+        const { orders, isAuthorized } = await getSalesData(timeframe);
+        if (!isAuthorized) {
+          setIsAuthorized(false);
+          setIsLoading(false);
+          return;
+        }
+        setIsAuthorized(true);
+        setAllOrders(orders);
+      } else {
+        const { preOrders, isAuthorized } = await getPreOrderSalesData(timeframe);
+        if (!isAuthorized) {
+          setIsAuthorized(false);
+          setIsLoading(false);
+          return;
+        }
+        setIsAuthorized(true);
+        setAllPreOrders(preOrders);
       }
-      setIsAuthorized(true);
-      setAllOrders(orders);
+
       setIsLoading(false);
     };
     fetchData();
-  }, [timeframe]);
+  }, [timeframe, viewType]);
 
   const handlePrint = () => {
     window.open(`/sales/report?timeframe=${timeframe}`, '_blank');
   };
 
   const salesMetrics = useMemo(() => {
-    const deliveredOrders = allOrders.filter((order: any) => order.shippingStatus === 'Delivered');
+    if (viewType === "regular") {
+      const deliveredOrders = allOrders.filter((order: any) => order.shippingStatus === 'Delivered');
 
-    let totalRevenue = 0;
-    let totalCost = 0;
-    const numberSales = deliveredOrders.length;
+      let totalRevenue = 0;
+      let totalCost = 0;
+      const numberSales = deliveredOrders.length;
 
-    deliveredOrders.forEach((order: any) => {
-      totalRevenue += order.totalAmount || 0;
+      deliveredOrders.forEach((order: any) => {
+        totalRevenue += order.totalAmount || 0;
 
-      const items = Array.isArray(order.items)
-        ? order.items
-        : (typeof order.items === 'string' ? JSON.parse(order.items) : []);
+        const items = Array.isArray(order.items)
+          ? order.items
+          : (typeof order.items === 'string' ? JSON.parse(order.items) : []);
 
-      items.forEach((item: any) => {
-        const qty = item.quantity || 0;
-        const cost = item.product?.cost || 0;
-        totalCost += qty * cost;
+        items.forEach((item: any) => {
+          const qty = item.quantity || 0;
+          const cost = item.product?.cost || 0;
+          totalCost += qty * cost;
+        });
       });
-    });
 
-    const netIncome = totalRevenue - totalCost;
+      const netIncome = totalRevenue - totalCost;
 
-    return {
-      totalRevenue,
-      totalCost,
-      netIncome,
-      numberSales,
-      deliveredOrders
-    };
-  }, [allOrders]);
+      return {
+        totalRevenue,
+        totalCost,
+        netIncome,
+        numberSales,
+        deliveredOrders
+      };
+    } else {
+      // Pre-order sales metrics
+      const paidPreOrders = allPreOrders; // Already filtered for 'Paid' status
+
+      let totalRevenue = 0;
+      let totalCost = 0;
+      const numberSales = paidPreOrders.length;
+
+      paidPreOrders.forEach((preOrder: any) => {
+        totalRevenue += preOrder.totalAmount || 0;
+
+        const items = preOrder.items || [];
+        items.forEach((item: any) => {
+          const qty = item.quantity || 0;
+          // Pre-order items don't have product cost, estimate using pricePerUnit * 0.5 or use 0
+          const cost = 0; // We don't have cost data for pre-order items
+          totalCost += qty * cost;
+        });
+      });
+
+      const netIncome = totalRevenue - totalCost;
+
+      // Convert pre-orders to Order-compatible format for components
+      const deliveredOrders: Order[] = paidPreOrders.map((preOrder: any) => ({
+        id: preOrder.id,
+        customerName: preOrder.customerName,
+        contactNumber: preOrder.contactNumber || "",
+        address: preOrder.address || "",
+        orderDate: preOrder.orderDate,
+        itemName: preOrder.items?.map((item: any) => item.productName).join(", ") || "Pre-order items",
+        items: preOrder.items?.map((item: any) => ({
+          product: {
+            id: "",
+            name: item.productName,
+            sku: "",
+            description: "",
+            quantity: item.quantity,
+            totalStock: 0,
+            alertStock: 0,
+            cost: 0,
+            retailPrice: item.pricePerUnit,
+            images: item.images || []
+          },
+          quantity: item.quantity
+        })) || [],
+        quantity: preOrder.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0,
+        price: preOrder.items?.[0]?.pricePerUnit || 0,
+        shippingFee: 0,
+        totalAmount: preOrder.totalAmount,
+        paymentMethod: (preOrder.paymentMethod || "GCash") as any,
+        paymentStatus: (preOrder.paymentStatus || "Paid") as any,
+        shippingStatus: "Delivered" as any, // Treat paid pre-orders as delivered for display
+        batchId: preOrder.batchId,
+        customerId: preOrder.customerId,
+        customerEmail: preOrder.customerEmail,
+        rushShip: false,
+        batch: preOrder.batch,
+        createdAt: preOrder.createdAt
+      }));
+
+      return {
+        totalRevenue,
+        totalCost,
+        netIncome,
+        numberSales,
+        deliveredOrders
+      };
+    }
+  }, [allOrders, allPreOrders, viewType]);
 
   if (isAuthorized === false) {
     return (
@@ -123,10 +199,12 @@ export default function SalesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent w-fit pb-1">
-            Sales
+            {viewType === "regular" ? "Sales" : "Pre-Order Sales"}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Overview of your sales performance and metrics.
+            {viewType === "regular"
+              ? "Overview of your sales performance and metrics."
+              : "Overview of your pre-order sales performance and metrics."}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -139,6 +217,12 @@ export default function SalesPage() {
               View Batch Analytics
             </Button>
           </Link>
+          <Tabs value={viewType} onValueChange={(value) => setViewType(value as ViewType)}>
+            <TabsList>
+              <TabsTrigger value="regular">Regular Sales</TabsTrigger>
+              <TabsTrigger value="preorder">Pre-Order Sales</TabsTrigger>
+            </TabsList>
+          </Tabs>
           <Tabs value={timeframe} onValueChange={(value) => setTimeframe(value as Timeframe)}>
             <TabsList>
               <TabsTrigger value="week">This Week</TabsTrigger>
@@ -220,97 +304,10 @@ export default function SalesPage() {
           </Card>
 
           {/* Transactions Table */}
-          <Card className="border-t-4 border-t-purple-500/50 shadow-lg overflow-hidden">
-            <CardHeader className="border-b bg-muted/30 flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-purple-500" />
-                Recent Sales Transactions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-muted/50">
-                    <TableRow>
-                      <TableHead className="font-semibold h-12">Order ID</TableHead>
-                      <TableHead className="font-semibold">Customer</TableHead>
-                      <TableHead className="font-semibold">Date</TableHead>
-                      <TableHead className="font-semibold">Items</TableHead>
-                      <TableHead className="text-right font-semibold">Total Amount</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {salesMetrics.deliveredOrders
-                      .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                      .map((order) => (
-                        <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
-                          <TableCell className="font-mono text-xs text-muted-foreground uppercase">
-                            #{order.id.substring(0, 8)}
-                          </TableCell>
-                          <TableCell className="font-medium text-foreground">
-                            {order.customerName}
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {format(new Date(order.orderDate), "MMM dd, yyyy")}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              {Array.isArray(order.items) ? (
-                                order.items.map((item: any, i: number) => (
-                                  <Badge key={i} variant="secondary" className="text-[10px] py-0">
-                                    {item.product?.name || item.productName} (x{item.quantity})
-                                  </Badge>
-                                ))
-                              ) : (
-                                <span className="text-sm">{order.itemName} (x{order.quantity})</span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right font-bold text-foreground">
-                            ₱{order.totalAmount.toLocaleString()}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    {salesMetrics.deliveredOrders.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground h-32">
-                          No transactions found for this period
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {salesMetrics.deliveredOrders.length > itemsPerPage && (
-                <div className="flex items-center justify-between p-4 border-t bg-muted/10">
-                  <p className="text-xs text-muted-foreground">
-                    Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, salesMetrics.deliveredOrders.length)} of {salesMetrics.deliveredOrders.length} transactions
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(p => Math.min(Math.ceil(salesMetrics.deliveredOrders.length / itemsPerPage), p + 1))}
-                      disabled={currentPage === Math.ceil(salesMetrics.deliveredOrders.length / itemsPerPage)}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <RecentSalesTable orders={salesMetrics.deliveredOrders} />
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }

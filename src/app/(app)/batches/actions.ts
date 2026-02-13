@@ -9,13 +9,9 @@ export async function getBatches(): Promise<{ batches: Batch[], isAuthorized: bo
     try {
         const user = await getCurrentUser();
 
-        if (!user) {
+        if (!user || (!user.permissions?.batches && !user.permissions?.dashboard)) {
             return { batches: [], isAuthorized: false };
         }
-
-        // Batches access is controlled by the 'batches' permission toggle
-        // which is checked in the layout and in the UI components.
-        // We removed the hardcoded staff block here.
 
         const batches = await prisma.batch.findMany({
             orderBy: {
@@ -61,11 +57,14 @@ export async function createBatch(data: {
 }): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
         const user = await getCurrentUser();
-        const createdBy = user ? {
+        if (!user || !user.permissions?.batches) {
+            return { success: false, error: "Permission denied" };
+        }
+        const createdBy = {
             uid: user.id,
             name: user.name,
             email: user.email
-        } : { uid: "system", name: "System" };
+        };
 
         const newBatch = await prisma.batch.create({
             data: {
@@ -103,6 +102,10 @@ export async function updateBatch(id: string, data: {
     status?: string;
 }): Promise<{ success: boolean; error?: string }> {
     try {
+        const user = await getCurrentUser();
+        if (!user || !user.permissions?.batches) {
+            return { success: false, error: "Permission denied" };
+        }
         await prisma.batch.update({
             where: { id },
             data: {
@@ -123,6 +126,10 @@ export async function updateBatch(id: string, data: {
 
 export async function deleteBatch(id: string): Promise<{ success: boolean; error?: string }> {
     try {
+        const user = await getCurrentUser();
+        if (!user || !user.permissions?.batches) {
+            return { success: false, error: "Permission denied" };
+        }
         await prisma.batch.delete({
             where: { id },
         });

@@ -7,22 +7,32 @@ export function hasPermission(
 ): boolean {
     if (!role) return false;
 
-    const isStaff = role.toLowerCase() === 'staff';
-    const isSuperAdmin = role.toLowerCase() === 'super admin';
+    const formattedRole = role?.toLowerCase() || '';
+    const isSuperAdmin = formattedRole === 'super admin' || formattedRole === 'superadmin';
+
+    // Super Admin has granular control but with a safety net for critical features
+    if (isSuperAdmin) {
+        if (pathname.startsWith('/users') ||
+            pathname.startsWith('/settings') ||
+            pathname.startsWith('/profile') ||
+            pathname.startsWith('/admin')) {
+            return true;
+        }
+    }
 
     // Public patterns that everyone can access (profile is always visible)
     if (pathname === '/profile' || pathname.startsWith('/profile/')) {
         return true;
     }
 
-    // Special case: Dashboard is restricted for Staff
+    // Dashboard handling
     if (pathname === '/dashboard' || pathname === '/' || pathname === '') {
-        return !isStaff;
+        return !!permissions?.dashboard;
     }
 
-    // Special case: Sales is restricted for Staff
+    // Sales handling
     if (pathname.startsWith('/sales')) {
-        return !isStaff;
+        return !!permissions?.sales;
     }
 
     // Admin Manage Section

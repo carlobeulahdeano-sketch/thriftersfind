@@ -99,6 +99,7 @@ export function CreatePreOrderDialog({
     const [depositAmount, setDepositAmount] = useState<number | string>(0);
 
     const [comboboxOpen, setComboboxOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
     // const [itemComboboxOpen, setItemComboboxOpen] = useState(false);
     const [totalAmount, setTotalAmount] = useState(0);
     const [isCreateBatchOpen, setCreateBatchOpen] = useState(false);
@@ -170,6 +171,7 @@ export function CreatePreOrderDialog({
         setBatchId("none");
         setIsSubmitting(false);
         setSelectedProductNames([]);
+        setSearchQuery("");
     };
 
     // handleAddItems removed as it's replaced by handleProductsSelected
@@ -206,6 +208,18 @@ export function CreatePreOrderDialog({
                 description: "Please select a customer and at least one item.",
             });
             return;
+        }
+
+        if (paymentTerms === 'downpayment') {
+            const deposit = typeof depositAmount === 'string' ? parseFloat(depositAmount) || 0 : depositAmount;
+            if (deposit > totalAmount) {
+                toast({
+                    variant: "destructive",
+                    title: "Invalid Downpayment",
+                    description: "Downpayment cannot exceed the total amount.",
+                });
+                return;
+            }
         }
 
         setIsSubmitting(true);
@@ -300,6 +314,7 @@ export function CreatePreOrderDialog({
         setContactNumber(customer.phone);
         setAddress([customer.address.street, customer.address.city, customer.address.state].filter(Boolean).join(', '));
         setEmail(customer.email || "");
+        setSearchQuery("");
         setComboboxOpen(false);
     }
 
@@ -311,12 +326,16 @@ export function CreatePreOrderDialog({
         <>
             <Dialog open={isOpen} onOpenChange={handleClose}>
                 <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-                    <DialogHeader className="p-6 pb-2 border-b">
-                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                            <Package className="h-5 w-5 text-indigo-500" />
-                            Create Pre-order
-                        </DialogTitle>
-                    </DialogHeader>
+                    {/* Gradient Header */}
+                    <div className="bg-gradient-to-r from-blue-500 to-purple-500 px-6 py-4 flex items-center gap-3 text-white">
+                        <ShoppingCart className="h-6 w-6" />
+                        <div>
+                            <DialogTitle className="text-white text-lg font-semibold">Create New Order</DialogTitle>
+                            <DialogDescription className="text-blue-100 text-sm">
+                                Add a new pre-order to the system
+                            </DialogDescription>
+                        </div>
+                    </div>
 
                     <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
 
@@ -336,21 +355,32 @@ export function CreatePreOrderDialog({
 
                                 <TabsContent value="existing" className="space-y-3 pt-4">
                                     <div className="grid gap-4">
-                                        <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+                                        <Popover open={comboboxOpen} onOpenChange={(open) => {
+                                            setComboboxOpen(open);
+                                            if (!open) setSearchQuery("");
+                                        }} modal={false}>
                                             <PopoverTrigger asChild>
                                                 <Button variant="outline" role="combobox" aria-expanded={comboboxOpen} className="w-full justify-between h-10">
                                                     {customerName || "Select customer..."}
                                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                 </Button>
                                             </PopoverTrigger>
-                                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[200]" align="start">
                                                 <Command>
-                                                    <CommandInput placeholder="Search customer..." value={customerName} onValueChange={setCustomerName} />
+                                                    <CommandInput
+                                                        placeholder="Search customer..."
+                                                        value={searchQuery}
+                                                        onValueChange={setSearchQuery}
+                                                    />
                                                     <CommandList>
                                                         <CommandEmpty>No customer found.</CommandEmpty>
                                                         <CommandGroup>
                                                             {customers.map((customer) => (
-                                                                <CommandItem key={customer.id} value={`${customer.name}-${customer.id}`} onSelect={() => handleCustomerSelect(customer)}>
+                                                                <CommandItem
+                                                                    key={customer.id}
+                                                                    value={customer.name}
+                                                                    onSelect={() => handleCustomerSelect(customer)}
+                                                                >
                                                                     <Check className={cn("mr-2 h-4 w-4", customerName.toLowerCase() === customer.name.toLowerCase() ? "opacity-100" : "opacity-0")} />
                                                                     {customer.name}
                                                                 </CommandItem>
@@ -543,7 +573,7 @@ export function CreatePreOrderDialog({
                             <div className="flex items-end gap-2">
                                 <div className="grid gap-2 flex-1">
                                     <Label>Delivery Batch</Label>
-                                    <Select value={batchId} onValueChange={(v) => {
+                                    <Select value={batchId} onValueChange={(v: string) => {
                                         if (v === "none") {
                                             setBatchId(v);
                                             return;
