@@ -37,9 +37,10 @@ interface PreOrderItem {
 
 interface PreOrderInventoryGridProps {
     products: PreOrderItem[];
+    onRefresh: () => void;
 }
 
-export default function PreOrderInventoryGrid({ products }: PreOrderInventoryGridProps) {
+export default function PreOrderInventoryGrid({ products, onRefresh }: PreOrderInventoryGridProps) {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = React.useState("");
 
@@ -59,7 +60,7 @@ export default function PreOrderInventoryGrid({ products }: PreOrderInventoryGri
                 <div className="relative w-full sm:w-96">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        className="pl-9 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+                        className="pl-9 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-foreground"
                         placeholder="Search items or customers..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}

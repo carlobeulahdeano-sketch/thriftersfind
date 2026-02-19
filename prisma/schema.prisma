@@ -23,6 +23,7 @@ model Customer {
   createdBy    Json?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @default(now()) @updatedAt
+  isActive     Boolean    @default(true)
   orders       Order[]
   preOrders    PreOrder[]
 
@@ -222,7 +223,7 @@ model WarehouseProduct {
   updatedAt        DateTime       @default(now()) @updatedAt
   batchId          String?
   alertStock       Int            @default(0)
-  productId        String?        // Reference to products table
+  productId        String?
   inventoryLogs    InventoryLog[]
   products         Product[]
   batch            Batch?         @relation(fields: [batchId], references: [id])

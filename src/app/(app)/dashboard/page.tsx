@@ -105,7 +105,18 @@ export default function DashboardPage() {
 
         const { batches, isAuthorized: batchesAuthorized } = await getBatches();
 
-        if (!batchesAuthorized) {
+        // Extra check: even if APIs return authorized (because they check orders/batches),
+        // we must check the specific dashboard permission if available.
+        // We'll trust the isAuthorized flag from the APIs for now, but also check the dashboard flag
+        // if we can get it. For now, the existing isAuthorized logic is okay IF we ensure 
+        // the APIs are strictly checking what they should.
+
+        // Actually, let's just make sure isAuthorized reflects correctly.
+        // In getBatches, it checks: !user.permissions?.batches && !user.permissions?.dashboard
+        // In getAllOrders, it checks: !hasOrdersPermission && !hasDashboardPermission
+
+        // To be safe, if either is unauthorized, we block.
+        if (!ordersAuthorized || !batchesAuthorized) {
           setIsAuthorized(false);
           setLoading(false);
           return;

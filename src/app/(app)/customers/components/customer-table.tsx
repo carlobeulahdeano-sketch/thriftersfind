@@ -31,6 +31,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CreateCustomerDialog } from "./create-customer-dialog";
 import { EditCustomerDialog } from "./edit-customer-dialog";
 import { ViewCustomerDialog } from "./view-customer-dialog";
+import { Switch } from "@/components/ui/switch";
+import { toggleCustomerStatus } from "../actions";
+import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -40,6 +44,7 @@ interface CustomerTableProps {
 type ActivityFilter = "all" | "active" | "inactive";
 
 export default function CustomerTable({ customers: initialCustomers, onCustomerAdded }: CustomerTableProps) {
+  const { toast } = useToast();
   const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
   const [allCustomers, setAllCustomers] = React.useState<Customer[]>(initialCustomers);
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -60,9 +65,9 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
     let filtered = allCustomers;
 
     if (activityFilter === "active") {
-      filtered = filtered.filter(c => c.orderHistory && c.orderHistory.length > 0);
+      filtered = filtered.filter(c => c.isActive !== false);
     } else if (activityFilter === "inactive") {
-      filtered = filtered.filter(c => !c.orderHistory || c.orderHistory.length === 0);
+      filtered = filtered.filter(c => c.isActive === false);
     }
 
     if (searchTerm) {
@@ -87,9 +92,36 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
   const isFiltered = searchTerm !== "" || activityFilter !== "all";
 
   const resetFilters = () => {
-    setSearchTerm("");
     setActivityFilter("all");
   }
+
+  const handleToggleStatus = async (customerId: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+
+    // Optimistic update
+    setAllCustomers(prev => prev.map(c =>
+      c.id === customerId ? { ...c, isActive: newStatus } : c
+    ));
+
+    const success = await toggleCustomerStatus(customerId, newStatus);
+
+    if (success) {
+      toast({
+        title: `Customer marked as ${newStatus ? 'active' : 'inactive'}`,
+      });
+      if (onCustomerAdded) onCustomerAdded();
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update customer status",
+      });
+      // Rollback
+      setAllCustomers(prev => prev.map(c =>
+        c.id === customerId ? { ...c, isActive: currentStatus } : c
+      ));
+    }
+  };
 
   return (
     <>
@@ -135,6 +167,7 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
                 <TableHead className="font-semibold">Customer</TableHead>
                 <TableHead className="hidden md:table-cell font-semibold">Phone</TableHead>
                 <TableHead className="hidden sm:table-cell font-semibold">Total Spent</TableHead>
+                <TableHead className="font-semibold text-center">Status</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -153,6 +186,24 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
                   </TableCell>
                   <TableCell className="hidden md:table-cell">{customer.phone}</TableCell>
                   <TableCell className="hidden sm:table-cell font-medium">₱{customer.totalSpent?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex flex-col items-center gap-1.5">
+                      <Badge
+                        variant={customer.isActive !== false ? "outline" : "secondary"}
+                        className={customer.isActive !== false
+                          ? "bg-green-50 text-green-700 border-green-200"
+                          : "bg-slate-100 text-slate-600 border-slate-200"
+                        }
+                      >
+                        {customer.isActive !== false ? "Active" : "Inactive"}
+                      </Badge>
+                      <Switch
+                        checked={customer.isActive !== false}
+                        onCheckedChange={() => handleToggleStatus(customer.id, customer.isActive !== false)}
+                        className="scale-75 data-[state=checked]:bg-green-600"
+                      />
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -211,6 +262,7 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
         isOpen={!!editingCustomer}
         onClose={() => setEditingCustomer(null)}
         customer={editingCustomer}
+        onCustomerUpdated={onCustomerAdded}
       />
       <ViewCustomerDialog
         isOpen={!!viewingCustomer}

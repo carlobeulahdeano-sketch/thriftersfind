@@ -14,22 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Image as ImageIcon, X, RefreshCw, Check, ChevronsUpDown, Search } from "lucide-react";
+import { Image as ImageIcon, X, RefreshCw, Check, Search } from "lucide-react";
 import { createPreOrderProduct } from "../actions";
 import { searchProducts } from "../../inventory/actions";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "@/components/ui/command";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 interface AddPreOrderProductDialogProps {
@@ -59,6 +46,7 @@ export function AddPreOrderProductDialog({ isOpen, onClose, onSuccess }: AddPreO
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [linkedProductId, setLinkedProductId] = useState<string | null>(null);
     const [linkedProductName, setLinkedProductName] = useState<string>("");
+    const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
     // Debounce search
     useEffect(() => {
@@ -90,6 +78,7 @@ export function AddPreOrderProductDialog({ isOpen, onClose, onSuccess }: AddPreO
         setImagePreviews([]);
         setLinkedProductId(null);
         setLinkedProductName("");
+        setSelectedProduct(null);
         setSearchValue("");
         setSearchResults([]);
     };
@@ -189,66 +178,111 @@ export function AddPreOrderProductDialog({ isOpen, onClose, onSuccess }: AddPreO
                 </DialogHeader>
                 <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
 
-                    {/* Link Inventory Item Section */}
-                    <div className="grid gap-2">
-                        <Label>Link Inventory Item (Optional)</Label>
-                        <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    aria-expanded={openCombobox}
-                                    className="w-full justify-between"
-                                >
-                                    {linkedProductName ? linkedProductName : "Search inventory..."}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[400px] p-0">
-                                <Command shouldFilter={false}>
-                                    <CommandInput
-                                        placeholder="Search product name or SKU..."
-                                        value={searchValue}
-                                        onValueChange={setSearchValue}
-                                    />
-                                    <CommandList>
-                                        <CommandEmpty>No products found.</CommandEmpty>
-                                        <CommandGroup>
-                                            {searchResults.map((product) => (
-                                                <CommandItem
-                                                    key={product.id}
-                                                    value={`${product.name}-${product.id}`}
-                                                    onSelect={() => {
-                                                        setLinkedProductId(product.id === linkedProductId ? null : product.id);
-                                                        setLinkedProductName(product.id === linkedProductId ? "" : product.name);
-                                                        // Autofill name if selecting
-                                                        if (product.id !== linkedProductId) {
+                    {/* Link Inventory Item Section - Redesigned */}
+                    <div className="space-y-3">
+                        <Label>Select Existing Product</Label>
+
+                        {!linkedProductId ? (
+                            <div className="relative">
+                                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                                <Input
+                                    placeholder="Search product by name or SKU..."
+                                    className="pl-9 h-10"
+                                    value={searchValue}
+                                    onChange={(e) => {
+                                        setSearchValue(e.target.value);
+                                        if (e.target.value && !openCombobox) setOpenCombobox(true);
+                                    }}
+                                    onFocus={() => setOpenCombobox(true)}
+                                />
+                                {openCombobox && searchValue.length > 0 && (
+                                    <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-[300px] overflow-y-auto rounded-lg border bg-popover shadow-xl animate-in fade-in-0 zoom-in-95">
+                                        {searchResults.length === 0 ? (
+                                            <div className="p-4 text-sm text-center text-muted-foreground">
+                                                No products found.
+                                            </div>
+                                        ) : (
+                                            <div className="p-1 space-y-1">
+                                                {searchResults.map((product) => (
+                                                    <div
+                                                        key={product.id}
+                                                        className="flex items-center gap-3 p-2 rounded-md hover:bg-accent cursor-pointer transition-colors group"
+                                                        onClick={() => {
+                                                            setLinkedProductId(product.id);
+                                                            setLinkedProductName(product.name);
+                                                            setSelectedProduct(product);
+
+                                                            // Autofill
                                                             setName(product.name);
-                                                            // Optional: autofill description if empty
                                                             if (!description && product.description) setDescription(product.description);
-                                                        }
-                                                        setOpenCombobox(false);
-                                                    }}
-                                                >
-                                                    <Check
-                                                        className={cn(
-                                                            "mr-2 h-4 w-4",
-                                                            linkedProductId === product.id ? "opacity-100" : "opacity-0"
-                                                        )}
-                                                    />
-                                                    <div className="flex flex-col">
-                                                        <span>{product.name}</span>
-                                                        <span className="text-xs text-muted-foreground">SKU: {product.sku} | Stock: {product.totalStock}</span>
+
+                                                            setOpenCombobox(false);
+                                                            setSearchValue("");
+                                                        }}
+                                                    >
+                                                        <div className="h-10 w-10 rounded-md bg-muted border overflow-hidden shrink-0">
+                                                            {product.images?.[0] ? (
+                                                                <img src={product.images[0]} alt="" className="h-full w-full object-cover" />
+                                                            ) : (
+                                                                <ImageIcon className="h-5 w-5 m-auto mt-2 text-muted-foreground/50" />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">{product.name}</p>
+                                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                                <span className="font-mono bg-muted px-1 rounded">{product.sku}</span>
+                                                                <span>•</span>
+                                                                <span>{product.totalStock} in stock</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </CommandItem>
-                                            ))}
-                                        </CommandGroup>
-                                    </CommandList>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                {/* Overlay to close */}
+                                {openCombobox && (
+                                    <div
+                                        className="fixed inset-0 z-40 bg-transparent"
+                                        onClick={() => setOpenCombobox(false)}
+                                    />
+                                )}
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-4 p-3 border border-primary/20 bg-primary/5 rounded-lg shadow-sm animate-in fade-in zoom-in-95 relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none" />
+                                <div className="h-12 w-12 rounded-md bg-background border shadow-sm overflow-hidden shrink-0 z-10">
+                                    {selectedProduct?.images?.[0] ? (
+                                        <img src={selectedProduct.images[0]} alt="" className="h-full w-full object-cover" />
+                                    ) : (
+                                        <div className="h-full w-full flex items-center justify-center text-muted-foreground bg-muted"><ImageIcon className="h-6 w-6" /></div>
+                                    )}
+                                </div>
+                                <div className="flex-1 z-10 min-w-0">
+                                    <h4 className="font-semibold text-sm text-foreground truncate">{linkedProductName}</h4>
+                                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                                        <Check className="h-3 w-3 text-green-500" />
+                                        <span>Linked to inventory</span>
+                                        {selectedProduct && <span className="opacity-50">| SKU: {selectedProduct.sku}</span>}
+                                    </p>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="z-10 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                    onClick={() => {
+                                        setLinkedProductId(null);
+                                        setLinkedProductName("");
+                                        setSelectedProduct(null);
+                                    }}
+                                >
+                                    Change
+                                </Button>
+                            </div>
+                        )}
                         <p className="text-[0.8rem] text-muted-foreground">
-                            Linking to an inventory item will autofill the name.
+                            Selecting an existing product will autofill details and link stock history.
                         </p>
                     </div>
 

@@ -11,30 +11,32 @@ export default function InventoryPage() {
   const [isAuthorized, setIsAuthorized] = useState(true);
   const [hasCheckedPermission, setHasCheckedPermission] = useState(false);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch('/api/auth/me');
-        if (!response.ok) throw new Error('Auth failed');
-        const { user } = await response.json();
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/auth/me');
+      if (!response.ok) throw new Error('Auth failed');
+      const { user } = await response.json();
 
-        if (!user?.permissions?.inventory) {
-          setIsAuthorized(false);
-        } else {
-          const productsData = await getProducts();
-          setProducts(productsData);
-        }
-      } catch (error) {
-        console.error("Error fetching inventory data:", error);
-      } finally {
-        setHasCheckedPermission(true);
-        setIsLoading(false);
+      if (!user?.permissions?.inventory) {
+        setIsAuthorized(false);
+      } else {
+        const productsData = await getProducts();
+        setProducts(productsData);
       }
+    } catch (error) {
+      console.error("Error fetching inventory data:", error);
+    } finally {
+      setHasCheckedPermission(true);
+      setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
-  if (!hasCheckedPermission || isLoading) {
+  if (!hasCheckedPermission) {
     return (
       <div className="flex flex-col gap-8">
         <div className="flex items-center justify-between">
@@ -68,6 +70,7 @@ export default function InventoryPage() {
       </div>
       <InventoryTable
         products={products}
+        onRefresh={fetchData}
       />
     </div>
   );

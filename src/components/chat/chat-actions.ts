@@ -100,7 +100,7 @@ export async function markMessagesAsRead(senderId: string) {
         const currentUser = await getCurrentUser();
         if (!currentUser) return { success: false };
 
-        await prisma.message.updateMany({
+        const result = await prisma.message.updateMany({
             where: {
                 senderId: senderId,
                 receiverId: currentUser.id,
@@ -111,11 +111,13 @@ export async function markMessagesAsRead(senderId: string) {
             }
         });
 
-        revalidatePath('/');
-        return { success: true };
+        if (result.count > 0) {
+            revalidatePath('/');
+        }
+        return { success: true, count: result.count };
     } catch (error) {
         console.error("Failed to mark messages as read:", error);
-        return { success: false };
+        return { success: false, count: 0 };
     }
 }
 

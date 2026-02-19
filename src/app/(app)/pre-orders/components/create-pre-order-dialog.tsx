@@ -51,6 +51,7 @@ interface CreatePreOrderDialogProps {
     customers: Customer[];
     stations: Station[];
     batches?: Batch[];
+    onSuccess?: () => void;
 }
 
 const paymentMethods: PaymentMethod[] = ["COD", "GCash", "Bank Transfer"];
@@ -69,6 +70,7 @@ export function CreatePreOrderDialog({
     customers,
     stations,
     batches,
+    onSuccess,
 }: CreatePreOrderDialogProps) {
     const { toast } = useToast();
     const router = useRouter();
@@ -120,6 +122,7 @@ export function CreatePreOrderDialog({
         setSelectedItems(prev => [...prev, newItem]);
         toast({ title: "Product Created", description: `${product.name} added to order.` });
         setAddProductOpen(false);
+        router.refresh();
     };
 
     const handleBatchCreated = (batch: Batch) => {
@@ -291,8 +294,13 @@ export function CreatePreOrderDialog({
                 title: "Pre-order Created",
                 description: `Successfully added pre-order for ${customerName}.`,
             });
-            handleClose();
-            router.refresh();
+            resetForm();
+            if (onSuccess) {
+                onSuccess();
+            } else {
+                onClose();
+                router.refresh();
+            }
         } catch (error) {
             toast({
                 variant: "destructive",
@@ -355,41 +363,69 @@ export function CreatePreOrderDialog({
 
                                 <TabsContent value="existing" className="space-y-3 pt-4">
                                     <div className="grid gap-4">
-                                        <Popover open={comboboxOpen} onOpenChange={(open) => {
-                                            setComboboxOpen(open);
-                                            if (!open) setSearchQuery("");
-                                        }} modal={false}>
-                                            <PopoverTrigger asChild>
-                                                <Button variant="outline" role="combobox" aria-expanded={comboboxOpen} className="w-full justify-between h-10">
-                                                    {customerName || "Select customer..."}
-                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[200]" align="start">
-                                                <Command>
-                                                    <CommandInput
-                                                        placeholder="Search customer..."
-                                                        value={searchQuery}
-                                                        onValueChange={setSearchQuery}
+                                        <div className="relative">
+                                            <Input
+                                                id="customerName"
+                                                value={customerName}
+                                                onChange={(e) => {
+                                                    setCustomerName(e.target.value);
+                                                    setComboboxOpen(true);
+                                                }}
+                                                onFocus={() => setComboboxOpen(true)}
+                                                placeholder="Type customer name..."
+                                                className="h-11 border-2 focus:border-blue-400 pr-10 bg-background text-foreground"
+                                                autoComplete="off"
+                                            />
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                                <Search className="w-4 h-4" />
+                                            </div>
+
+                                            {comboboxOpen && (
+                                                <>
+                                                    <div
+                                                        className="fixed inset-0 z-[100]"
+                                                        onClick={() => setComboboxOpen(false)}
                                                     />
-                                                    <CommandList>
-                                                        <CommandEmpty>No customer found.</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {customers.map((customer) => (
-                                                                <CommandItem
-                                                                    key={customer.id}
-                                                                    value={customer.name}
-                                                                    onSelect={() => handleCustomerSelect(customer)}
-                                                                >
-                                                                    <Check className={cn("mr-2 h-4 w-4", customerName.toLowerCase() === customer.name.toLowerCase() ? "opacity-100" : "opacity-0")} />
-                                                                    {customer.name}
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
-                                                    </CommandList>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
+                                                    <div className="absolute top-full left-0 w-full mt-1 bg-popover border-2 border-border rounded-xl shadow-xl z-[101] max-h-[250px] overflow-y-auto">
+                                                        <div className="p-1">
+                                                            {customers
+                                                                .filter(c =>
+                                                                    c.isActive !== false &&
+                                                                    c.name.toLowerCase().includes(customerName.toLowerCase())
+                                                                )
+                                                                .slice(0, 10)
+                                                                .map((customer) => (
+                                                                    <div
+                                                                        key={customer.id}
+                                                                        className={cn(
+                                                                            "flex items-center px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors",
+                                                                            customerName.toLowerCase() === customer.name.toLowerCase() ? "bg-primary/10 text-primary font-semibold" : "hover:bg-muted"
+                                                                        )}
+                                                                        onClick={() => {
+                                                                            handleCustomerSelect(customer);
+                                                                            setComboboxOpen(false);
+                                                                        }}
+                                                                    >
+                                                                        <Check className={cn("mr-2 h-4 w-4", customerName.toLowerCase() === customer.name.toLowerCase() ? "opacity-100" : "opacity-0")} />
+                                                                        <div className="flex flex-col">
+                                                                            <span>{customer.name}</span>
+                                                                            <span className="text-[10px] text-slate-500 font-normal">{customer.phone || customer.email}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+
+                                                            {customers.filter(c =>
+                                                                c.name.toLowerCase().includes(customerName.toLowerCase())
+                                                            ).length === 0 && customerName !== "" && (
+                                                                    <div className="px-3 py-4 text-center">
+                                                                        <p className="text-sm text-slate-500">Creating new customer: <span className="font-semibold text-blue-600">"{customerName}"</span></p>
+                                                                    </div>
+                                                                )}
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <Input value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} placeholder="Phone Number" />
@@ -570,52 +606,88 @@ export function CreatePreOrderDialog({
                                 </div>
                             )}
 
-                            <div className="flex items-end gap-2">
-                                <div className="grid gap-2 flex-1">
-                                    <Label>Delivery Batch</Label>
-                                    <Select value={batchId} onValueChange={(v: string) => {
-                                        if (v === "none") {
-                                            setBatchId(v);
-                                            return;
-                                        }
-
-                                        const selectedBatch = availableBatches.find(b => b.id === v);
-                                        // Debug log
-                                        console.log("Selected batch:", selectedBatch);
-
-                                        const status = selectedBatch?.status?.trim().toLowerCase();
-                                        if (selectedBatch && status !== 'open') {
-                                            toast({
-                                                variant: "destructive",
-                                                title: `Batch is ${selectedBatch.status}`,
-                                                description: "This batch is closed and cannot be selected.",
-                                            });
-                                            return;
-                                        }
-                                        setBatchId(v);
-                                    }}>
+                            <div className="grid grid-cols-2 gap-4 items-end">
+                                <div className="grid gap-2">
+                                    <Label>Delivery Choice</Label>
+                                    <Select
+                                        value={batchId === "none" ? "normal" : "batch"}
+                                        onValueChange={(v: string) => {
+                                            if (v === "normal") {
+                                                setBatchId("none");
+                                            } else if (availableBatches.length > 0) {
+                                                // Default to the first open batch if available
+                                                const firstOpen = availableBatches.find(b => b.status.toLowerCase() === 'open');
+                                                if (firstOpen) {
+                                                    setBatchId(firstOpen.id);
+                                                } else {
+                                                    // Just switch mode, keep selection as none if no open ones found 
+                                                    // but we should probably show the first one anyway if mode is 'batch'
+                                                    setBatchId(availableBatches[0].id);
+                                                }
+                                            }
+                                        }}
+                                    >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select delivery batch" />
+                                            <SelectValue placeholder="Select delivery type" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="none">Normal Delivery</SelectItem>
-                                            {availableBatches.map((batch) => (
-                                                <SelectItem key={batch.id} value={batch.id}>
-                                                    {batch.batchName} ({batch.status}) - {format(new Date(batch.manufactureDate), 'MMM d')}
-                                                </SelectItem>
-                                            ))}
+                                            <SelectItem value="normal">Normal Delivery</SelectItem>
+                                            <SelectItem value="batch">Batch Delivery</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => setCreateBatchOpen(true)}
-                                    title="Create New Batch"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                </Button>
+                                <div className="flex items-end gap-2">
+                                    <div className="grid gap-2 flex-1">
+                                        <Label>Assign Batch</Label>
+                                        <Select
+                                            value={batchId}
+                                            onValueChange={(v: string) => {
+                                                if (v === "none") {
+                                                    setBatchId(v);
+                                                    return;
+                                                }
+
+                                                const selectedBatch = availableBatches.find(b => b.id === v);
+                                                const status = selectedBatch?.status?.trim().toLowerCase();
+                                                if (selectedBatch && status !== 'open') {
+                                                    toast({
+                                                        variant: "destructive",
+                                                        title: `Batch is ${selectedBatch.status}`,
+                                                        description: "This batch is closed and cannot be selected.",
+                                                    });
+                                                    return;
+                                                }
+                                                setBatchId(v);
+                                            }}
+                                            disabled={batchId === "none"}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select batch" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {availableBatches.length === 0 ? (
+                                                    <SelectItem value="none" disabled>No batches available</SelectItem>
+                                                ) : (
+                                                    availableBatches.map((batch) => (
+                                                        <SelectItem key={batch.id} value={batch.id}>
+                                                            {batch.batchName} ({batch.status})
+                                                        </SelectItem>
+                                                    ))
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setCreateBatchOpen(true)}
+                                        title="Create New Batch"
+                                        className="h-10 w-10 shrink-0"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>

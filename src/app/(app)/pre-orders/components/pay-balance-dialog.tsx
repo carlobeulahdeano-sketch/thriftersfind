@@ -14,9 +14,10 @@ interface PayBalanceDialogProps {
     isOpen: boolean;
     onClose: () => void;
     preOrder: PreOrder | null;
+    onSuccess?: () => void;
 }
 
-export function PayBalanceDialog({ isOpen, onClose, preOrder }: PayBalanceDialogProps) {
+export function PayBalanceDialog({ isOpen, onClose, preOrder, onSuccess }: PayBalanceDialogProps) {
     const { toast } = useToast();
     const [amount, setAmount] = React.useState<string>("");
     const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -66,6 +67,7 @@ export function PayBalanceDialog({ isOpen, onClose, preOrder }: PayBalanceDialog
                 title: "Payment Recorded",
                 description: `Successfully recorded payment of ₱${paymentAmount.toLocaleString()}`,
             });
+            onSuccess?.();
             onClose();
         } catch (error) {
             console.error("Failed to record payment:", error);

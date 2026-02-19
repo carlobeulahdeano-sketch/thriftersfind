@@ -39,7 +39,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export default function WarehouseProductsTable({ products: initialProducts }: { products: WarehouseProduct[] }) {
+export default function WarehouseProductsTable({ products: initialProducts, onRefresh }: { products: WarehouseProduct[], onRefresh: () => void }) {
     const { toast } = useToast();
     const router = useRouter();
     const [products, setProducts] = React.useState<WarehouseProduct[]>(initialProducts);
@@ -56,7 +56,7 @@ export default function WarehouseProductsTable({ products: initialProducts }: { 
     }>({ isOpen: false, product: null, mode: "add" });
 
     const refreshProducts = () => {
-        router.refresh();
+        onRefresh();
     };
 
     React.useEffect(() => {

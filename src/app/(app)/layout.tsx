@@ -1,10 +1,9 @@
 import React from "react";
 import { AppShell } from "./app-shell";
-import { User } from "@/lib/types";
-import { cookies } from "next/headers";
+import { User, UserPermissions } from "@/lib/types";
+import { cookies, headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { ReloadButton } from "@/components/reload-button";
@@ -69,7 +68,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   };
 
   const headersList = await headers();
-  const pathname = headersList.get("x-pathname");
+  const rawPathname = headersList.get("x-pathname") || "";
+
   // Detect if this is a Server Action request
   const isServerAction = headersList.get("next-action");
 
@@ -77,11 +77,23 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     return <AppShell user={transformedUser}>{children}</AppShell>;
   }
 
-  if (pathname && !hasPermission(pathname, transformedUser.permissions, transformedUser.role?.name)) {
-    // If it's the root path and they don't have dashboard access, we should find a path they DO have access to
-    // or just show an error. For now, let's redirect to profile as it's always accessible.
-    if (pathname === "/" || pathname === "/dashboard") {
-      // Find the first permission they have
+  // FAIL-SAFE: If rawPathname is missing, we don't know the path.
+  // Instead of risking a redirect loop, we render the page and 
+  // let the client-side permission checks in the pages handle it.
+  if (!rawPathname) {
+    return <AppShell user={transformedUser}>{children}</AppShell>;
+  }
+
+  // Normalize pathname for permission check
+  const pathname = rawPathname === '/' ? '/' : rawPathname.replace(/\/$/, '');
+
+  const isAuthorized = hasPermission(pathname, transformedUser.permissions, transformedUser.role?.name);
+
+  if (!isAuthorized) {
+    console.log(`[Auth] Access denied for user ${transformedUser.email} to path: "${pathname}"`);
+
+    // ONLY redirect if we definitely know we are on a "root-like" path that needs a redirect
+    if (pathname === "/" || pathname === "/dashboard" || pathname === "") {
       const availablePaths = [
         { key: 'orders', path: '/orders' },
         { key: 'batches', path: '/batches' },
@@ -96,14 +108,25 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { key: 'settings', path: '/settings' },
       ];
 
-      const firstAvailable = availablePaths.find(p => transformedUser.permissions?.[p.key as keyof typeof transformedUser.permissions]);
+      const firstAvailable = availablePaths.find(p => transformedUser.permissions?.[p.key as keyof UserPermissions]);
+
       if (firstAvailable) {
+        // Safety check: Don't redirect if we're already at the target path
+        if (pathname === firstAvailable.path) {
+          return (
+            <AppShell user={transformedUser}>
+              <AccessDenied />
+            </AppShell>
+          );
+        }
+
         redirect(firstAvailable.path);
       } else {
         redirect("/profile");
       }
     }
 
+    // Default to showing Access Denied if not authorized and not on a redirectable root path
     return (
       <AppShell user={transformedUser}>
         <AccessDenied />

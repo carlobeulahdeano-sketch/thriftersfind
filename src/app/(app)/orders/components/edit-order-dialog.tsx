@@ -389,7 +389,7 @@ export function EditOrderDialog({
                                   Walk In Customer
                                 </CommandItem>
                                 {customers
-                                  .filter(c => c.name.toLowerCase() !== "walk in customer")
+                                  .filter(c => c.isActive !== false && c.name.toLowerCase() !== "walk in customer")
                                   .filter(c => c.name.toLowerCase().includes((searchQuery || "").toLowerCase()))
                                   .map((customer) => (
                                     <CommandItem

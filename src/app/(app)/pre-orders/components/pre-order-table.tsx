@@ -27,6 +27,7 @@ interface PreOrderTableProps {
     customers: Customer[];
     stations: Station[];
     batches?: Batch[];
+    onRefresh: () => void;
 }
 
 const statusBadgeStyles: Record<ShippingStatus, string> = {
@@ -42,7 +43,7 @@ const statusBadgeStyles: Record<ShippingStatus, string> = {
 // Mock payment statuses for the filter UI - in real app this would likely be on the Order object
 const PAYMENT_STATUSES = ["TO PAY", "DOWNPAYMENT", "PAID"];
 
-export default function PreOrderTable({ orders, customers, stations, batches }: PreOrderTableProps) {
+export default function PreOrderTable({ orders, customers, stations, batches, onRefresh }: PreOrderTableProps) {
     const [searchTerm, setSearchTerm] = React.useState("");
     const [statusFilter, setStatusFilter] = React.useState<string>("all");
     const [paymentStatusFilter, setPaymentStatusFilter] = React.useState<string>("all");
@@ -317,6 +318,10 @@ export default function PreOrderTable({ orders, customers, stations, batches }: 
                 customers={customers}
                 stations={stations}
                 batches={batches}
+                onSuccess={() => {
+                    onRefresh();
+                    setCreateDialogOpen(false);
+                }}
             />
 
             <PayBalanceDialog
@@ -326,6 +331,7 @@ export default function PreOrderTable({ orders, customers, stations, batches }: 
                     setSelectedPreOrder(null);
                 }}
                 preOrder={selectedPreOrder}
+                onSuccess={onRefresh}
             />
         </div>
     );

@@ -1,12 +1,16 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { Product } from "@/lib/types";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-server";
 import { createInventoryLog } from "@/lib/inventory-log-helper";
 import { checkAndNotifyStock } from "./notifications-actions";
 
+import { unstable_noStore as noStore } from "next/cache";
+
 export async function getProducts(): Promise<Product[]> {
+  noStore();
   try {
     const user = await getCurrentUser();
 
@@ -14,24 +18,19 @@ export async function getProducts(): Promise<Product[]> {
       return [];
     }
 
-    const hasPermission = !!user.permissions?.inventory;
+    const roleName = user.role?.name?.toLowerCase() || "";
+    const isSuperAdmin = roleName === "super admin";
+
+    const hasPermission = isSuperAdmin || !!user.permissions?.inventory || !!user.permissions?.preOrders;
     if (!hasPermission) {
       return [];
     }
-
-    const isSuperAdmin = user.role?.name === 'Super Admin';
 
     // Use raw query to avoid schema validation errors with stale client
     const products: any[] = await prisma.$queryRaw`SELECT * FROM products ORDER BY createdAt DESC`;
 
     // Filter products based on user role
-    const filteredProducts = isSuperAdmin
-      ? products
-      : products.filter(product => {
-        if (!(product as any).createdBy) return false;
-        const createdByData = (product as any).createdBy as any;
-        return createdByData?.uid === user.id;
-      });
+    const filteredProducts = products;
 
     return filteredProducts.map(product => {
       let images: string[] = [];
@@ -235,6 +234,9 @@ export async function createProduct(productData: Omit<Product, 'id' | 'totalStoc
       branchId: user?.branchId || null,
     });
 
+    revalidatePath("/inventory");
+    revalidatePath("/pre-orders");
+
     return {
       id,
       name: productData.name,
@@ -330,6 +332,9 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
       });
     }
 
+    revalidatePath("/inventory");
+    revalidatePath("/pre-orders");
+
     return {
       id: updatedProduct.id,
       name: updatedProduct.name,
@@ -411,7 +416,66 @@ export async function deleteProduct(id: string): Promise<void> {
 
     // 5. Delete the product
     await prisma.$executeRawUnsafe(`DELETE FROM products WHERE id = ?`, id);
+
+    revalidatePath("/inventory");
+    revalidatePath("/pre-orders");
   } catch (error) {
     throw new Error(`Failed to delete product: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function bulkAddStock(updates: { productId: string; quantityToAdd: number }[]): Promise<void> {
+  try {
+    const user = await getCurrentUser();
+    if (!user || !user.permissions?.inventory) {
+      throw new Error("Permission denied");
+    }
+
+    for (const update of updates) {
+      const { productId, quantityToAdd } = update;
+
+      if (quantityToAdd <= 0) continue;
+
+      // Get current product
+      const currentProducts: any[] = await prisma.$queryRaw`SELECT * FROM products WHERE id = ${productId} LIMIT 1`;
+      const currentProduct = currentProducts[0];
+
+      if (!currentProduct) continue;
+
+      const newQuantity = (currentProduct.quantity || 0) + quantityToAdd;
+
+      // Update quantity
+      await prisma.$executeRawUnsafe(
+        `UPDATE products SET quantity = ?, updatedAt = NOW(3) WHERE id = ?`,
+        newQuantity,
+        productId
+      );
+
+      // Log inventory change
+      await createInventoryLog({
+        action: "STOCK_IN",
+        productId: productId,
+        quantityChange: quantityToAdd,
+        previousStock: currentProduct.quantity || 0,
+        newStock: newQuantity,
+        reason: "Bulk stock addition",
+        referenceId: productId,
+        branchId: user?.branchId || null,
+      });
+
+      // Check for notifications
+      await checkAndNotifyStock({
+        productName: currentProduct.name,
+        sku: currentProduct.sku,
+        quantity: newQuantity,
+        alertStock: currentProduct.alertStock,
+      });
+    }
+
+    revalidatePath("/inventory");
+    revalidatePath("/pre-orders");
+  } catch (error) {
+    console.error("Error in bulkAddStock:", error);
+    throw error;
   }
 }

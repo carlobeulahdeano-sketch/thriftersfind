@@ -77,14 +77,18 @@ export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
             try {
                 const { getMessages, markMessagesAsRead } = await import("./chat-actions");
 
-                if (!isMinimized) {
-                    markMessagesAsRead(user.id).catch(err => console.error("Failed to mark read", err));
-                }
-
                 const result = await getMessages(user.id);
                 if (isMounted) {
                     if (result.success && Array.isArray(result.data)) {
                         const newMsgs = result.data as unknown as Message[];
+
+                        // Check if there are any unread messages from the other user
+                        const hasUnread = newMsgs.some(m => m.senderId === user.id && !(m as any).read);
+
+                        if (!isMinimized && hasUnread) {
+                            markMessagesAsRead(user.id).catch(err => console.error("Failed to mark read", err));
+                        }
+
                         setMessages((prev) => {
                             const hasChanges = newMsgs.length !== prev.length ||
                                 (newMsgs.length > 0 && prev.length > 0 && newMsgs[newMsgs.length - 1].id !== prev[prev.length - 1].id);
@@ -213,7 +217,7 @@ export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
                     </div>
                 </div>
             ) : (
-                <div className="fixed bottom-0 right-10 w-80 h-[450px] bg-white rounded-t-2xl shadow-2xl flex flex-col z-[100] overflow-hidden border-2 border-slate-200 animate-in slide-in-from-bottom-10 fade-in duration-300">
+                <div className="fixed bottom-0 right-10 w-80 h-[450px] bg-white dark:bg-slate-900 rounded-t-2xl shadow-2xl flex flex-col z-[100] overflow-hidden border-2 border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-10 fade-in duration-300">
                     {/* Enhanced Header */}
                     <div className="relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600" />
@@ -255,7 +259,7 @@ export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
                     </div>
 
                     {/* Messages Area */}
-                    <ScrollArea className="flex-1 bg-gradient-to-br from-slate-50 to-blue-50/30">
+                    <ScrollArea className="flex-1 bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-950 dark:to-slate-900">
                         <div className="p-4 space-y-4">
                             {/* Profile Hero Section */}
                             <div className="flex flex-col items-center justify-center py-6 text-center space-y-3">
@@ -267,7 +271,7 @@ export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
                                     </Avatar>
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-lg text-slate-900">{user.name}</h3>
+                                    <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">{user.name}</h3>
                                     <p className="text-xs text-muted-foreground mt-1">Connected on ThriftersFind</p>
                                 </div>
                             </div>
@@ -303,7 +307,7 @@ export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
                                                         "px-4 py-2.5 text-[15px] shadow-md whitespace-pre-wrap relative",
                                                         isMe
                                                             ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-2xl rounded-br-md"
-                                                            : "bg-white text-slate-900 rounded-2xl rounded-bl-md border border-slate-200"
+                                                            : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl rounded-bl-md border border-slate-200 dark:border-slate-700"
                                                     )}
                                                 >
                                                     {(() => {
@@ -346,7 +350,7 @@ export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
                     </ScrollArea>
 
                     {/* Enhanced Input Area */}
-                    <div className="p-2 border-t-2 bg-white">
+                    <div className="p-2 border-t-2 bg-white dark:bg-slate-900 dark:border-slate-800">
                         <div className="flex items-center gap-2">
                             <div className="flex gap-1">
                                 <Button
@@ -373,7 +377,7 @@ export function ChatBox({ user, currentUser, onClose }: ChatBoxProps) {
                                         value={newMessage}
                                         onChange={(e) => setNewMessage(e.target.value)}
                                         placeholder="Type a message..."
-                                        className="w-full rounded-full bg-slate-100 border-2 border-transparent focus:border-blue-400 focus:bg-white px-4 py-2 h-9 pr-10"
+                                        className="w-full rounded-full bg-slate-100 dark:bg-slate-800 dark:text-slate-100 border-2 border-transparent focus:border-blue-400 focus:bg-white dark:focus:bg-slate-800 px-4 py-2 h-9 pr-10"
                                         disabled={sending}
                                     />
                                     <Button
@@ -516,7 +520,7 @@ function ProductSelectorModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-6xl h-[85vh] flex flex-col p-0 z-[150] overflow-hidden bg-white">
+            <DialogContent className="sm:max-w-6xl h-[85vh] flex flex-col p-0 z-[150] overflow-hidden bg-white dark:bg-slate-950">
                 {/* Enhanced Header */}
                 <div className="relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600" />
@@ -556,7 +560,7 @@ function ProductSelectorModal({
                             placeholder="Search by name, SKU, or manufacturer..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 h-12 border-2 focus:border-purple-400 bg-white"
+                            className="pl-10 h-12 border-2 focus:border-purple-400 bg-white dark:bg-slate-900 dark:text-slate-100 dark:border-slate-800"
                         />
                     </div>
 
@@ -598,10 +602,10 @@ function ProductSelectorModal({
                                         <div
                                             key={product.id}
                                             className={cn(
-                                                "group relative flex flex-col bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-200 border-2 shadow-sm hover:shadow-lg",
+                                                "group relative flex flex-col bg-white dark:bg-slate-900 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 border-2 shadow-sm hover:shadow-lg",
                                                 isSelected
-                                                    ? 'border-purple-500 ring-2 ring-purple-200 shadow-purple-200'
-                                                    : 'border-slate-200 hover:border-purple-300'
+                                                    ? 'border-purple-500 ring-2 ring-purple-200 shadow-purple-200 dark:shadow-purple-900/50'
+                                                    : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700'
                                             )}
                                             onClick={() => onSelect(product)}
                                         >
@@ -637,7 +641,7 @@ function ProductSelectorModal({
                                             </div>
 
                                             <div className="p-3 flex flex-col gap-2">
-                                                <h4 className="font-semibold text-sm truncate text-slate-900" title={product.productName}>
+                                                <h4 className="font-semibold text-sm truncate text-slate-900 dark:text-slate-100" title={product.productName}>
                                                     {product.productName}
                                                 </h4>
                                                 <Badge variant="outline" className="w-fit text-[10px] font-mono">

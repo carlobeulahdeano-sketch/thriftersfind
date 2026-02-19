@@ -104,6 +104,7 @@ export type Customer = {
   orderHistory: OrderHistoryItem[];
   totalSpent: number;
   role?: UserRole;
+  isActive?: boolean;
 };
 
 export type PaymentStatus = 'Hold' | 'Paid' | 'Unpaid' | 'PAID PENDING';

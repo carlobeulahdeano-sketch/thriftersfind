@@ -23,7 +23,7 @@ import { Customer, Order, PaymentStatus, ShippingStatus, PaymentMethod, Batch, O
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { ChevronsUpDown, Check, Copy, Package, Trash2, Plus, PhilippinePeso, User, MapPin, Phone, CreditCard, Truck, Calendar, FileText, Printer, CheckCircle2, ShoppingCart, Zap, Layers } from "lucide-react";
+import { ChevronsUpDown, Check, Copy, Package, Trash2, Plus, PhilippinePeso, User, MapPin, Phone, CreditCard, Truck, Calendar, FileText, Printer, CheckCircle2, ShoppingCart, Zap, Layers, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SelectProductDialog } from "./select-product-dialog";
@@ -418,33 +418,37 @@ Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}
                           <User className="w-4 h-4 text-blue-500" />
                           Customer Name
                         </Label>
-                        <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              aria-expanded={comboboxOpen}
-                              className="w-full justify-between h-11 border-2 hover:border-blue-400"
-                            >
-                              {customerName || "Walk In Customer"}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[200]" align="start">
-                            <Command>
-                              <CommandInput
-                                placeholder="Search or type new customer..."
+                        <div className="relative">
+                          <Input
+                            id="customerName"
+                            value={customerName}
+                            onChange={(e) => {
+                              setCustomerName(e.target.value);
+                              setComboboxOpen(true);
+                            }}
+                            onFocus={() => setComboboxOpen(true)}
+                            placeholder="Type customer name..."
+                            className="h-11 border-2 focus:border-blue-400 pr-10"
+                            autoComplete="off"
+                          />
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            <Search className="w-4 h-4" />
+                          </div>
+
+                          {comboboxOpen && (
+                            <>
+                              <div
+                                className="fixed inset-0 z-[100]"
+                                onClick={() => setComboboxOpen(false)}
                               />
-                              <CommandList>
-                                <CommandEmpty>
-                                  <div className="flex flex-col items-center gap-2 py-2">
-                                    <span>No customer found.</span>
-                                  </div>
-                                </CommandEmpty>
-                                <CommandGroup>
-                                  <CommandItem
-                                    value="Walk In Customer"
-                                    onSelect={() => {
+                              <div className="absolute top-full left-0 w-full mt-1 bg-white border-2 border-slate-200 rounded-xl shadow-xl z-[101] max-h-[250px] overflow-y-auto">
+                                <div className="p-1">
+                                  <div
+                                    className={cn(
+                                      "flex items-center px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors",
+                                      customerName.toLowerCase() === "walk in customer" ? "bg-blue-50 text-blue-700 font-semibold" : "hover:bg-slate-100"
+                                    )}
+                                    onClick={() => {
                                       setCustomerName("Walk In Customer");
                                       setContactNumber("");
                                       setAddress("");
@@ -459,36 +463,50 @@ Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}
                                       setComboboxOpen(false);
                                     }}
                                   >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        customerName.toLowerCase() === "walk in customer" ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
+                                    <Check className={cn("mr-2 h-4 w-4", customerName.toLowerCase() === "walk in customer" ? "opacity-100" : "opacity-0")} />
                                     Walk In Customer
-                                  </CommandItem>
+                                  </div>
+
                                   {customers
-                                    .filter(c => c.name.toLowerCase() !== "walk in customer")
+                                    .filter(c =>
+                                      c.isActive !== false &&
+                                      c.name.toLowerCase() !== "walk in customer" &&
+                                      c.name.toLowerCase().includes(customerName.toLowerCase())
+                                    )
+                                    .slice(0, 10)
                                     .map((customer) => (
-                                      <CommandItem
+                                      <div
                                         key={customer.id}
-                                        value={customer.name}
-                                        onSelect={() => handleCustomerSelect(customer)}
+                                        className={cn(
+                                          "flex items-center px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors",
+                                          customerName.toLowerCase() === customer.name.toLowerCase() ? "bg-blue-50 text-blue-700 font-semibold" : "hover:bg-slate-100"
+                                        )}
+                                        onClick={() => {
+                                          handleCustomerSelect(customer);
+                                          setComboboxOpen(false);
+                                        }}
                                       >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            customerName.toLowerCase() === customer.name.toLowerCase() ? "opacity-100" : "opacity-0"
-                                          )}
-                                        />
-                                        {customer.name}
-                                      </CommandItem>
+                                        <Check className={cn("mr-2 h-4 w-4", customerName.toLowerCase() === customer.name.toLowerCase() ? "opacity-100" : "opacity-0")} />
+                                        <div className="flex flex-col">
+                                          <span>{customer.name}</span>
+                                          <span className="text-[10px] text-slate-500 font-normal">{customer.phone || customer.email}</span>
+                                        </div>
+                                      </div>
                                     ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
+
+                                  {customers.filter(c =>
+                                    c.name.toLowerCase() !== "walk in customer" &&
+                                    c.name.toLowerCase().includes(customerName.toLowerCase())
+                                  ).length === 0 && customerName !== "" && (
+                                      <div className="px-3 py-4 text-center">
+                                        <p className="text-sm text-slate-500">Creating new customer: <span className="font-semibold text-blue-600">"{customerName}"</span></p>
+                                      </div>
+                                    )}
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="contactNumber" className="text-sm font-semibold text-slate-700 flex items-center gap-2">

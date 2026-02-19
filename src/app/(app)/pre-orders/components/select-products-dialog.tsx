@@ -149,10 +149,7 @@ export function SelectProductsDialog({ isOpen, onClose, onSelect }: SelectProduc
                                             <h4 className="font-semibold text-sm truncate" title={product.name}>
                                                 {product.name}
                                             </h4>
-                                            <div className="flex justify-between items-center mt-1">
-                                                <span className="text-xs text-muted-foreground truncate">{product.sku}</span>
-                                                <span className="text-sm font-medium">₱{product.retailPrice?.toLocaleString() ?? 0}</span>
-                                            </div>
+                                            <div className="mt-1"></div>
                                         </div>
                                     </div>
                                 );

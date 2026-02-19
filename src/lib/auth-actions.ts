@@ -2,8 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { UserPermissions } from "./types";
 
 export async function login(prevState: any, formData: FormData) {
     const email = formData.get("email") as string;
@@ -39,12 +40,43 @@ export async function login(prevState: any, formData: FormData) {
         });
 
         // Success
+        // Determine where to redirect based on permissions
+        const userWithPerms = user as any;
+        const permissions = userWithPerms.permissions as UserPermissions;
+
+        if (permissions?.dashboard) {
+            redirect("/dashboard");
+        }
+
+        const availablePaths = [
+            { key: 'orders', path: '/orders' },
+            { key: 'batches', path: '/batches' },
+            { key: 'inventory', path: '/inventory' },
+            { key: 'customers', path: '/customers' },
+            { key: 'stations', path: '/stations' },
+            { key: 'warehouses', path: '/warehouses' },
+            { key: 'preOrders', path: '/pre-orders' },
+            { key: 'reports', path: '/reports' },
+            { key: 'sales', path: '/sales' },
+            { key: 'users', path: '/users' },
+            { key: 'settings', path: '/settings' },
+        ];
+
+        const firstAvailable = availablePaths.find(p => permissions?.[p.key as keyof UserPermissions]);
+
+        if (firstAvailable) {
+            redirect(firstAvailable.path);
+        } else {
+            redirect("/profile");
+        }
+
     } catch (error: any) {
+        if (error.digest?.startsWith('NEXT_REDIRECT')) {
+            throw error;
+        }
         console.error("Login error:", error);
         return { error: "An unexpected error occurred. Please try again." };
     }
-
-    redirect("/dashboard");
 }
 
 export async function logout() {

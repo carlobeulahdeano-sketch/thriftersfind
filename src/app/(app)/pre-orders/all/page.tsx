@@ -18,37 +18,39 @@ export default function PreOrdersPage() {
     const [isAuthorized, setIsAuthorized] = useState(true);
     const [hasCheckedPermission, setHasCheckedPermission] = useState(false);
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const response = await fetch('/api/auth/me');
-                if (!response.ok) throw new Error('Auth failed');
-                const { user } = await response.json();
+    const fetchData = async (showLoading = true) => {
+        if (showLoading) setIsLoading(true);
+        try {
+            const response = await fetch('/api/auth/me');
+            if (!response.ok) throw new Error('Auth failed');
+            const { user } = await response.json();
 
-                if (!user?.permissions?.preOrders) {
-                    setIsAuthorized(false);
-                }
-
-                if (user?.permissions?.preOrders) {
-                    const [preOrdersData, customersData, stationsData, batchesData] = await Promise.all([
-                        getPreOrders(),
-                        getCustomers(),
-                        getStations(),
-                        getBatches(),
-                    ]);
-                    setPreOrders(preOrdersData);
-                    setCustomers(customersData);
-                    setStations(stationsData);
-                    setBatches(batchesData.batches);
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setHasCheckedPermission(true);
-                setIsLoading(false);
+            if (!user?.permissions?.preOrders) {
+                setIsAuthorized(false);
             }
+
+            if (user?.permissions?.preOrders) {
+                const [preOrdersData, customersData, stationsData, batchesData] = await Promise.all([
+                    getPreOrders(),
+                    getCustomers(),
+                    getStations(),
+                    getBatches(),
+                ]);
+                setPreOrders(preOrdersData);
+                setCustomers(customersData);
+                setStations(stationsData);
+                setBatches(batchesData.batches);
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setHasCheckedPermission(true);
+            setIsLoading(false);
         }
-        fetchData();
+    };
+
+    useEffect(() => {
+        fetchData(true);
     }, []);
 
     if (!hasCheckedPermission || isLoading) {
@@ -103,6 +105,7 @@ export default function PreOrdersPage() {
                 customers={customers}
                 stations={stations}
                 batches={batches}
+                onRefresh={() => fetchData(false)}
             />
         </div>
     );

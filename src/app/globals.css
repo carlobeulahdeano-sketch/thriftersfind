@@ -4,88 +4,90 @@
 
 @layer base {
   :root {
-    --background: 210 40% 96.1%;
+    --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
+    --card: 0 0% 98%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 174 83% 40%;
-    /* Teal */
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 240 10% 3.9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 330 85% 65%;
-    /* Pink */
+    --primary: 189 94% 48%; /* Logo Cyan */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 330 81% 70%; /* Logo Pink */
+    --secondary-foreground: 330 84% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 262 80% 60%; /* Logo Purple */
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 174 83% 40%;
-    /* Teal */
-    --radius: 0.5rem;
-
-    --chart-1: 174 83% 40%;
-    --chart-2: 330 85% 65%;
-    --chart-3: 262 70% 65%;
-    --chart-4: 330, 70%, 65%;
-    --chart-5: 262 60% 75%;
-
-    --sidebar-background: 262 84% 15%;
-    --sidebar-foreground: 270 20% 90%;
-    --sidebar-primary: 330 84% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 262 84% 30%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 262 84% 20%;
-    --sidebar-ring: 330 84% 50%;
-  }
-
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 4.8% 9.8%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 4.8% 9.8%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 189 94% 48%;
-    /* Cyan from Logo */
-    --primary-foreground: 189 94% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 330 81% 70%;
-    /* Pink from Logo */
-    --accent-foreground: 330 84% 10%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 189 94% 48%;
-    /* Cyan */
+    --radius: 0.75rem;
 
     --chart-1: 189 94% 48%;
-    /* Cyan */
     --chart-2: 330 81% 70%;
-    /* Pink */
     --chart-3: 262 80% 60%;
-    --chart-4: 330, 80%, 65%;
-    --chart-5: 262 70% 55%;
+    --chart-4: 43 96% 64%;
+    --chart-5: 27 87% 67%;
 
     --sidebar-background: 262 60% 12%;
-    /* Deep Purple */
     --sidebar-foreground: 262 10% 90%;
     --sidebar-primary: 189 94% 48%;
-    /* Cyan */
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 262 60% 20%;
     --sidebar-accent-foreground: 262 10% 95%;
     --sidebar-border: 262 60% 20%;
     --sidebar-ring: 189 94% 48%;
+
+    /* Glassmorphism/Glow Tokens */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glow-cyan: 189 94% 48%;
+    --glow-pink: 330 81% 70%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 5% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 189 94% 48%; /* Logo Cyan */
+    --primary-foreground: 189 94% 10%;
+    --secondary: 330 81% 70%; /* Logo Pink */
+    --secondary-foreground: 330 84% 10%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 262 70% 50%; /* Logo Purple */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 189 94% 48%;
+
+    --chart-1: 189 94% 48%;
+    --chart-2: 330 81% 70%;
+    --chart-3: 262 80% 60%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    --sidebar-background: 262 70% 8%;
+    --sidebar-foreground: 262 10% 90%;
+    --sidebar-primary: 189 94% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 262 60% 15%;
+    --sidebar-accent-foreground: 262 10% 95%;
+    --sidebar-border: 262 70% 12%;
+    --sidebar-ring: 189 94% 48%;
+
+    /* Glassmorphism/Glow Tokens */
+    --glass-bg: rgba(0, 0, 0, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glow-cyan: 189 94% 55%;
+    --glow-pink: 330 81% 75%;
   }
 }
 

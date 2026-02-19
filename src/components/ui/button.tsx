@@ -9,14 +9,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        default: "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/30 active:scale-[0.98] transition-all",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98] transition-all",
+        outline: "border-2 border-primary/20 bg-background hover:bg-primary/5 hover:border-primary/40 hover:text-primary active:scale-[0.98] transition-all",
+        secondary: "bg-secondary text-secondary-foreground shadow-lg shadow-secondary/20 hover:bg-secondary/90 active:scale-[0.98] transition-all",
+        accent: "bg-accent text-accent-foreground shadow-lg shadow-accent/20 hover:bg-accent/90 active:scale-[0.98] transition-all",
+        brand: "bg-gradient-brand text-white shadow-lg glow-primary hover:opacity-90 active:scale-[0.98] transition-all border-none",
+        glass: "glass-card text-foreground hover:bg-white/10 active:scale-[0.98] transition-all border-white/20",
+        ghost: "hover:bg-primary/10 hover:text-primary active:scale-[0.95] transition-all",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -35,7 +35,7 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
 

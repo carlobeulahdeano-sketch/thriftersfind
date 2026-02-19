@@ -19,11 +19,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MoreHorizontal, PlusCircle, Search, X, Image as ImageIcon, AlertTriangle, MinusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search, X, Image as ImageIcon, AlertTriangle, MinusCircle, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AddProductDialog } from "./add-product-dialog";
 import { AddQuantityDialog } from "./add-quantity-dialog";
+import { BulkAddStockDialog } from "./bulk-add-stock-dialog";
 import { DeductQuantityDialog } from "./deduct-quantity-dialog";
 import type { Product, InventoryItem } from "@/lib/types";
 import { EditProductDialog } from "./edit-product-dialog";
@@ -43,7 +44,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
-export default function InventoryTable({ products: initialProducts }: { products: Product[] }) {
+export default function InventoryTable({ products: initialProducts, onRefresh }: { products: Product[], onRefresh?: () => void }) {
   const { toast } = useToast();
   const router = useRouter();
   const [products, setProducts] = React.useState<Product[]>(initialProducts);
@@ -51,12 +52,17 @@ export default function InventoryTable({ products: initialProducts }: { products
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 10;
   const [isAddDialogOpen, setAddDialogOpen] = React.useState(false);
+  const [isBulkAddDialogOpen, setBulkAddDialogOpen] = React.useState(false);
   const [editingProduct, setEditingProduct] = React.useState<Product | null>(null);
   const [addingQuantityProduct, setAddingQuantityProduct] = React.useState<Product | null>(null);
   const [deductingQuantityProduct, setDeductingQuantityProduct] = React.useState<Product | null>(null);
 
   const refreshProducts = () => {
-    router.refresh();
+    if (onRefresh) {
+      onRefresh();
+    } else {
+      router.refresh();
+    }
   };
 
   React.useEffect(() => {
@@ -128,10 +134,16 @@ export default function InventoryTable({ products: initialProducts }: { products
               </Button>
             )}
           </div>
-          <Button onClick={() => setAddDialogOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Product
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setBulkAddDialogOpen(true)}>
+              <Package className="mr-2 h-4 w-4" />
+              Bulk Add Stock
+            </Button>
+            <Button onClick={() => setAddDialogOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Product
+            </Button>
+          </div>
         </div>
         <CardContent className="p-0">
           <Table>
@@ -267,6 +279,12 @@ export default function InventoryTable({ products: initialProducts }: { products
       <AddProductDialog
         isOpen={isAddDialogOpen}
         onClose={() => setAddDialogOpen(false)}
+        onSuccess={refreshProducts}
+      />
+      <BulkAddStockDialog
+        isOpen={isBulkAddDialogOpen}
+        onClose={() => setBulkAddDialogOpen(false)}
+        products={products}
         onSuccess={refreshProducts}
       />
       <EditProductDialog

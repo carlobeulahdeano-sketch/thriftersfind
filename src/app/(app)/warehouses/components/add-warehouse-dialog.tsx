@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
     Dialog,
     DialogContent,
@@ -14,21 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { createWarehouseProduct } from "@/app/(app)/warehouses/server-actions";
-import { Package, MapPin, Calendar, Image as ImageIcon, PhilippinePeso, Hash, X, RefreshCw, Check, ChevronsUpDown } from "lucide-react";
+import { Package, MapPin, Calendar, Image as ImageIcon, PhilippinePeso, Hash, X, RefreshCw, Check, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "@/components/ui/command";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
+
+
 import { searchProducts, searchProductsSimple } from "@/app/(app)/inventory/actions";
 import { Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -58,22 +47,21 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
 
     // EXISTING PRODUCT STATES
     const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string; sku: string; images: string[] } | null>(null);
-    const [openCombobox, setOpenCombobox] = useState(false);
     const [searchResults, setSearchResults] = useState<{ id: string; name: string; sku: string; images: string[] }[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
-        if (openCombobox) {
-            searchProductsSimple("").then(setSearchResults);
-        }
-    }, [openCombobox]);
+
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             if (searchQuery) {
                 const results = await searchProductsSimple(searchQuery);
+                setSearchResults(results);
+            } else {
+                // Load initial products if query is empty
+                const results = await searchProductsSimple("");
                 setSearchResults(results);
             }
         }, 300);
@@ -114,10 +102,11 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
     };
 
     const handleSelectProduct = (product: { id: string; name: string; sku: string; images: string[] }) => {
-        setSelectedProduct(product);
-        // We no longer have cost, retailPrice, or images in the simple product object
-        // So we just set the selected product and close the combobox
-        setOpenCombobox(false);
+        if (selectedProduct?.id === product.id) {
+            setSelectedProduct(null);
+        } else {
+            setSelectedProduct(product);
+        }
     };
 
     const handleSave = async () => {
@@ -379,108 +368,104 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
                                     </div>
                                     <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">Select Existing Product</h3>
                                 </div>
-                                <div className="space-y-2.5">
-                                    <Label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                        <Package className="w-4 h-4 text-purple-600" />
-                                        Search Product <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                role="combobox"
-                                                aria-expanded={openCombobox}
-                                                className="w-full justify-between bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 h-11 rounded-lg shadow-sm transition-all duration-200"
-                                            >
-                                                <span className={selectedProduct ? "font-medium" : "text-gray-500"}>
-                                                    {selectedProduct
-                                                        ? selectedProduct.name
-                                                        : "Select product..."}
-                                                </span>
-                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-[400px] p-0" align="start">
-                                            <Command>
-                                                <CommandInput placeholder="Search product..." onValueChange={setSearchQuery} />
-                                                <CommandList>
-                                                    <CommandEmpty>No product found.</CommandEmpty>
-                                                    <CommandGroup>
-                                                        {searchResults.map((product) => (
-                                                            <CommandItem
-                                                                key={product.id}
-                                                                value={`${product.name} ${product.sku}`}
-                                                                onSelect={() => handleSelectProduct(product)}
-                                                            >
-                                                                <Check
-                                                                    className={cn(
-                                                                        "mr-2 h-4 w-4",
-                                                                        selectedProduct?.id === product.id ? "opacity-100" : "opacity-0"
-                                                                    )}
-                                                                />
-                                                                <div className="flex flex-col">
-                                                                    <span>{product.name}</span>
-                                                                    <span className="text-xs text-muted-foreground">SKU: {product.sku}</span>
-                                                                </div>
-                                                                {
-                                                                    product.images && product.images.length > 0 && (
-                                                                        <div className="ml-auto w-8 h-8 rounded overflow-hidden border border-gray-200">
-                                                                            <img
-                                                                                src={product.images[0]}
-                                                                                alt={product.name}
-                                                                                className="w-full h-full object-cover"
-                                                                            />
-                                                                        </div>
-                                                                    )
-                                                                }
-                                                            </CommandItem>
-                                                        ))}
-                                                    </CommandGroup>
-                                                </CommandList>
-                                            </Command>
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
 
-                                {selectedProduct && (
-                                    <div className="space-y-4 p-5 border-2 border-purple-300 dark:border-purple-700 rounded-2xl bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-950 dark:to-purple-950/20 shadow-md">
-                                        {selectedProduct.images && selectedProduct.images.length > 0 && (
-                                            <div className="flex justify-center mb-4">
-                                                <div className="relative w-full h-56 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-900 dark:to-gray-950 rounded-2xl overflow-hidden border-2 border-purple-300 dark:border-purple-700 shadow-sm">
-                                                    <img
-                                                        src={selectedProduct.images[0]}
-                                                        alt={selectedProduct.name}
-                                                        className="w-full h-full object-contain p-2"
-                                                    />
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* Left Column: Search & Selection */}
+                                    <div className="space-y-4">
+                                        <div className="space-y-2.5">
+                                            <Label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                <Package className="w-4 h-4 text-purple-600" />
+                                                Search Product <span className="text-red-500">*</span>
+                                            </Label>
+                                            <div className="relative">
+                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                                                <Input
+                                                    placeholder="Search product by name or SKU..."
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    className="pl-10 w-full bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-500 rounded-lg shadow-sm transition-all duration-200 h-11"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {selectedProduct && (
+                                            <div className="space-y-4 p-4 border-2 border-purple-300 dark:border-purple-700 rounded-xl bg-white/50 dark:bg-gray-900/50 shadow-sm animate-in fade-in zoom-in duration-300">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-800 shadow-sm">
+                                                        {selectedProduct.images?.[0] ? (
+                                                            <img src={selectedProduct.images[0]} alt={selectedProduct.name} className="h-full w-full object-contain p-1" />
+                                                        ) : (
+                                                            <div className="h-full w-full flex items-center justify-center text-gray-400 font-bold bg-gray-50 dark:bg-gray-900">
+                                                                {selectedProduct.name.charAt(0).toUpperCase()}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <h4 className="font-bold text-gray-900 dark:text-gray-100 truncate">{selectedProduct.name}</h4>
+                                                        <p className="text-sm text-purple-600 dark:text-purple-400 font-mono">{selectedProduct.sku}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-end">
+                                                    <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                                                        <Check className="w-3 h-3" /> Selected
+                                                    </p>
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="space-y-2.5">
-                                            <Label htmlFor="existing-name" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                <Package className="w-4 h-4 text-purple-600" />
-                                                Product Name
-                                            </Label>
-                                            <Input
-                                                id="existing-name"
-                                                value={selectedProduct.name}
-                                                readOnly
-                                                className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-200 dark:border-gray-700 font-semibold rounded-lg h-11"
-                                            />
-                                        </div>
-                                        <div className="space-y-2.5">
-                                            <Label htmlFor="existing-sku" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                <Hash className="w-4 h-4 text-purple-600" />
-                                                SKU
-                                            </Label>
-                                            <Input
-                                                id="existing-sku"
-                                                value={selectedProduct.sku}
-                                                readOnly
-                                                className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-200 dark:border-gray-700 font-mono font-semibold rounded-lg h-11"
-                                            />
+                                    </div>
+
+                                    {/* Right Column: Results List */}
+                                    <div className="space-y-2.5 flex flex-col h-full min-h-[300px]">
+                                        <Label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            <Check className="w-4 h-4 text-purple-600" />
+                                            Existing Available Products
+                                        </Label>
+                                        <div className="flex-1 bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-inner flex flex-col">
+                                            {searchResults.length > 0 ? (
+                                                <div className="overflow-y-auto max-h-[300px] p-2 space-y-2">
+                                                    {searchResults.map((product) => (
+                                                        <div
+                                                            key={product.id}
+                                                            onClick={() => handleSelectProduct(product)}
+                                                            className={cn(
+                                                                "flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 border",
+                                                                selectedProduct?.id === product.id
+                                                                    ? "bg-purple-50 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700 ring-1 ring-purple-300 dark:ring-purple-700"
+                                                                    : "hover:bg-gray-50 dark:hover:bg-gray-900 border-transparent hover:border-gray-200 dark:hover:border-gray-800"
+                                                            )}
+                                                        >
+                                                            <div className="h-10 w-10 shrink-0 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                                                                {product.images?.[0] ? (
+                                                                    <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
+                                                                ) : (
+                                                                    <div className="h-full w-full flex items-center justify-center text-gray-400 text-xs font-bold">
+                                                                        {product.name.charAt(0).toUpperCase()}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{product.name}</p>
+                                                                <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{product.sku}</p>
+                                                            </div>
+                                                            {selectedProduct?.id === product.id && (
+                                                                <div className="h-5 w-5 bg-purple-600 rounded-full flex items-center justify-center">
+                                                                    <Check className="h-3 w-3 text-white" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-6 text-center">
+                                                    <Search className="h-8 w-8 mb-2 opacity-20" />
+                                                    <p className="text-sm">
+                                                        {searchQuery ? "No products found matching your search." : "Type in the search box to find products."}
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                )}
+                                </div>
                             </div>
                         </TabsContent>
                     </Tabs>

@@ -223,21 +223,33 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
 
       // Update Batch Totals for Delivered orders
       const isValidBatchId = (bid: string | null | undefined) => bid && bid !== 'none' && bid !== 'hold';
-      if (orderData.shippingStatus === 'Delivered' && isValidBatchId(orderData.batchId)) {
-        const targetBatchId = orderData.batchId!;
-        const batch = await tx.batch.findUnique({ where: { id: targetBatchId } });
-        if (batch) {
-          await tx.batch.update({
-            where: { id: targetBatchId },
-            data: {
-              totalOrders: (batch.totalOrders || 0) + 1,
-              totalSales: (batch.totalSales || 0) + orderData.totalAmount
-            }
-          });
-          console.log(`[BatchUpdate] Updated Batch ${targetBatchId}: Orders +1, Sales +${orderData.totalAmount}`);
-        } else {
-          console.warn(`[BatchUpdate] Batch ${targetBatchId} not found!`);
+      if (orderData.shippingStatus === 'Delivered') {
+        // Update Batch stats if valid batch
+        if (isValidBatchId(orderData.batchId)) {
+          const targetBatchId = orderData.batchId!;
+          const batch = await tx.batch.findUnique({ where: { id: targetBatchId } });
+          if (batch) {
+            await tx.batch.update({
+              where: { id: targetBatchId },
+              data: {
+                totalOrders: (batch.totalOrders || 0) + 1,
+                totalSales: (batch.totalSales || 0) + orderData.totalAmount
+              }
+            });
+            console.log(`[BatchUpdate] Updated Batch ${targetBatchId}: Orders +1, Sales +${orderData.totalAmount}`);
+          } else {
+            console.warn(`[BatchUpdate] Batch ${targetBatchId} not found!`);
+          }
         }
+
+        // Update Customer totalSpent
+        await tx.customer.update({
+          where: { id: orderData.customerId },
+          data: {
+            totalSpent: { increment: orderData.totalAmount }
+          }
+        });
+        console.log(`[CustomerUpdate] Updated Customer ${orderData.customerId}: totalSpent +${orderData.totalAmount}`);
       }
 
       // 4. Create Sales Log (Raw SQL)
@@ -332,6 +344,11 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
             });
           }
         }
+        // Update Customer totalSpent
+        await tx.customer.update({
+          where: { id: existingOrder.customerId },
+          data: { totalSpent: { decrement: oldAmount } }
+        });
       } else if (!wasCountable && isNowCountable) {
         // Condition 2: Transition FROM non-Countable TO Countable -> Apply stats
         if (isValidBatch(newBatchId)) {
@@ -346,8 +363,36 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
             });
           }
         }
+        // Update Customer totalSpent
+        await tx.customer.update({
+          where: { id: data.customerId || existingOrder.customerId },
+          data: { totalSpent: { increment: newAmount } }
+        });
       } else if (wasCountable && isNowCountable) {
-        // Condition 3: Stayed Countable but Batch or Amount changed -> Diff stats
+        // Condition 3: Stayed Countable but Batch, Amount, or Customer changed -> Diff stats
+        const oldCustomerId = existingOrder.customerId;
+        const newCustomerId = data.customerId || oldCustomerId;
+        const customerChanged = oldCustomerId !== newCustomerId;
+
+        if (customerChanged) {
+          // Revert old customer
+          await tx.customer.update({
+            where: { id: oldCustomerId },
+            data: { totalSpent: { decrement: oldAmount } }
+          });
+          // Apply to new customer
+          await tx.customer.update({
+            where: { id: newCustomerId },
+            data: { totalSpent: { increment: newAmount } }
+          });
+        } else if (amountChanged) {
+          // Same customer, different amount
+          await tx.customer.update({
+            where: { id: oldCustomerId },
+            data: { totalSpent: { increment: newAmount - oldAmount } }
+          });
+        }
+
         if (batchChanged) {
           // Revert old
           if (isValidBatch(oldBatchId)) {
@@ -586,18 +631,27 @@ export async function cancelOrder(orderId: string): Promise<void> {
 
       // Update Batch Totals (Decrement) if it was countable (Delivered)
       const isValidBatchId = (bid: string | null | undefined) => bid && bid !== 'none' && bid !== 'hold';
-      if (order.shippingStatus === 'Delivered' && isValidBatchId(order.batchId)) {
-        const targetBatchId = order.batchId!;
-        const batch = await tx.batch.findUnique({ where: { id: targetBatchId } });
-        if (batch) {
-          await tx.batch.update({
-            where: { id: targetBatchId },
-            data: {
-              totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
-              totalSales: Math.max(0, (batch.totalSales || 0) - order.totalAmount)
-            }
-          });
+      if (order.shippingStatus === 'Delivered') {
+        if (isValidBatchId(order.batchId)) {
+          const targetBatchId = order.batchId!;
+          const batch = await tx.batch.findUnique({ where: { id: targetBatchId } });
+          if (batch) {
+            await tx.batch.update({
+              where: { id: targetBatchId },
+              data: {
+                totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
+                totalSales: Math.max(0, (batch.totalSales || 0) - order.totalAmount)
+              }
+            });
+          }
         }
+
+        // Update Customer totalSpent
+        await tx.customer.update({
+          where: { id: order.customerId },
+          data: { totalSpent: { decrement: order.totalAmount } }
+        });
+        console.log(`[CustomerUpdate] Updated Customer ${order.customerId}: totalSpent -${order.totalAmount} (Cancellation)`);
       }
 
       // 4. Update order status

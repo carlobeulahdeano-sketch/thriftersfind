@@ -20,37 +20,42 @@ export function hasPermission(
         }
     }
 
+    // Normalize pathname by removing trailing slash (unless it's just '/')
+    const normalizedPath = pathname !== '/' && pathname.endsWith('/')
+        ? pathname.slice(0, -1)
+        : pathname;
+
     // Public patterns that everyone can access (profile is always visible)
-    if (pathname === '/profile' || pathname.startsWith('/profile/')) {
+    if (normalizedPath === '/profile' || normalizedPath.startsWith('/profile/')) {
         return true;
     }
 
     // Dashboard handling
-    if (pathname === '/dashboard' || pathname === '/' || pathname === '') {
+    if (normalizedPath === '/dashboard' || normalizedPath === '/' || normalizedPath === '') {
         return !!permissions?.dashboard;
     }
 
     // Sales handling
-    if (pathname.startsWith('/sales')) {
+    if (normalizedPath.startsWith('/sales')) {
         return !!permissions?.sales;
     }
 
     // Admin Manage Section
-    if (pathname.startsWith('/admin')) {
+    if (normalizedPath.startsWith('/admin')) {
         return !!permissions?.adminManage;
     }
 
     // Core Features
-    if (pathname.startsWith('/orders')) return !!permissions?.orders;
-    if (pathname.startsWith('/batches')) return !!permissions?.batches;
-    if (pathname.startsWith('/inventory')) return !!permissions?.inventory;
-    if (pathname.startsWith('/customers')) return !!permissions?.customers;
-    if (pathname.startsWith('/stations')) return !!permissions?.stations;
-    if (pathname.startsWith('/warehouses')) return !!permissions?.warehouses;
-    if (pathname.startsWith('/pre-orders')) return !!permissions?.preOrders;
-    if (pathname.startsWith('/reports')) return !!permissions?.reports;
-    if (pathname.startsWith('/users')) return !!permissions?.users;
-    if (pathname.startsWith('/settings')) return !!permissions?.settings;
+    if (normalizedPath.startsWith('/orders')) return !!permissions?.orders;
+    if (normalizedPath.startsWith('/batches')) return !!permissions?.batches;
+    if (normalizedPath.startsWith('/inventory')) return !!permissions?.inventory;
+    if (normalizedPath.startsWith('/customers')) return !!permissions?.customers;
+    if (normalizedPath.startsWith('/stations')) return !!permissions?.stations;
+    if (normalizedPath.startsWith('/warehouses')) return !!permissions?.warehouses;
+    if (normalizedPath.startsWith('/pre-orders')) return !!permissions?.preOrders;
+    if (normalizedPath.startsWith('/reports')) return !!permissions?.reports;
+    if (normalizedPath.startsWith('/users')) return !!permissions?.users;
+    if (normalizedPath.startsWith('/settings')) return !!permissions?.settings;
 
     // Default to true if path is not recognized (though everything should be covered)
     return true;
