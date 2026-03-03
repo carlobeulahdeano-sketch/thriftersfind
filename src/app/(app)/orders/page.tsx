@@ -9,6 +9,8 @@ import { getStations } from "../stations/actions";
 import { getBatches } from "../batches/actions";
 import type { Order, Customer, Product, Batch } from "@/lib/types";
 import type { Station } from "../stations/actions";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { RecentSalesTable } from "../sales/components/recent-sales-table";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -89,13 +91,25 @@ export default function OrdersPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent w-fit">Orders</h1>
       </div>
-      <OrderTable
-        orders={orders}
-        customers={customers}
-        products={products}
-        stations={stations}
-        batches={batches}
-      />
+
+      <Tabs defaultValue="all-orders" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="all-orders">All Orders</TabsTrigger>
+          <TabsTrigger value="recent-sales">Recent Sales</TabsTrigger>
+        </TabsList>
+        <TabsContent value="all-orders">
+          <OrderTable
+            orders={orders}
+            customers={customers}
+            products={products}
+            stations={stations}
+            batches={batches}
+          />
+        </TabsContent>
+        <TabsContent value="recent-sales">
+          <RecentSalesTable orders={orders.filter(order => order.shippingStatus === 'Delivered')} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

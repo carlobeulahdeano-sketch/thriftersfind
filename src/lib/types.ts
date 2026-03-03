@@ -54,6 +54,8 @@ export type User = {
   branchId?: string | null;
   branch?: Branch | null;
   permissions?: UserPermissions | null;
+  isActive?: boolean;
+  isOnline?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -158,6 +160,16 @@ export type Batch = {
   totalSales: number;
 }
 
+export type ProductCategory = {
+  id: string;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { products: number };
+}
+
 export type Product = {
   id: string;
   name: string;
@@ -165,6 +177,8 @@ export type Product = {
   description: string;
   quantity: number;
   warehouseId?: string | null;
+  categoryId?: string | null;
+  category?: ProductCategory | null;
   totalStock: number;
   alertStock: number;
   cost: number;

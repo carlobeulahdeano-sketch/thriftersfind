@@ -370,7 +370,10 @@ export default function OrderTable({ orders, customers, products, stations, batc
                           <DropdownMenuItem onClick={() => setViewOrder(order)}>
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSelectedOrder(order)}>
+                          <DropdownMenuItem
+                            onClick={() => setSelectedOrder(order)}
+                            disabled={order.shippingStatus === 'Delivered'}
+                          >
                             Edit Order
                           </DropdownMenuItem>
                           <DropdownMenuItem

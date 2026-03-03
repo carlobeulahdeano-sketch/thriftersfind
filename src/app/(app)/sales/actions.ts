@@ -5,7 +5,7 @@ import { Order, PreOrder } from "@/lib/types";
 import { startOfWeek, startOfMonth, startOfYear, endOfDay } from "date-fns";
 import { getCurrentUser } from "@/lib/auth-server";
 
-export async function getSalesData(timeframe: "week" | "month" | "year"): Promise<{ orders: Order[], isAuthorized: boolean }> {
+export async function getSalesData(timeframe: "week" | "month" | "year" | "all"): Promise<{ orders: Order[], isAuthorized: boolean }> {
     try {
         const user = await getCurrentUser();
 
@@ -25,8 +25,10 @@ export async function getSalesData(timeframe: "week" | "month" | "year"): Promis
             startDate = startOfWeek(now);
         } else if (timeframe === 'month') {
             startDate = startOfMonth(now);
-        } else { // year
+        } else if (timeframe === 'year') {
             startDate = startOfYear(now);
+        } else { // all
+            startDate = new Date(0);
         }
 
         const endDate = endOfDay(now);
@@ -184,7 +186,7 @@ export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promi
     }
 }
 
-export async function getPreOrderSalesData(timeframe: "week" | "month" | "year"): Promise<{ preOrders: PreOrder[], isAuthorized: boolean }> {
+export async function getPreOrderSalesData(timeframe: "week" | "month" | "year" | "all"): Promise<{ preOrders: PreOrder[], isAuthorized: boolean }> {
     try {
         const user = await getCurrentUser();
 
@@ -204,8 +206,10 @@ export async function getPreOrderSalesData(timeframe: "week" | "month" | "year")
             startDate = startOfWeek(now);
         } else if (timeframe === 'month') {
             startDate = startOfMonth(now);
-        } else { // year
+        } else if (timeframe === 'year') {
             startDate = startOfYear(now);
+        } else { // all
+            startDate = new Date(0);
         }
 
         const endDate = endOfDay(now);

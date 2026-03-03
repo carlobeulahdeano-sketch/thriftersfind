@@ -26,8 +26,13 @@ export async function getProducts(): Promise<Product[]> {
       return [];
     }
 
-    // Use raw query to avoid schema validation errors with stale client
-    const products: any[] = await prisma.$queryRaw`SELECT * FROM products ORDER BY createdAt DESC`;
+    // Use raw query with LEFT JOIN to include category data
+    const products: any[] = await prisma.$queryRaw`
+      SELECT p.*, pc.name as categoryName 
+      FROM products p 
+      LEFT JOIN product_categories pc ON p.categoryId = pc.id 
+      ORDER BY p.createdAt DESC
+    `;
 
     // Filter products based on user role
     const filteredProducts = products;
@@ -52,6 +57,8 @@ export async function getProducts(): Promise<Product[]> {
         description: product.description || "",
         quantity: typeof (product as any).quantity === 'number' ? (product as any).quantity : 0,
         warehouseId: (product as any).warehouseId || null,
+        categoryId: (product as any).categoryId || null,
+        category: product.categoryName ? { id: product.categoryId, name: product.categoryName, description: null, createdAt: '', updatedAt: '' } : null,
         totalStock: ((product as any).quantity || 0),
         alertStock: typeof product.alertStock === 'number' ? product.alertStock : 0,
         cost: typeof product.cost === 'number' ? product.cost : 0,
@@ -207,14 +214,15 @@ export async function createProduct(productData: Omit<Product, 'id' | 'totalStoc
 
     // Use raw query to bypass outdated Prisma client validation for createdBy
     await prisma.$executeRawUnsafe(
-      `INSERT INTO products (id, name, sku, description, quantity, warehouseId, alertStock, cost, retailPrice, images, createdBy, createdAt, updatedAt) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))`,
+      `INSERT INTO products (id, name, sku, description, quantity, warehouseId, categoryId, alertStock, cost, retailPrice, images, createdBy, createdAt, updatedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))`,
       id,
       productData.name,
       productData.sku,
       productData.description || null,
       productData.quantity || 0,
       productData.warehouseId || null,
+      (productData as any).categoryId || null,
       productData.alertStock || 0,
       productData.cost || 0,
       productData.retailPrice || 0,
@@ -297,6 +305,7 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
     if (productData.cost !== undefined) { updates.push("cost = ?"); values.push(productData.cost); }
     if (productData.retailPrice !== undefined) { updates.push("retailPrice = ?"); values.push(productData.retailPrice); }
     if (productData.images !== undefined) { updates.push("images = ?"); values.push(JSON.stringify(productData.images)); }
+    if ((productData as any).categoryId !== undefined) { updates.push("categoryId = ?"); values.push((productData as any).categoryId || null); }
 
     updates.push("updatedAt = NOW(3)");
 

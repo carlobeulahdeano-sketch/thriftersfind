@@ -140,7 +140,8 @@ export function StationsMap({ stations }: StationsMapProps) {
                 mapInstanceRef.current = null;
             }
         };
-    }, [stationsWithCoords.length]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(stationsWithCoords)]);
 
     if (stationsWithCoords.length === 0) {
         return (

@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
-    const session = request.cookies.get('session');
+    const sessionValue = request.cookies.get('session')?.value;
+    const hasSession = !!sessionValue;
 
     // Define public routes that don't require authentication
     const isAuthPage = pathname.startsWith('/login');
@@ -22,13 +23,20 @@ export function middleware(request: NextRequest) {
     }
 
     // Skip redirection for POST requests (Server Actions)
-    if (request.method === 'POST' && !session) {
+    if (request.method === 'POST' && !hasSession) {
         return NextResponse.next();
     }
 
-    if (!session && !isAuthPage) {
+    if (!hasSession && !isAuthPage) {
         // Redirect to login if no session and trying to access protected page
         return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    if (hasSession && isAuthPage) {
+        // Redirect to dashboard if logged in and trying to access login page
+        // Wait, what if they don't have dashboard access?
+        // AppLayout will redirect them to their first available page!
+        return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     // Pass the pathname to the app via headers

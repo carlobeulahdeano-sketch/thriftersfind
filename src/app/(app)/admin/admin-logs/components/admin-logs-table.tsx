@@ -23,7 +23,14 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { AdminLog } from "@prisma/client";
-import { getAdminLogs, GetAdminLogsResult } from "@/actions/admin-logs";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { getAdminLogs, GetAdminLogsResult, getAdminLogActions } from "@/actions/admin-logs";
 
 export default function AdminLogsTable() {
     const [logsData, setLogsData] = React.useState<GetAdminLogsResult>({
@@ -37,24 +44,31 @@ export default function AdminLogsTable() {
     const [selectedLog, setSelectedLog] = React.useState<AdminLog | null>(null);
     const [isDetailsOpen, setDetailsOpen] = React.useState(false);
 
-    const fetchLogs = async (page: number) => {
+    const [actionFilter, setActionFilter] = React.useState<string>("all");
+    const [availableActions, setAvailableActions] = React.useState<string[]>([]);
+
+    const fetchLogs = React.useCallback(async (page: number, action: string) => {
         setLoading(true);
         try {
-            const result = await getAdminLogs(page, 10);
+            const result = await getAdminLogs(page, 10, action);
             setLogsData(result);
         } catch (error) {
             console.error("Failed to fetch logs", error);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     React.useEffect(() => {
-        fetchLogs(currentPage);
-    }, [currentPage]);
+        fetchLogs(currentPage, actionFilter);
+    }, [currentPage, actionFilter, fetchLogs]);
+
+    React.useEffect(() => {
+        getAdminLogActions().then(setAvailableActions);
+    }, []);
 
     const handleRefresh = () => {
-        fetchLogs(currentPage);
+        fetchLogs(currentPage, actionFilter);
     }
 
     const handleViewDetails = (log: AdminLog) => {
@@ -152,9 +166,30 @@ export default function AdminLogsTable() {
                             <CardTitle>System Logs</CardTitle>
                             <CardDescription>View all system activities and changes.</CardDescription>
                         </div>
-                        <Button variant="outline" size="icon" onClick={handleRefresh} disabled={loading}>
-                            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Select
+                                value={actionFilter}
+                                onValueChange={(val: string) => {
+                                    setActionFilter(val);
+                                    if (currentPage !== 1) {
+                                        setCurrentPage(1);
+                                    }
+                                }}
+                            >
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Filter by action" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Actions</SelectItem>
+                                    {availableActions.map(action => (
+                                        <SelectItem key={action} value={action}>{action}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Button variant="outline" size="icon" onClick={handleRefresh} disabled={loading}>
+                                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                            </Button>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">

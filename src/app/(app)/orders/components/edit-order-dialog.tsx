@@ -71,7 +71,7 @@ export function EditOrderDialog({
   // Multiple Items State
   const [selectedItems, setSelectedItems] = useState<{ product: Product; quantity: number | string }[]>([]);
 
-  const [shippingFee, setShippingFee] = useState("0");
+  const [shippingFee, setShippingFee] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("Unpaid");
   const [shippingStatus, setShippingStatus] = useState<ShippingStatus>("Pending");

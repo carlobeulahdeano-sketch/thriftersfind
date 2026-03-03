@@ -67,7 +67,7 @@ export function CreateOrderDialog({
 
   const [selectedItems, setSelectedItems] = useState<{ product: Product; quantity: number | string; batchName?: string }[]>([]);
 
-  const [shippingFee, setShippingFee] = useState("0");
+  const [shippingFee, setShippingFee] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("Unpaid");
   const [shippingStatus, setShippingStatus] = useState<ShippingStatus>("Pending");
@@ -103,7 +103,7 @@ export function CreateOrderDialog({
     setContactNumber("");
     setAddress("");
     setSelectedItems([]);
-    setShippingFee("0");
+    setShippingFee("");
     setPaymentMethod("COD");
     setPaymentStatus("Unpaid");
     setShippingStatus("Pending");
@@ -402,8 +402,8 @@ Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}
             <div className="flex-1 overflow-y-auto px-6 py-6">
               <div className="space-y-6 max-w-3xl mx-auto">
                 {/* Customer Information Card */}
-                <div className="bg-white rounded-xl shadow-sm border-2 border-slate-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-4 border-b-2 border-blue-200">
+                <div className="bg-white rounded-xl shadow-sm border-2 border-slate-200">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-4 border-b-2 border-blue-200 rounded-t-xl">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
                         <User className="w-4 h-4 text-blue-600" />
@@ -446,7 +446,7 @@ Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}
                                   <div
                                     className={cn(
                                       "flex items-center px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors",
-                                      customerName.toLowerCase() === "walk in customer" ? "bg-blue-50 text-blue-700 font-semibold" : "hover:bg-slate-100"
+                                      customerName.toLowerCase() === "walk in customer" ? "bg-blue-50 text-blue-700 font-semibold" : "hover:bg-slate-100 text-slate-900 dark:text-slate-900"
                                     )}
                                     onClick={() => {
                                       setCustomerName("Walk In Customer");
@@ -479,7 +479,7 @@ Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}
                                         key={customer.id}
                                         className={cn(
                                           "flex items-center px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors",
-                                          customerName.toLowerCase() === customer.name.toLowerCase() ? "bg-blue-50 text-blue-700 font-semibold" : "hover:bg-slate-100"
+                                          customerName.toLowerCase() === customer.name.toLowerCase() ? "bg-blue-50 text-blue-700 font-semibold" : "hover:bg-slate-100 text-slate-900 dark:text-slate-900"
                                         )}
                                         onClick={() => {
                                           handleCustomerSelect(customer);
@@ -541,8 +541,8 @@ Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}
                 </div>
 
                 {/* Item Purchases Card */}
-                <div className="bg-white rounded-xl shadow-sm border-2 border-slate-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b-2 border-purple-200 flex items-center justify-between">
+                <div className="bg-white rounded-xl shadow-sm border-2 border-slate-200">
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b-2 border-purple-200 flex items-center justify-between rounded-t-xl">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
                         <Package className="w-4 h-4 text-purple-600" />
@@ -653,8 +653,8 @@ Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}
                 </div>
 
                 {/* Delivery & Payment Card */}
-                <div className="bg-white rounded-xl shadow-sm border-2 border-slate-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b-2 border-green-200">
+                <div className="bg-white rounded-xl shadow-sm border-2 border-slate-200">
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b-2 border-green-200 rounded-t-xl">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
                         <Truck className="w-4 h-4 text-green-600" />

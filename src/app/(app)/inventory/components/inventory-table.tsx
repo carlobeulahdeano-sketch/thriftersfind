@@ -17,6 +17,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoreHorizontal, PlusCircle, Search, X, Image as ImageIcon, AlertTriangle, MinusCircle, Package } from "lucide-react";
@@ -26,7 +33,7 @@ import { AddProductDialog } from "./add-product-dialog";
 import { AddQuantityDialog } from "./add-quantity-dialog";
 import { BulkAddStockDialog } from "./bulk-add-stock-dialog";
 import { DeductQuantityDialog } from "./deduct-quantity-dialog";
-import type { Product, InventoryItem } from "@/lib/types";
+import type { Product, InventoryItem, ProductCategory } from "@/lib/types";
 import { EditProductDialog } from "./edit-product-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { deleteProduct } from "../actions";
@@ -44,11 +51,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
-export default function InventoryTable({ products: initialProducts, onRefresh }: { products: Product[], onRefresh?: () => void }) {
+export default function InventoryTable({ products: initialProducts, onRefresh, categories = [] }: { products: Product[], onRefresh?: () => void, categories?: ProductCategory[] }) {
   const { toast } = useToast();
   const router = useRouter();
   const [products, setProducts] = React.useState<Product[]>(initialProducts);
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [stockFilter, setStockFilter] = React.useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 10;
   const [isAddDialogOpen, setAddDialogOpen] = React.useState(false);
@@ -74,9 +83,23 @@ export default function InventoryTable({ products: initialProducts, onRefresh }:
           product.sku.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
+    if (stockFilter !== "all") {
+      filtered = filtered.filter((product) => {
+        if (stockFilter === "in-stock") return product.totalStock > product.alertStock;
+        if (stockFilter === "low-stock") return product.totalStock > 0 && product.totalStock <= product.alertStock;
+        if (stockFilter === "out-of-stock") return product.totalStock === 0;
+        return true;
+      });
+    }
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter((product) => {
+        if (categoryFilter === "uncategorized") return !product.category;
+        return product.category?.id === categoryFilter;
+      });
+    }
     setProducts(filtered);
     setCurrentPage(1);
-  }, [searchTerm, initialProducts]);
+  }, [searchTerm, stockFilter, categoryFilter, initialProducts]);
 
   const handleDelete = async (productId: string) => {
     try {
@@ -104,10 +127,12 @@ export default function InventoryTable({ products: initialProducts, onRefresh }:
 
   const totalPages = Math.ceil(products.length / itemsPerPage);
 
-  const isFiltered = searchTerm !== "";
+  const isFiltered = searchTerm !== "" || stockFilter !== "all" || categoryFilter !== "all";
 
   const resetFilters = () => {
     setSearchTerm("");
+    setStockFilter("all");
+    setCategoryFilter("all");
   }
 
 
@@ -116,7 +141,7 @@ export default function InventoryTable({ products: initialProducts, onRefresh }:
     <>
       <Card>
         <div className="flex items-center justify-between gap-2 p-4 flex-wrap">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -127,6 +152,34 @@ export default function InventoryTable({ products: initialProducts, onRefresh }:
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
+            <Select value={stockFilter} onValueChange={setStockFilter}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Stock Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Stock Status</SelectItem>
+                <SelectItem value="in-stock">In Stock</SelectItem>
+                <SelectItem value="low-stock">Low Stock</SelectItem>
+                <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             {isFiltered && (
               <Button variant="ghost" onClick={resetFilters}>
                 Reset
@@ -152,6 +205,7 @@ export default function InventoryTable({ products: initialProducts, onRefresh }:
                 <TableHead className="w-[80px] font-semibold">Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>SKU</TableHead>
+                <TableHead>Category</TableHead>
                 <TableHead className="text-center">Total Qty</TableHead>
                 <TableHead className="text-center">Status</TableHead>
                 <TableHead className="text-right">Retail Price</TableHead>
@@ -184,6 +238,15 @@ export default function InventoryTable({ products: initialProducts, onRefresh }:
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{product.sku}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {product.category ? (
+                      <Badge className="bg-cyan-500/15 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/25">
+                        {product.category.name}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-xs italic">Uncategorized</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-center">{product.totalStock}</TableCell>
                   <TableCell className="text-center">
@@ -280,6 +343,7 @@ export default function InventoryTable({ products: initialProducts, onRefresh }:
         isOpen={isAddDialogOpen}
         onClose={() => setAddDialogOpen(false)}
         onSuccess={refreshProducts}
+        categories={categories}
       />
       <BulkAddStockDialog
         isOpen={isBulkAddDialogOpen}
@@ -292,6 +356,7 @@ export default function InventoryTable({ products: initialProducts, onRefresh }:
         onClose={() => setEditingProduct(null)}
         product={editingProduct}
         onSuccess={refreshProducts}
+        categories={categories}
       />
       <AddQuantityDialog
         isOpen={!!addingQuantityProduct}

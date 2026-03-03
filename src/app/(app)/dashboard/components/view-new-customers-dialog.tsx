@@ -27,7 +27,7 @@ interface ViewNewCustomersDialogProps {
     isOpen: boolean;
     onClose: () => void;
     customers: Customer[];
-    timeframe: "week" | "month" | "year";
+    timeframe: "week" | "month" | "year" | "all";
 }
 
 export function ViewNewCustomersDialog({
@@ -48,7 +48,7 @@ export function ViewNewCustomersDialog({
                                 New Customers
                             </DialogTitle>
                             <p className="text-sm text-muted-foreground">
-                                Customers who joined this {timeframe}
+                                Customers who joined {timeframe === 'all' ? 'all time' : `this ${timeframe}`}
                             </p>
                         </div>
                         <Badge variant="outline" className="text-sm px-3 py-1 bg-purple-50 text-purple-700 border-purple-200">

@@ -13,7 +13,7 @@ import { startOfWeek, startOfMonth, startOfYear, endOfToday, isWithinInterval } 
 import { getCustomers } from "../customers/actions";
 import { getSalesData } from "../sales/actions";
 
-type Timeframe = "week" | "month" | "year";
+type Timeframe = "week" | "month" | "year" | "all";
 
 export default function ReportsPage() {
   const [timeframe, setTimeframe] = useState<Timeframe>("year");
@@ -49,8 +49,10 @@ export default function ReportsPage() {
       startDate = startOfWeek(now);
     } else if (timeframe === 'month') {
       startDate = startOfMonth(now);
-    } else { // year
+    } else if (timeframe === 'year') {
       startDate = startOfYear(now);
+    } else { // all
+      startDate = new Date(0);
     }
     const endDate = endOfToday();
 
@@ -110,6 +112,7 @@ export default function ReportsPage() {
                   <TabsTrigger value="week">Week</TabsTrigger>
                   <TabsTrigger value="month">Month</TabsTrigger>
                   <TabsTrigger value="year">Year</TabsTrigger>
+                  <TabsTrigger value="all">All Time</TabsTrigger>
                 </TabsList>
               </Tabs>
             )}
@@ -123,6 +126,7 @@ export default function ReportsPage() {
                       <TabsTrigger value="week" className="flex-1">Week</TabsTrigger>
                       <TabsTrigger value="month" className="flex-1">Month</TabsTrigger>
                       <TabsTrigger value="year" className="flex-1">Year</TabsTrigger>
+                      <TabsTrigger value="all" className="flex-1">All Time</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>

@@ -9,7 +9,7 @@ export function PrintButton() {
 
     const handlePrint = () => {
         const params = new URLSearchParams(searchParams);
-        window.open(`/sales/batches/print?${params.toString()}`, '_blank');
+        window.open(`/print/sales/batches?${params.toString()}`, '_blank');
     };
 
     return (

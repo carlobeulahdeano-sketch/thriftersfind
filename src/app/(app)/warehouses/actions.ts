@@ -213,3 +213,47 @@ export async function adjustWarehouseStock(
         return { success: false, error: error.message || "Failed to adjust stock" };
     }
 }
+
+export async function bulkAddWarehouseStock(
+    items: { id: string; quantityToAdd: number }[]
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        if (!items || items.length === 0) {
+            return { success: false, error: "No products provided" };
+        }
+
+        for (const item of items) {
+            if (item.quantityToAdd <= 0) {
+                return { success: false, error: "Quantities must be greater than zero" };
+            }
+        }
+
+        await prisma.$transaction(async (tx) => {
+            for (const item of items) {
+                const product = await tx.warehouseProduct.findUnique({
+                    where: { id: item.id },
+                    select: { productName: true, sku: true, quantity: true, alertStock: true }
+                });
+
+                if (!product) {
+                    throw new Error(`Product with ID ${item.id} not found`);
+                }
+
+                await tx.warehouseProduct.update({
+                    where: { id: item.id },
+                    data: {
+                        quantity: {
+                            increment: item.quantityToAdd,
+                        },
+                    }
+                });
+            }
+        });
+
+        revalidatePath("/warehouses");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error in bulkAddWarehouseStock:", error);
+        return { success: false, error: error.message || "Failed to update stock" };
+    }
+}

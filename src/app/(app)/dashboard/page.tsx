@@ -61,7 +61,7 @@ const shippingStatusStyles: Record<ShippingStatus, string> = {
   "Rush Ship": "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
 };
 
-type Timeframe = "week" | "month" | "year";
+type Timeframe = "week" | "month" | "year" | "all";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -146,8 +146,10 @@ export default function DashboardPage() {
       startDate = startOfWeek(now);
     } else if (timeframe === 'month') {
       startDate = startOfMonth(now);
-    } else {
+    } else if (timeframe === 'year') {
       startDate = startOfYear(now);
+    } else { // all
+      startDate = new Date(0);
     }
     const endDate = endOfToday();
 
@@ -337,10 +339,11 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto mt-4 md:mt-0">
           <PrintButton />
           <Tabs value={timeframe} onValueChange={(value) => setTimeframe(value as Timeframe)} className="w-full md:w-auto">
-            <TabsList className="grid w-full grid-cols-3 md:w-auto h-11">
+            <TabsList className="grid w-full grid-cols-4 md:w-auto h-11">
               <TabsTrigger value="week" className="text-sm font-medium">Week</TabsTrigger>
               <TabsTrigger value="month" className="text-sm font-medium">Month</TabsTrigger>
               <TabsTrigger value="year" className="text-sm font-medium">Year</TabsTrigger>
+              <TabsTrigger value="all" className="text-sm font-medium">All Time</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -362,7 +365,7 @@ export default function DashboardPage() {
             </div>
             <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
-              For this {timeframe}
+              For {timeframe === 'all' ? 'all time' : `this ${timeframe}`}
             </p>
           </CardContent>
         </Card>
@@ -379,7 +382,7 @@ export default function DashboardPage() {
             <div className="text-3xl font-bold text-pink-700 dark:text-pink-300">{totalOrders}</div>
             <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
-              For this {timeframe}
+              For {timeframe === 'all' ? 'all time' : `this ${timeframe}`}
             </p>
           </CardContent>
         </Card>

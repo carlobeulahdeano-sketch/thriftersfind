@@ -11,6 +11,11 @@ export default function StationsPage() {
     const [isAuthorized, setIsAuthorized] = useState(true);
     const [hasCheckedPermission, setHasCheckedPermission] = useState(false);
 
+    const refreshStations = async () => {
+        const stationsData = await getStations();
+        setStations(stationsData);
+    };
+
     useEffect(() => {
         async function fetchData() {
             try {
@@ -82,7 +87,7 @@ export default function StationsPage() {
                     </p>
                 </div>
             </div>
-            <StationsTable stations={stations} />
+            <StationsTable stations={stations} onRefresh={refreshStations} />
         </div>
     );
 }

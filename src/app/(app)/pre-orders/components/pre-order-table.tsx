@@ -50,6 +50,12 @@ export default function PreOrderTable({ orders, customers, stations, batches, on
     const [isCreateDialogOpen, setCreateDialogOpen] = React.useState(false);
     const [isPayBalanceDialogOpen, setPayBalanceDialogOpen] = React.useState(false);
     const [selectedPreOrder, setSelectedPreOrder] = React.useState<PreOrder | null>(null);
+    const [currentPage, setCurrentPage] = React.useState(1);
+    const itemsPerPage = 10;
+
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, statusFilter, paymentStatusFilter]);
 
     const filteredOrders = React.useMemo(() => {
         return orders.filter((order) => {
@@ -81,6 +87,13 @@ export default function PreOrderTable({ orders, customers, stations, batches, on
             .toUpperCase()
             .substring(0, 2);
     };
+
+    const paginatedOrders = React.useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return filteredOrders.slice(start, start + itemsPerPage);
+    }, [filteredOrders, currentPage]);
+
+    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
 
     return (
         <div className="space-y-6">
@@ -146,8 +159,8 @@ export default function PreOrderTable({ orders, customers, stations, batches, on
                     </TableHeader>
                     <TableBody>
                         <AnimatePresence mode="popLayout">
-                            {filteredOrders.length > 0 ? (
-                                filteredOrders.map((order) => {
+                            {paginatedOrders.length > 0 ? (
+                                paginatedOrders.map((order) => {
                                     // Use depositAmount from DB
                                     const amountPaid = order.depositAmount || 0;
                                     const remainingBalance = Math.max(0, order.totalAmount - amountPaid);
@@ -308,9 +321,36 @@ export default function PreOrderTable({ orders, customers, stations, batches, on
                     </TableBody>
                 </Table>
             </div>
-            <div className="text-xs text-center text-muted-foreground">
-                Showing {filteredOrders.length} records.
-            </div>
+
+            {/* Pagination Controls */}
+            {filteredOrders.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+                    <div className="text-sm text-muted-foreground w-full sm:w-auto text-center sm:text-left">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} records
+                    </div>
+                    <div className="flex items-center space-x-2 w-full sm:w-auto justify-center sm:justify-end">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </Button>
+                        <div className="text-sm font-medium w-24 text-center">
+                            Page {currentPage} of {Math.max(1, totalPages)}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             <CreatePreOrderDialog
                 isOpen={isCreateDialogOpen}

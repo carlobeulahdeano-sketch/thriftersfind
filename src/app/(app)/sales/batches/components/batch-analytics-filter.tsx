@@ -19,20 +19,26 @@ export function BatchAnalyticsFilter() {
     });
 
     useEffect(() => {
-        if (date?.from) {
-            const params = new URLSearchParams(searchParams);
-            params.set('from', format(date.from, 'yyyy-MM-dd'));
-            if (date.to) {
-                params.set('to', format(date.to, 'yyyy-MM-dd'));
-            } else {
-                params.delete('to');
+        const currentFrom = searchParams.get('from');
+        const currentTo = searchParams.get('to');
+
+        if (date?.from && date?.to) {
+            const newFrom = format(date.from, 'yyyy-MM-dd');
+            const newTo = format(date.to, 'yyyy-MM-dd');
+
+            if (newFrom !== currentFrom || newTo !== currentTo) {
+                const params = new URLSearchParams(searchParams);
+                params.set('from', newFrom);
+                params.set('to', newTo);
+                router.push(`?${params.toString()}`);
             }
-            router.push(`?${params.toString()}`);
         } else if (date === undefined) {
-            const params = new URLSearchParams(searchParams);
-            params.delete('from');
-            params.delete('to');
-            router.replace(`?${params.toString()}`);
+            if (currentFrom || currentTo) {
+                const params = new URLSearchParams(searchParams);
+                params.delete('from');
+                params.delete('to');
+                router.replace(`?${params.toString()}`);
+            }
         }
     }, [date, router, searchParams]);
 

@@ -26,6 +26,7 @@ export interface CreatePreOrderData {
     remarks?: string;
     items: PreOrderItem[];
     batchId?: string;
+    productId?: string;
 }
 
 export async function getPreOrders() {
@@ -117,6 +118,7 @@ export async function createPreOrder(data: CreatePreOrderData) {
                         name: user.name,
                     },
                     batchId: data.batchId && data.batchId !== 'none' ? data.batchId : null,
+                    productId: data.productId || null,
                 },
             });
 
@@ -267,6 +269,7 @@ export async function updatePreOrder(
                     customerEmail: data.customerEmail,
                     remarks: data.remarks,
                     batchId: data.batchId && data.batchId !== 'none' ? data.batchId : (data.batchId === 'none' ? null : undefined),
+                    productId: data.productId !== undefined ? data.productId : undefined,
                 },
             });
         });

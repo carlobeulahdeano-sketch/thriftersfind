@@ -7,7 +7,7 @@ export async function getInventoryLogs(
     page: number = 1,
     pageSize: number = 10,
     filters?: {
-        branchId?: string;
+        userId?: string;
         action?: string;
         search?: string;
     }
@@ -17,8 +17,8 @@ export async function getInventoryLogs(
 
         const where: Prisma.InventoryLogWhereInput = {};
 
-        if (filters?.branchId) {
-            where.branchId = filters.branchId;
+        if (filters?.userId) {
+            where.userId = filters.userId;
         }
 
         if (filters?.action) {

@@ -3,8 +3,9 @@ import { InventoryLogsTable } from "./components/inventory-logs-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function InventoryLogsPage() {
-    const branches = await db.branch.findMany({
+    const users = await db.user.findMany({
         orderBy: { name: 'asc' },
+        select: { id: true, name: true },
     });
 
     return (
@@ -25,12 +26,7 @@ export default async function InventoryLogsPage() {
                     <CardTitle>Log History</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <InventoryLogsTable branches={branches.map(b => ({
-                        id: b.id,
-                        name: b.name,
-                        createdAt: b.createdAt.toISOString(),
-                        updatedAt: b.updatedAt.toISOString()
-                    }))} />
+                    <InventoryLogsTable users={users} />
                 </CardContent>
             </Card>
         </div>

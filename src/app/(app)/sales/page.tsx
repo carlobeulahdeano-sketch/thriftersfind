@@ -39,7 +39,7 @@ const SalesChart = dynamic(() => import("../reports/components/sales-chart"), {
   ),
 });
 
-type Timeframe = "week" | "month" | "year";
+type Timeframe = "week" | "month" | "year" | "all";
 type ViewType = "regular" | "preorder";
 
 export default function SalesPage() {
@@ -49,8 +49,10 @@ export default function SalesPage() {
   const [allPreOrders, setAllPreOrders] = useState<PreOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const fetchData = async () => {
       setIsLoading(true);
 
@@ -184,6 +186,14 @@ export default function SalesPage() {
     }
   }, [allOrders, allPreOrders, viewType]);
 
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   if (isAuthorized === false) {
     return (
       <div className="flex h-[50vh] flex-col items-center justify-center gap-4 text-center">
@@ -217,17 +227,18 @@ export default function SalesPage() {
               View Batch Analytics
             </Button>
           </Link>
-          <Tabs value={viewType} onValueChange={(value) => setViewType(value as ViewType)}>
+          <Tabs defaultValue="regular" value={viewType} onValueChange={(value) => setViewType(value as ViewType)}>
             <TabsList>
               <TabsTrigger value="regular">Regular Sales</TabsTrigger>
               <TabsTrigger value="preorder">Pre-Order Sales</TabsTrigger>
             </TabsList>
           </Tabs>
-          <Tabs value={timeframe} onValueChange={(value) => setTimeframe(value as Timeframe)}>
+          <Tabs defaultValue="month" value={timeframe} onValueChange={(value) => setTimeframe(value as Timeframe)}>
             <TabsList>
               <TabsTrigger value="week">This Week</TabsTrigger>
               <TabsTrigger value="month">This Month</TabsTrigger>
               <TabsTrigger value="year">This Year</TabsTrigger>
+              <TabsTrigger value="all">All Time</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>

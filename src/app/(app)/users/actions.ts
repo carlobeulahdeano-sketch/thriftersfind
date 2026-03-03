@@ -39,6 +39,8 @@ export async function getUsers(): Promise<User[]> {
         updatedAt: user.branch.updatedAt ? user.branch.updatedAt.toISOString() : new Date().toISOString(),
       } : null,
       permissions: user.permissions as UserPermissions | null,
+      isActive: user.isActive,
+      isOnline: user.isOnline,
       updatedAt: user.updatedAt.toISOString(),
     }));
   } catch (error) {
@@ -198,6 +200,8 @@ export async function createUser(userData: {
         updatedAt: user.branch.createdAt.toISOString(),
       } : null,
       permissions: user.permissions as UserPermissions | null,
+      isActive: user.isActive,
+      isOnline: user.isOnline,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     }
@@ -389,6 +393,8 @@ export async function updateUser(
         updatedAt: user.branch.createdAt.toISOString(),
       } : null,
       permissions: user.permissions as UserPermissions | null,
+      isActive: user.isActive,
+      isOnline: user.isOnline,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     }
@@ -487,3 +493,50 @@ export async function deleteUser(id: string): Promise<{ success: boolean; error?
     return { success: false, error: "Failed to delete user." };
   }
 }
+
+export async function toggleUserStatus(id: string, isActive: boolean): Promise<{ success: boolean; error?: string }> {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return { success: false, error: "Unauthorized." };
+
+    const hasPermission = await checkPermission('users');
+    if (!hasPermission) return { success: false, error: "Permission denied." };
+
+    // Prevent deactivating yourself
+    if (id === currentUser.id && !isActive) {
+      return { success: false, error: "You cannot deactivate your own account." };
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { isActive } as any
+    });
+
+    try {
+      await (prisma as any).adminLog.create({
+        data: {
+          action: 'USER_STATUS_TOGGLED',
+          module: 'USERS',
+          description: `User ${updatedUser.name} (${updatedUser.email}) was ${isActive ? 'activated' : 'deactivated'}.`,
+          performedBy: {
+            uid: currentUser.id,
+            name: currentUser.name,
+            role: currentUser.role?.name || 'Unknown'
+          },
+          targetId: id,
+          targetType: 'USER',
+          newData: { isActive },
+        }
+      });
+    } catch (e) {
+      console.error("Failed to log status toggle:", e);
+    }
+
+    revalidatePath('/users');
+    return { success: true };
+  } catch (error) {
+    console.error("Error toggling user status:", error);
+    return { success: false, error: "Failed to update user status." };
+  }
+}
+

@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import type { Product } from "@/lib/types";
+import type { Product, ProductCategory } from "@/lib/types";
 import { Image as ImageIcon, X, RefreshCw, PhilippinePeso } from "lucide-react";
 import { createProduct } from "../actions";
 
@@ -32,22 +32,24 @@ interface AddProductDialogProps {
   onClose: () => void;
   onSuccess?: (product?: any) => void;
   simpleMode?: boolean;
+  categories?: ProductCategory[];
 }
 
-export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = false }: AddProductDialogProps) {
+export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = false, categories = [] }: AddProductDialogProps) {
   const { toast } = useToast();
 
   const [name, setName] = useState("");
   const [variantColor, setVariantColor] = useState("");
   const [description, setDescription] = useState("");
   const [baseSku, setBaseSku] = useState(() => String.fromCharCode(65 + Math.floor(Math.random() * 26)) + "-" + Math.floor(Math.random() * 100).toString().padStart(2, '0'));
-  const [quantity, setQuantity] = useState("0");
-  const [cost, setCost] = useState("0.00");
-  const [retailPrice, setRetailPrice] = useState("0.00");
-  const [alertStock, setAlertStock] = useState("0");
+  const [quantity, setQuantity] = useState("");
+  const [cost, setCost] = useState("");
+  const [retailPrice, setRetailPrice] = useState("");
+  const [alertStock, setAlertStock] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
 
   // Restore helper functions
   const sku = baseSku + (variantColor ? "-" + variantColor : "");
@@ -61,12 +63,13 @@ export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = fals
     setVariantColor("");
     setBaseSku(String.fromCharCode(65 + Math.floor(Math.random() * 26)) + "-" + Math.floor(Math.random() * 100).toString().padStart(2, '0'));
     setDescription("");
-    setQuantity("0");
-    setCost("0.00");
-    setRetailPrice("0.00");
-    setAlertStock("0");
+    setQuantity("");
+    setCost("");
+    setRetailPrice("");
+    setAlertStock("");
     setImages([]);
     setImagePreviews([]);
+    setSelectedCategoryId("");
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,6 +134,7 @@ export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = fals
         cost: parseFloat(cost) || 0,
         retailPrice: parseFloat(retailPrice) || 0,
         images: imageDataUrls,
+        categoryId: selectedCategoryId || null,
       };
 
       const newProduct = await createProduct(productData);
@@ -236,6 +240,26 @@ export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = fals
                 />
               </div>
 
+              <div className="grid gap-2">
+                <Label className="flex items-center gap-2 text-sm">
+                  <svg className="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  Category
+                </Label>
+                <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
+                  <SelectTrigger className="bg-white dark:bg-gray-950">
+                    <SelectValue placeholder="Select a category (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Category</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="quantity" className="flex items-center gap-2 text-sm">
@@ -247,6 +271,7 @@ export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = fals
                   <Input
                     id="quantity"
                     type="number"
+                    placeholder="0"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     className="bg-white dark:bg-gray-950"
@@ -262,6 +287,7 @@ export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = fals
                   <Input
                     id="alertStock"
                     type="number"
+                    placeholder="0"
                     value={alertStock}
                     onChange={(e) => setAlertStock(e.target.value)}
                     className="bg-white dark:bg-gray-950"
@@ -291,6 +317,7 @@ export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = fals
                   <Input
                     id="cost"
                     type="number"
+                    placeholder="0.00"
                     value={cost}
                     onChange={(e) => setCost(e.target.value)}
                     className="pl-7 bg-white dark:bg-gray-950"
@@ -309,6 +336,7 @@ export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = fals
                   <Input
                     id="retailPrice"
                     type="number"
+                    placeholder="0.00"
                     value={retailPrice}
                     onChange={(e) => setRetailPrice(e.target.value)}
                     className="pl-7 bg-white dark:bg-gray-950"

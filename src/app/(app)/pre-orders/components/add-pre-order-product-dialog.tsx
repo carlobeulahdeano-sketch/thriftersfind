@@ -32,10 +32,10 @@ export function AddPreOrderProductDialog({ isOpen, onClose, onSuccess }: AddPreO
     const [description, setDescription] = useState("");
     // Auto-generate SKU
     const [sku, setSku] = useState(() => "PRE-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-    const [quantity, setQuantity] = useState("0");
-    const [cost, setCost] = useState("0.00");
-    const [retailPrice, setRetailPrice] = useState("0.00");
-    const [alertStock, setAlertStock] = useState("0");
+    const [quantity, setQuantity] = useState("");
+    const [cost, setCost] = useState("");
+    const [retailPrice, setRetailPrice] = useState("");
+    const [alertStock, setAlertStock] = useState("");
     const [images, setImages] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -70,10 +70,10 @@ export function AddPreOrderProductDialog({ isOpen, onClose, onSuccess }: AddPreO
         setName("");
         regenerateSku();
         setDescription("");
-        setQuantity("0");
-        setCost("0.00");
-        setRetailPrice("0.00");
-        setAlertStock("0");
+        setQuantity("");
+        setCost("");
+        setRetailPrice("");
+        setAlertStock("");
         setImages([]);
         setImagePreviews([]);
         setLinkedProductId(null);
@@ -310,22 +310,22 @@ export function AddPreOrderProductDialog({ isOpen, onClose, onSuccess }: AddPreO
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="quantity">Quantity</Label>
-                            <Input id="quantity" type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                            <Input id="quantity" type="number" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="alertStock">Alert Stock level</Label>
-                            <Input id="alertStock" type="number" value={alertStock} onChange={(e) => setAlertStock(e.target.value)} />
+                            <Input id="alertStock" type="number" placeholder="0" value={alertStock} onChange={(e) => setAlertStock(e.target.value)} />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="cost">Cost (PHP)</Label>
-                            <Input id="cost" type="number" value={cost} onChange={(e) => setCost(e.target.value)} />
+                            <Input id="cost" type="number" placeholder="0.00" value={cost} onChange={(e) => setCost(e.target.value)} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="retailPrice">Retail Price (PHP)</Label>
-                            <Input id="retailPrice" type="number" value={retailPrice} onChange={(e) => setRetailPrice(e.target.value)} />
+                            <Input id="retailPrice" type="number" placeholder="0.00" value={retailPrice} onChange={(e) => setRetailPrice(e.target.value)} />
                         </div>
                     </div>
 

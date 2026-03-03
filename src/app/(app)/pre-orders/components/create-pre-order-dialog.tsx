@@ -58,6 +58,7 @@ const paymentMethods: PaymentMethod[] = ["COD", "GCash", "Bank Transfer"];
 
 interface OrderItem {
     id: string; // temp id
+    productId?: string;
     name: string;
     quantity: number | string;
     price: number | string;
@@ -114,6 +115,7 @@ export function CreatePreOrderDialog({
         // Upon creation, add to list immediately
         const newItem: OrderItem = {
             id: Math.random().toString(36).substr(2, 9),
+            productId: product.id,
             name: product.name,
             price: product.retailPrice || 0,
             quantity: 1,
@@ -134,8 +136,9 @@ export function CreatePreOrderDialog({
     const handleProductsSelected = (products: Product[]) => {
         const newItems: OrderItem[] = products.map(product => ({
             id: Math.random().toString(36).substr(2, 9),
+            productId: product.id,
             name: product.name,
-            price: 0,
+            price: product.retailPrice || 0,
             quantity: 1,
             image: product.images?.[0]
         }));
@@ -250,6 +253,7 @@ export function CreatePreOrderDialog({
             }
 
             const itemsPayload = selectedItems.map(item => ({
+                productId: item.productId,
                 productName: item.name,
                 quantity: typeof item.quantity === 'string' ? parseFloat(item.quantity) || 0 : item.quantity,
                 pricePerUnit: typeof item.price === 'string' ? parseFloat(item.price) || 0 : item.price,
@@ -288,6 +292,7 @@ export function CreatePreOrderDialog({
                 remarks: '',
                 items: itemsPayload,
                 batchId: batchId,
+                productId: selectedItems[0]?.productId,
             });
 
             toast({
@@ -610,29 +615,14 @@ export function CreatePreOrderDialog({
                                 <div className="grid gap-2">
                                     <Label>Delivery Choice</Label>
                                     <Select
-                                        value={batchId === "none" ? "normal" : "batch"}
-                                        onValueChange={(v: string) => {
-                                            if (v === "normal") {
-                                                setBatchId("none");
-                                            } else if (availableBatches.length > 0) {
-                                                // Default to the first open batch if available
-                                                const firstOpen = availableBatches.find(b => b.status.toLowerCase() === 'open');
-                                                if (firstOpen) {
-                                                    setBatchId(firstOpen.id);
-                                                } else {
-                                                    // Just switch mode, keep selection as none if no open ones found 
-                                                    // but we should probably show the first one anyway if mode is 'batch'
-                                                    setBatchId(availableBatches[0].id);
-                                                }
-                                            }
-                                        }}
+                                        value="standard"
+                                        onValueChange={() => { }}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select delivery type" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="normal">Normal Delivery</SelectItem>
-                                            <SelectItem value="batch">Batch Delivery</SelectItem>
+                                            <SelectItem value="standard">Standard Delivery</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -659,7 +649,6 @@ export function CreatePreOrderDialog({
                                                 }
                                                 setBatchId(v);
                                             }}
-                                            disabled={batchId === "none"}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select batch" />
@@ -668,11 +657,14 @@ export function CreatePreOrderDialog({
                                                 {availableBatches.length === 0 ? (
                                                     <SelectItem value="none" disabled>No batches available</SelectItem>
                                                 ) : (
-                                                    availableBatches.map((batch) => (
-                                                        <SelectItem key={batch.id} value={batch.id}>
-                                                            {batch.batchName} ({batch.status})
-                                                        </SelectItem>
-                                                    ))
+                                                    <>
+                                                        <SelectItem value="none">No Batch</SelectItem>
+                                                        {availableBatches.map((batch) => (
+                                                            <SelectItem key={batch.id} value={batch.id}>
+                                                                {batch.batchName} ({batch.status})
+                                                            </SelectItem>
+                                                        ))}
+                                                    </>
                                                 )}
                                             </SelectContent>
                                         </Select>

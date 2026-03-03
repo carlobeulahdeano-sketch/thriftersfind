@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { getBatches } from "../../batches/actions";
+import { getCategories } from "../../inventory/category-actions";
 import { useEffect } from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -38,17 +39,33 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
   const [selectedProducts, setSelectedProducts] = useState<{ product: Product, quantity: number | string }[]>([]);
   const [selectedBatch, setSelectedBatch] = useState("all");
   const [batches, setBatches] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
-    async function loadBatches() {
-      const data = await getBatches();
-      if (data && Array.isArray(data.batches)) {
-        setBatches(data.batches);
-      } else {
-        setBatches([]);
+    async function loadData() {
+      try {
+        const [batchData, categoryData] = await Promise.all([
+          getBatches(),
+          getCategories()
+        ]);
+
+        if (batchData && Array.isArray(batchData.batches)) {
+          setBatches(batchData.batches);
+        } else {
+          setBatches([]);
+        }
+
+        if (categoryData && Array.isArray(categoryData)) {
+          setCategories(categoryData);
+        } else {
+          setCategories([]);
+        }
+      } catch (error) {
+        console.error("Failed to load data:", error);
       }
     }
-    loadBatches();
+    loadData();
   }, []);
 
   const isLoading = false;
@@ -57,7 +74,8 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
     (product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.sku.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesSearch;
+      const matchesCategory = selectedCategory === "all" || product.categoryId === selectedCategory;
+      return matchesSearch && matchesCategory;
     }
   );
 
@@ -117,6 +135,7 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
     setSelectedProducts([]);
     setSearchTerm("");
     setSelectedBatch("all");
+    setSelectedCategory("all");
     onClose();
   };
 
@@ -124,14 +143,14 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-7xl h-[90vh] flex flex-col p-0 overflow-hidden bg-gradient-to-br from-slate-50 to-purple-50/30">
+      <DialogContent className="max-w-7xl h-[90vh] flex flex-col p-0 overflow-hidden bg-gradient-to-br from-slate-50 to-purple-50/30 dark:from-slate-950 dark:to-purple-950/20">
         {/* Enhanced Header */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 opacity-90" />
           <div className="relative p-6 pb-8">
             <DialogHeader>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-white/20 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center">
                   <Package className="w-5 h-5 text-white" />
                 </div>
                 <DialogTitle className="text-2xl font-bold text-white">
@@ -148,20 +167,35 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
         {/* Main Content */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 px-6 pb-6 overflow-hidden min-h-0">
           {/* Left Panel: Product List */}
-          <div className="flex flex-col gap-4 h-full min-h-0 bg-white rounded-xl shadow-sm border-2 border-slate-200 overflow-hidden">
+          <div className="flex flex-col gap-4 h-full min-h-0 bg-white dark:bg-slate-900 rounded-xl shadow-sm border-2 border-slate-200 dark:border-slate-800 overflow-hidden">
             {/* Search and Filter Bar */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 border-b-2 border-purple-200">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 p-4 border-b-2 border-purple-200 dark:border-purple-900/30">
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
                     placeholder="Search products by name or SKU..."
-                    className="pl-10 h-11 border-2 focus:border-purple-400"
+                    className="pl-10 h-11 border-2 dark:border-slate-700 bg-white dark:bg-slate-950 focus:border-purple-400 dark:focus:border-purple-600"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
+
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-full sm:w-[150px] h-11 border-2">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
                 <Select value={selectedBatch} onValueChange={(v: string) => {
                   if (v === "all") {
                     setSelectedBatch(v);
@@ -197,11 +231,11 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
 
               {/* Results Count */}
               <div className="mt-3 flex items-center justify-between text-sm">
-                <span className="text-slate-600 font-medium">
+                <span className="text-slate-600 dark:text-slate-400 font-medium">
                   {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
                 </span>
                 {selectedBatch !== "all" && (
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                  <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300">
                     Batch: {batches.find(b => b.id === selectedBatch)?.batchName}
                   </Badge>
                 )}
@@ -225,11 +259,11 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
                 {!isLoading && filteredProducts?.length === 0 && (
                   <div className="flex items-center justify-center p-12">
                     <div className="text-center">
-                      <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                        <Search className="w-8 h-8 text-slate-400" />
+                      <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+                        <Search className="w-8 h-8 text-slate-400 dark:text-slate-500" />
                       </div>
-                      <p className="text-base font-medium text-slate-700 mb-1">No products found</p>
-                      <p className="text-sm text-muted-foreground">Try adjusting your search terms</p>
+                      <p className="text-base font-medium text-slate-700 dark:text-slate-300 mb-1">No products found</p>
+                      <p className="text-sm text-muted-foreground dark:text-slate-400">Try adjusting your search terms</p>
                     </div>
                   </div>
                 )}
@@ -240,10 +274,10 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
                     <div
                       key={product.id}
                       className={cn(
-                        "relative flex items-center gap-4 p-4 rounded-xl transition-all duration-200 cursor-pointer border-2",
+                        "relative flex items-center gap-4 p-4 rounded-xl transition-all duration-200 cursor-pointer border-2 dark:shadow-none",
                         isSelected
-                          ? "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 shadow-md"
-                          : "bg-white border-slate-200 hover:border-purple-200 hover:shadow-sm"
+                          ? "bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-300 dark:border-purple-700 shadow-md"
+                          : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-purple-200 dark:hover:border-purple-800 hover:shadow-sm"
                       )}
                       onClick={() => handleProductClick(product)}
                     >
@@ -254,27 +288,27 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
                         </div>
                       )}
 
-                      <Avatar className="h-16 w-16 rounded-xl border-2 border-white shadow-sm">
+                      <Avatar className="h-16 w-16 rounded-xl border-2 border-white dark:border-slate-800 shadow-sm">
                         <AvatarImage src={product.images?.[0]} alt={product.name} />
-                        <AvatarFallback className="rounded-xl bg-gradient-to-br from-purple-100 to-pink-100">
-                          <ImageIcon className="h-7 w-7 text-purple-600" />
+                        <AvatarFallback className="rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50">
+                          <ImageIcon className="h-7 w-7 text-purple-600 dark:text-purple-400" />
                         </AvatarFallback>
                       </Avatar>
 
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-base text-slate-900 truncate">{product.name}</p>
+                        <p className="font-semibold text-base text-slate-900 dark:text-slate-100 truncate">{product.name}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs bg-white">
+                          <Badge variant="outline" className="text-xs bg-white dark:bg-slate-800 dark:text-slate-300">
                             SKU: {product.sku}
                           </Badge>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground dark:text-slate-400">
                             Stock: {getTotalQuantity(product)}
                           </span>
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <p className="font-bold text-lg text-purple-600">₱{product.retailPrice.toFixed(2)}</p>
+                        <p className="font-bold text-lg text-purple-600 dark:text-purple-400">₱{product.retailPrice.toFixed(2)}</p>
                       </div>
                     </div>
                   );
@@ -284,30 +318,30 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
           </div>
 
           {/* Right Panel: Selected Products */}
-          <div className="flex flex-col rounded-xl shadow-sm border-2 border-slate-200 h-full min-h-0 overflow-hidden bg-white">
+          <div className="flex flex-col rounded-xl shadow-sm border-2 border-slate-200 dark:border-slate-800 h-full min-h-0 overflow-hidden bg-white dark:bg-slate-900">
             {selectedProducts.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-slate-50 to-purple-50/30">
+              <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-slate-50 to-purple-50/30 dark:from-slate-900 dark:to-purple-900/10">
                 <div className="relative mb-6">
                   <div className="absolute inset-0 bg-purple-500 rounded-full blur-2xl opacity-10" />
-                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                    <ShoppingCart className="h-12 w-12 text-purple-600" />
+                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 flex items-center justify-center">
+                    <ShoppingCart className="h-12 w-12 text-purple-600 dark:text-purple-400" />
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">No Products Selected</h3>
-                <p className="text-sm text-muted-foreground text-center max-w-xs">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">No Products Selected</h3>
+                <p className="text-sm text-muted-foreground dark:text-slate-400 text-center max-w-xs">
                   Click on products from the left panel to add them to your order
                 </p>
               </div>
             ) : (
               <div className="flex flex-col h-full min-h-0">
                 {/* Selected Header */}
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 border-b-2 border-purple-200 flex-shrink-0">
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 border-b-2 border-purple-200 dark:from-purple-900/20 dark:to-pink-900/20 dark:border-purple-900/30 flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-base font-semibold text-slate-900">
+                      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                         Selected Products
                       </h3>
-                      <p className="text-sm text-slate-600 mt-0.5">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
                         {selectedProducts.length} {selectedProducts.length === 1 ? 'item' : 'items'} • {totalItems} total quantity
                       </p>
                     </div>
@@ -324,37 +358,37 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
                 </div>
 
                 {/* Selected Products List */}
-                <ScrollArea className="flex-1 min-h-0 bg-gradient-to-br from-slate-50/50 to-purple-50/20">
+                <ScrollArea className="flex-1 min-h-0 bg-gradient-to-br from-slate-50/50 to-purple-50/20 dark:from-slate-950/50 dark:to-purple-950/20">
                   <div className="p-4 space-y-3">
                     {selectedProducts.map((item) => (
                       <div
                         key={item.product.id}
-                        className="bg-white border-2 border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                        className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
                       >
                         <div className="flex items-start gap-3">
-                          <Avatar className="h-16 w-16 rounded-xl border-2 border-purple-100 shadow-sm">
+                          <Avatar className="h-16 w-16 rounded-xl border-2 border-purple-100 dark:border-purple-900 shadow-sm">
                             <AvatarImage src={item.product.images?.[0]} alt={item.product.name} />
-                            <AvatarFallback className="rounded-xl bg-gradient-to-br from-purple-100 to-pink-100">
-                              <ImageIcon className="h-7 w-7 text-purple-600" />
+                            <AvatarFallback className="rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50">
+                              <ImageIcon className="h-7 w-7 text-purple-600 dark:text-purple-400" />
                             </AvatarFallback>
                           </Avatar>
 
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm text-slate-900 truncate mb-1">
+                            <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate mb-1">
                               {item.product.name}
                             </p>
                             <div className="flex items-center gap-2 mb-3">
-                              <Badge variant="outline" className="text-[10px] py-0 px-2 h-5 bg-slate-50">
+                              <Badge variant="outline" className="text-[10px] py-0 px-2 h-5 bg-slate-50 dark:bg-slate-800 dark:text-slate-300">
                                 {item.product.sku}
                               </Badge>
-                              <span className="text-sm font-bold text-purple-600">
+                              <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
                                 ₱{item.product.retailPrice.toFixed(2)}
                               </span>
                             </div>
 
                             {/* Quantity Controls */}
                             <div className="flex items-center gap-2">
-                              <div className="flex items-center bg-slate-100 rounded-lg border-2 border-slate-200">
+                              <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg border-2 border-slate-200 dark:border-slate-700">
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -362,7 +396,7 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
                                     e.stopPropagation();
                                     decrementQuantity(item.product.id);
                                   }}
-                                  className="h-9 w-9 p-0 hover:bg-slate-200 rounded-l-md"
+                                  className="h-9 w-9 p-0 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-l-md text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
                                 >
                                   <Minus className="h-4 w-4" />
                                 </Button>
@@ -373,7 +407,7 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
                                   onChange={(e) => updateQuantity(item.product.id, e.target.value)}
                                   onFocus={(e) => e.target.select()}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="w-16 h-9 border-0 bg-transparent text-center font-semibold focus-visible:ring-0 text-sm"
+                                  className="w-16 h-9 border-0 bg-transparent text-center font-semibold focus-visible:ring-0 text-sm text-slate-900 dark:text-slate-100"
                                 />
                                 <Button
                                   variant="ghost"
@@ -382,7 +416,7 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
                                     e.stopPropagation();
                                     incrementQuantity(item.product.id);
                                   }}
-                                  className="h-9 w-9 p-0 hover:bg-slate-200 rounded-r-md"
+                                  className="h-9 w-9 p-0 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-r-md text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
                                 >
                                   <Plus className="h-4 w-4" />
                                 </Button>
@@ -395,7 +429,7 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
                                   e.stopPropagation();
                                   removeProduct(item.product.id);
                                 }}
-                                className="h-9 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-2 border-transparent hover:border-red-200"
+                                className="h-9 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/50 border-2 border-transparent hover:border-red-200 dark:hover:border-red-900"
                               >
                                 <X className="w-3 h-3 mr-1" />
                                 Remove
@@ -405,9 +439,9 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
                         </div>
 
                         {/* Item Subtotal */}
-                        <div className="mt-3 pt-3 border-t-2 border-slate-100 flex justify-between items-center">
-                          <span className="text-xs text-slate-600">Item Subtotal</span>
-                          <span className="text-base font-bold text-purple-600">
+                        <div className="mt-3 pt-3 border-t-2 border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                          <span className="text-xs text-slate-600 dark:text-slate-400">Item Subtotal</span>
+                          <span className="text-base font-bold text-purple-600 dark:text-purple-400">
                             ₱{(item.product.retailPrice * (typeof item.quantity === 'string' ? 0 : item.quantity)).toFixed(2)}
                           </span>
                         </div>

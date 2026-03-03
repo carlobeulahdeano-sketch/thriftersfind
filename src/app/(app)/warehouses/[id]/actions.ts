@@ -285,3 +285,56 @@ export async function transferToInventory(
         return { success: false, error: error.message || "Failed to transfer product" };
     }
 }
+
+export async function bulkAddWarehouseStock(
+    items: { id: string; quantityToAdd: number }[]
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        if (!items || items.length === 0) {
+            return { success: false, error: "No products provided" };
+        }
+
+        // Validate quantities
+        for (const item of items) {
+            if (item.quantityToAdd <= 0) {
+                return { success: false, error: "Quantities must be greater than zero" };
+            }
+        }
+
+        // Use a transaction to ensure all updates succeed or fail together
+        await prisma.$transaction(async (tx) => {
+            for (const item of items) {
+                const product = await tx.warehouseProduct.findUnique({
+                    where: { id: item.id }
+                });
+
+                if (!product) {
+                    throw new Error(`Product with ID ${item.id} not found`);
+                }
+
+                const newQuantity = product.quantity + item.quantityToAdd;
+
+                await tx.warehouseProduct.update({
+                    where: { id: item.id },
+                    data: { quantity: newQuantity }
+                });
+
+                await createInventoryLog({
+                    action: "STOCK_IN",
+                    warehouseProductId: item.id,
+                    quantityChange: item.quantityToAdd,
+                    previousStock: product.quantity,
+                    newStock: newQuantity,
+                    reason: "Bulk Add Stock",
+                    referenceId: item.id
+                }, tx);
+            }
+        });
+
+        revalidatePath(`/warehouses`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error in bulkAddWarehouseStock:", error);
+        return { success: false, error: error.message || "Failed to update stock" };
+    }
+}

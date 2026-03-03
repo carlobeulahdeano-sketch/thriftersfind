@@ -9,7 +9,7 @@ export function PrintButton() {
 
     const handlePrint = () => {
         const timeframe = searchParams.get("timeframe") || "month";
-        window.open(`/dashboard/print?timeframe=${timeframe}`, '_blank');
+        window.open(`/print/dashboard?timeframe=${timeframe}`, '_blank');
     };
 
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatBox } from "./chat/chat-box";
@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "@/lib/types";
 import { getUsers } from "@/app/(app)/users/actions";
 import { getUnreadCounts } from "./chat/chat-actions";
+import { useChatEvents, ChatEventData } from "@/hooks/use-chat-events";
 
 interface MessengerNavProps {
     currentUser: User | null;
@@ -24,7 +25,7 @@ interface MessengerNavProps {
 export function MessengerNav({ currentUser }: MessengerNavProps) {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [activeChats, setActiveChats] = useState<User[]>([]);
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
     const [isMounted, setIsMounted] = useState(false);
 
@@ -36,7 +37,8 @@ export function MessengerNav({ currentUser }: MessengerNavProps) {
             try {
                 const usersData = await getUsers();
                 if (Array.isArray(usersData)) {
-                    setUsers(usersData);
+                    // Filter out inactive users
+                    setUsers(usersData.filter(u => u.isActive !== false));
                 } else {
                     console.warn("[MessengerNav] Received invalid users data:", usersData);
                     setUsers([]);
@@ -62,10 +64,52 @@ export function MessengerNav({ currentUser }: MessengerNavProps) {
         // Initial fetch
         fetchUsersAndCounts();
 
-        // Poll for new messages every 2 seconds for pseudo-realtime
-        const interval = setInterval(fetchUsersAndCounts, 2000);
+        // Poll less frequently since SSE handles real-time updates
+        const interval = setInterval(fetchUsersAndCounts, 10000);
         return () => clearInterval(interval);
     }, [currentUser]);
+
+    // SSE: Auto-open chat box when a new message arrives from another user
+    const handleChatEvent = useCallback((event: ChatEventData) => {
+        if (!currentUser) return;
+        // Only auto-open for messages from OTHER users (not our own sends)
+        if (event.senderId === currentUser.id) return;
+
+        // Update unread count immediately
+        setUnreadCounts(prev => ({
+            ...prev,
+            [event.senderId]: (prev[event.senderId] || 0) + 1,
+        }));
+
+        // Auto-open the chat box for the sender
+        setActiveChats(prev => {
+            // If already chatting with this user, keep it (chat-box will pick up the event)
+            if (prev.find(u => u.id === event.senderId)) return prev;
+
+            // Find the sender in our users list
+            const sender = users.find(u => u.id === event.senderId);
+            if (sender) {
+                return [...prev, sender];
+            }
+
+            // If sender not in the list yet, create a minimal user object
+            return [...prev, {
+                id: event.senderId,
+                name: event.senderName,
+                email: "",
+                password: "",
+                roleId: null,
+                role: null,
+                branchId: null,
+                branch: null,
+                permissions: null,
+                createdAt: "",
+                updatedAt: "",
+            } as User];
+        });
+    }, [currentUser, users]);
+
+    useChatEvents(handleChatEvent, !!currentUser);
 
     const totalUnread = unreadCounts ? Object.values(unreadCounts).reduce((a, b) => a + b, 0) : 0;
 
@@ -79,7 +123,10 @@ export function MessengerNav({ currentUser }: MessengerNavProps) {
     }
 
     const handleUserSelect = (user: User) => {
-        setSelectedUser(user);
+        setActiveChats(prev => {
+            if (prev.find(u => u.id === user.id)) return prev;
+            return [...prev, user];
+        });
         // Optimistically clear unread count for this user
         // The ChatBox will handle the server-side update when it mounts
         setUnreadCounts(prev => ({ ...prev, [user.id]: 0 }));
@@ -150,13 +197,17 @@ export function MessengerNav({ currentUser }: MessengerNavProps) {
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
-            {selectedUser && (
+            {activeChats.map((chatUser, index) => (
                 <ChatBox
-                    user={selectedUser}
+                    key={chatUser.id}
+                    user={chatUser}
                     currentUser={currentUser}
-                    onClose={() => setSelectedUser(null)}
+                    index={index}
+                    onClose={() => {
+                        setActiveChats(prev => prev.filter(u => u.id !== chatUser.id));
+                    }}
                 />
-            )}
+            ))}
         </>
     );
 }

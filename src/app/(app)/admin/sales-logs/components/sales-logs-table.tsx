@@ -54,7 +54,7 @@ export default function SalesLogsTable() {
         fetchLogs(currentPage);
     }
 
-    const handleViewDetails = (log: SalesLog) => {
+    const handleViewDetails = (log: any) => {
         setSelectedLog(log);
         setDetailsOpen(true);
     }
@@ -220,7 +220,7 @@ export default function SalesLogsTable() {
                             <TableRow className="hover:bg-transparent">
                                 <TableHead className="w-[180px] font-semibold">Date</TableHead>
                                 <TableHead className="font-semibold">Customer</TableHead>
-                                <TableHead className="font-semibold">Reference</TableHead>
+                                <TableHead className="font-semibold">Staff / Branch</TableHead>
                                 <TableHead className="font-semibold">Products</TableHead>
                                 <TableHead className="font-semibold">Description</TableHead>
                                 <TableHead className="text-right font-semibold">Total Amount</TableHead>
@@ -250,7 +250,22 @@ export default function SalesLogsTable() {
                                             <span className="font-medium">{log.customerName || "-"}</span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-xs text-muted-foreground">{log.orderId || log.preOrderId || "-"}</span>
+                                            {(() => {
+                                                if (!log.orders) return <span className="text-muted-foreground">-</span>;
+                                                let data: any = log.orders;
+                                                if (typeof data === 'string') {
+                                                    try { data = JSON.parse(data); } catch (e) { return <span className="text-muted-foreground">-</span>; }
+                                                }
+                                                if (data && data.createdBy) {
+                                                    return (
+                                                        <div>
+                                                            <span className="font-medium text-sm block">{data.createdBy.name || "System"}</span>
+                                                            <span className="text-xs text-muted-foreground">{(log as any).branchName || "No Branch"}</span>
+                                                        </div>
+                                                    );
+                                                }
+                                                return <span className="text-muted-foreground">-</span>;
+                                            })()}
                                         </TableCell>
                                         <TableCell className="max-w-[200px] truncate" title={log.products || ""}>
                                             {log.products || "-"}

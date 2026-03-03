@@ -17,7 +17,8 @@ export async function getNotifications() {
                 OR: [
                     { userId: user.id },
                     { userId: null }
-                ]
+                ],
+                read: false
             },
             orderBy: {
                 createdAt: 'desc'
@@ -77,14 +78,50 @@ export async function createNotification(data: { title: string; message: string;
 
 export async function checkAndNotifyStock(data: { productName: string; sku: string; quantity: number; alertStock: number; userId?: string | null }) {
     try {
+        // Automatically resolve (mark as read) notifications when stock levels improve
+        if (data.quantity > data.alertStock) {
+            // Stock is fully replenished, resolve both 'low_stock' and 'out_of_stock' alerts
+            await prisma.notification.updateMany({
+                where: {
+                    type: { in: ["low_stock", "out_of_stock"] },
+                    message: { contains: `(SKU: ${data.sku})` },
+                    read: false,
+                },
+                data: { read: true },
+            });
+        } else if (data.quantity > 0) {
+            // Stock is no longer completely out, resolve 'out_of_stock' alerts
+            await prisma.notification.updateMany({
+                where: {
+                    type: "out_of_stock",
+                    message: { contains: `(SKU: ${data.sku})` },
+                    read: false,
+                },
+                data: { read: true },
+            });
+        }
+
         if (data.alertStock > 0 && data.quantity <= data.alertStock) {
             const isOutOfStock = data.quantity <= 0;
-            await createNotification({
-                title: isOutOfStock ? "Out of Stock Alert" : "Low Stock Alert",
-                message: `Product ${data.productName} (SKU: ${data.sku}) is ${isOutOfStock ? "out of stock" : "running low"}. Current stock: ${data.quantity}.`,
-                type: isOutOfStock ? "out_of_stock" : "low_stock",
-                userId: data.userId
+            const alertType = isOutOfStock ? "out_of_stock" : "low_stock";
+
+            // Check if there's already an unread notification for this state to prevent spam
+            const existingAlert = await prisma.notification.findFirst({
+                where: {
+                    type: alertType,
+                    message: { contains: `(SKU: ${data.sku})` },
+                    read: false
+                }
             });
+
+            if (!existingAlert) {
+                await createNotification({
+                    title: isOutOfStock ? "Out of Stock Alert" : "Low Stock Alert",
+                    message: `Product ${data.productName} (SKU: ${data.sku}) is ${isOutOfStock ? "out of stock" : "running low"}. Current stock: ${data.quantity}.`,
+                    type: alertType,
+                    userId: data.userId
+                });
+            }
         }
     } catch (error) {
         console.error("Error checking and notifying stock:", error);

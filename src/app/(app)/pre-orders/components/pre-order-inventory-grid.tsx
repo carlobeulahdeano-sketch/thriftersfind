@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Search, Image as ImageIcon, ShoppingCart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -43,6 +44,12 @@ interface PreOrderInventoryGridProps {
 export default function PreOrderInventoryGrid({ products, onRefresh }: PreOrderInventoryGridProps) {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = React.useState("");
+    const [currentPage, setCurrentPage] = React.useState(1);
+    const itemsPerPage = 10;
+
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
 
     const filteredItems = React.useMemo(() => {
         return products.filter((item) => {
@@ -52,6 +59,13 @@ export default function PreOrderInventoryGrid({ products, onRefresh }: PreOrderI
             return matchesSearch;
         });
     }, [products, searchTerm]);
+
+    const paginatedItems = React.useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return filteredItems.slice(start, start + itemsPerPage);
+    }, [filteredItems, currentPage]);
+
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
 
     return (
         <div className="space-y-6">
@@ -89,8 +103,8 @@ export default function PreOrderInventoryGrid({ products, onRefresh }: PreOrderI
                         </TableHeader>
                         <TableBody>
                             <AnimatePresence mode="popLayout">
-                                {filteredItems.length > 0 ? (
-                                    filteredItems.map((item) => {
+                                {paginatedItems.length > 0 ? (
+                                    paginatedItems.map((item) => {
                                         // Handle images safely
                                         const imageUrl = Array.isArray(item.images) && item.images.length > 0 ? item.images[0] : null;
 
@@ -154,6 +168,36 @@ export default function PreOrderInventoryGrid({ products, onRefresh }: PreOrderI
                     </Table>
                 </CardContent>
             </Card>
+
+            {/* Pagination Controls */}
+            {filteredItems.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+                    <div className="text-sm text-muted-foreground w-full sm:w-auto text-center sm:text-left">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredItems.length)} of {filteredItems.length} entries
+                    </div>
+                    <div className="flex items-center space-x-2 w-full sm:w-auto justify-center sm:justify-end">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </Button>
+                        <div className="text-sm font-medium w-24 text-center">
+                            Page {currentPage} of {Math.max(1, totalPages)}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

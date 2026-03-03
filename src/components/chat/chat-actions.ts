@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-server";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { createInventoryLog } from "@/lib/inventory-log-helper";
+import { notifyChatEvent } from "@/lib/chat-emitter";
 
 export async function sendMessage(receiverId: string, content: string) {
     try {
@@ -20,8 +21,27 @@ export async function sendMessage(receiverId: string, content: string) {
             },
         });
 
+        // Push real-time SSE event to the receiver
+        notifyChatEvent(receiverId, {
+            type: "new-message",
+            senderId: currentUser.id,
+            senderName: currentUser.name,
+            messageId: message.id,
+            content,
+            createdAt: message.createdAt.toISOString(),
+        });
+
+        // Also notify the sender (for multi-tab support)
+        notifyChatEvent(currentUser.id, {
+            type: "new-message",
+            senderId: currentUser.id,
+            senderName: currentUser.name,
+            messageId: message.id,
+            content,
+            createdAt: message.createdAt.toISOString(),
+        });
+
         // Revalidate the path to update the UI
-        // Ideally we would use a more granular revalidation or a subscription
         revalidatePath("/");
 
         return { success: true, message };
@@ -248,7 +268,7 @@ export async function transferStock(
             const branchId = targetUserData[0]?.branchId || currentUser.branchId;
 
             await createInventoryLog({
-                action: inventoryProduct ? "ADJUSTMENT" : "STOCK_IN",
+                action: "TRANSFER",
                 productId: productId,
                 quantityChange: transferQty,
                 previousStock: inventoryProduct ? (inventoryProduct as any).quantity : 0,
@@ -301,10 +321,10 @@ export async function transferStock(
 }
 
 export async function bulkTransferStock(
-    warehouseProductIds: string[],
+    transfers: { id: string, quantity: number }[],
     targetUser?: { id: string, name: string, email: string }
 ) {
-    console.log(`[bulkTransferStock] Initiating bulk transfer for ${warehouseProductIds.length} products to ${targetUser?.name || 'Self'}`);
+    console.log(`[bulkTransferStock] Initiating bulk transfer for ${transfers.length} products to ${targetUser?.name || 'Self'}`);
     try {
         const currentUser = await getCurrentUser();
         if (!currentUser) {
@@ -328,17 +348,23 @@ export async function bulkTransferStock(
             const targetUserData: any[] = await tx.$queryRawUnsafe(`SELECT branchId FROM users WHERE id = ? LIMIT 1`, creator.id);
             const branchId = targetUserData[0]?.branchId || currentUser.branchId;
 
-            for (const id of warehouseProductIds) {
+            for (const transfer of transfers) {
                 const warehouseProducts: any[] = await tx.$queryRawUnsafe(
                     `SELECT * FROM warehouse_products WHERE id = ? LIMIT 1`,
-                    id
+                    transfer.id
                 );
                 const warehouseProduct = warehouseProducts[0];
 
                 if (!warehouseProduct) continue;
 
-                const transferQty = warehouseProduct.quantity;
-                console.log(`[bulkTransferStock] Transferring all (${transferQty}) for ${warehouseProduct.productName}`);
+                const transferQty = transfer.quantity;
+
+                if (transferQty <= 0 || transferQty > warehouseProduct.quantity) {
+                    console.error(`[bulkTransferStock] Invalid quantity for ${transfer.id}: ${transferQty}`);
+                    continue;
+                }
+
+                console.log(`[bulkTransferStock] Transferring (${transferQty}) for ${warehouseProduct.productName}`);
 
                 // Check if product exists in inventory by SKU and target User
                 const inventoryProducts: any[] = await tx.$queryRawUnsafe(
@@ -391,7 +417,7 @@ export async function bulkTransferStock(
 
                 // Log inventory change
                 await createInventoryLog({
-                    action: inventoryProduct ? "ADJUSTMENT" : "STOCK_IN",
+                    action: "TRANSFER",
                     productId: targetProductId,
                     quantityChange: transferQty,
                     previousStock: inventoryProduct ? (inventoryProduct as any).quantity : 0,
@@ -415,8 +441,16 @@ export async function bulkTransferStock(
                     creator.id
                 );
 
-                // Delete since we transfer all in bulk
-                await tx.$executeRawUnsafe(`DELETE FROM warehouse_products WHERE id = ?`, id);
+                const newQuantity = warehouseProduct.quantity - transferQty;
+                if (newQuantity <= 0) {
+                    await tx.$executeRawUnsafe(`DELETE FROM warehouse_products WHERE id = ?`, transfer.id);
+                } else {
+                    await tx.$executeRawUnsafe(
+                        `UPDATE warehouse_products SET quantity = ? WHERE id = ?`,
+                        newQuantity,
+                        transfer.id
+                    );
+                }
             }
         });
 

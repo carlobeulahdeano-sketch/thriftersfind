@@ -10,13 +10,16 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 189 94% 48%; /* Logo Cyan */
+    --primary: 189 94% 48%;
+    /* Logo Cyan */
     --primary-foreground: 0 0% 100%;
-    --secondary: 330 81% 70%; /* Logo Pink */
+    --secondary: 330 81% 70%;
+    /* Logo Pink */
     --secondary-foreground: 330 84% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 262 80% 60%; /* Logo Purple */
+    --accent: 262 80% 60%;
+    /* Logo Purple */
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -54,13 +57,16 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 189 94% 48%; /* Logo Cyan */
+    --primary: 189 94% 48%;
+    /* Logo Cyan */
     --primary-foreground: 189 94% 10%;
-    --secondary: 330 81% 70%; /* Logo Pink */
+    --secondary: 330 81% 70%;
+    /* Logo Pink */
     --secondary-foreground: 330 84% 10%;
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 262 70% 50%; /* Logo Purple */
+    --accent: 262 70% 50%;
+    /* Logo Purple */
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
@@ -100,4 +106,28 @@
     @apply bg-background text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+}
+
+/* ApexCharts Dark Mode Overrides */
+.dark .apexcharts-tooltip {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5) !important;
+}
+
+.dark .apexcharts-tooltip-title {
+  background: hsl(var(--muted)) !important;
+  border-bottom: 1px solid hsl(var(--border)) !important;
+  font-family: inherit !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.dark .apexcharts-tooltip-text {
+  color: hsl(var(--card-foreground)) !important;
+  font-family: inherit !important;
+}
+
+.dark .apexcharts-legend-text {
+  color: hsl(var(--foreground)) !important;
 }

@@ -49,7 +49,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export default function StationsTable({ stations: initialStations }: { stations: Station[] }) {
+export default function StationsTable({ stations: initialStations, onRefresh }: { stations: Station[], onRefresh?: () => Promise<void> | void }) {
     const { toast } = useToast();
     const router = useRouter();
     const [stations, setStations] = React.useState<Station[]>(initialStations);
@@ -64,6 +64,9 @@ export default function StationsTable({ stations: initialStations }: { stations:
 
     const refreshStations = () => {
         router.refresh();
+        if (onRefresh) {
+            onRefresh();
+        }
     };
 
     React.useEffect(() => {
@@ -132,18 +135,49 @@ export default function StationsTable({ stations: initialStations }: { stations:
     return (
         <>
             <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "list" | "map")} className="w-full">
-                <div className="flex items-center justify-between gap-2 mb-4">
-                    <TabsList>
-                        <TabsTrigger value="list" className="gap-2">
-                            <List className="h-4 w-4" />
-                            List View
-                        </TabsTrigger>
-                        <TabsTrigger value="map" className="gap-2">
-                            <Map className="h-4 w-4" />
-                            Map View
-                        </TabsTrigger>
-                    </TabsList>
-                    <Button onClick={() => setAddDialogOpen(true)} className="bg-pink-600 hover:bg-pink-700 text-white">
+                <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 mb-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full xl:w-auto">
+                        <TabsList>
+                            <TabsTrigger value="list" className="gap-2">
+                                <List className="h-4 w-4" />
+                                List View
+                            </TabsTrigger>
+                            <TabsTrigger value="map" className="gap-2">
+                                <Map className="h-4 w-4" />
+                                Map View
+                            </TabsTrigger>
+                        </TabsList>
+
+                        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                            <div className="relative flex-1 sm:flex-none">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="search"
+                                    placeholder="Search by name or location..."
+                                    className="pl-8 w-full sm:w-[250px] bg-background"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <Select value={typeFilter} onValueChange={setTypeFilter}>
+                                <SelectTrigger className="w-[150px] bg-background">
+                                    <SelectValue placeholder="Filter by type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Types</SelectItem>
+                                    <SelectItem value="courier">Courier</SelectItem>
+                                    <SelectItem value="pickup">Pickup</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {isFiltered && (
+                                <Button variant="ghost" onClick={resetFilters} className="px-2">
+                                    Reset
+                                    <X className="ml-2 h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                    <Button onClick={() => setAddDialogOpen(true)} className="bg-pink-600 hover:bg-pink-700 text-white shrink-0">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Add Station
                     </Button>
@@ -151,36 +185,6 @@ export default function StationsTable({ stations: initialStations }: { stations:
 
                 <TabsContent value="list" className="mt-0">
                     <Card className="border-t-4 border-t-pink-500/50 shadow-sm">
-                        <div className="flex items-center justify-between gap-2 p-4 flex-wrap">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <div className="relative">
-                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        type="search"
-                                        placeholder="Search by name or location..."
-                                        className="pl-8 sm:w-[250px]"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                </div>
-                                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                                    <SelectTrigger className="w-[150px]">
-                                        <SelectValue placeholder="Filter by type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Types</SelectItem>
-                                        <SelectItem value="courier">Courier</SelectItem>
-                                        <SelectItem value="pickup">Pickup</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {isFiltered && (
-                                    <Button variant="ghost" onClick={resetFilters}>
-                                        Reset
-                                        <X className="ml-2 h-4 w-4" />
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader className="bg-muted/30">

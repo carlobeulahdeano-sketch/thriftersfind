@@ -11,7 +11,7 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 interface SalesChartProps {
   orders: Order[];
-  timeframe: "week" | "month" | "year";
+  timeframe: "week" | "month" | "year" | "all";
 }
 
 export default function SalesChart({ orders, timeframe }: SalesChartProps) {
@@ -103,6 +103,29 @@ export default function SalesChart({ orders, timeframe }: SalesChartProps) {
       return {
         categories: monthOrder,
         seriesData: monthOrder.map(m => monthlySales[m])
+      };
+    }
+
+    if (timeframe === 'all') {
+      const salesByMonthYear: { [key: string]: number } = {};
+      const labels: string[] = [];
+
+      orders.forEach(order => {
+        const orderDate = (order.createdAt as any)?.seconds ? new Date((order.createdAt as any).seconds * 1000) : new Date(order.orderDate);
+        const label = format(orderDate, "MMM yyyy");
+
+        if (!salesByMonthYear.hasOwnProperty(label)) {
+          salesByMonthYear[label] = 0;
+          labels.push(label);
+        }
+        salesByMonthYear[label] += order.totalAmount;
+      });
+
+      labels.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+      return {
+        categories: labels,
+        seriesData: labels.map(l => salesByMonthYear[l])
       };
     }
 

@@ -16,7 +16,7 @@ import TopCustomersChart from "../components/top-customers-chart";
 
 function PrintReportContent() {
     const searchParams = useSearchParams();
-    const timeframe = (searchParams.get("timeframe") as "week" | "month" | "year") || "month";
+    const timeframe = (searchParams.get("timeframe") as "week" | "month" | "year" | "all") || "month";
     const [allOrders, setAllOrders] = useState<Order[]>([]);
     const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -45,7 +45,8 @@ function PrintReportContent() {
         let startDate: Date;
         if (timeframe === 'week') startDate = startOfWeek(now);
         else if (timeframe === 'month') startDate = startOfMonth(now);
-        else startDate = startOfYear(now);
+        else if (timeframe === 'year') startDate = startOfYear(now);
+        else startDate = new Date(0);
         const endDate = endOfToday();
 
         return allOrders.filter(order => {
@@ -152,7 +153,7 @@ function PrintReportContent() {
                     </div>
                     <div>
                         <h3 className="text-slate-400 font-bold uppercase tracking-wider mb-2 text-xs">Period Details</h3>
-                        <p className="font-bold text-slate-700 text-base">{timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}ly Report</p>
+                        <p className="font-bold text-slate-700 text-base">{timeframe === 'all' ? 'All Time' : timeframe.charAt(0).toUpperCase() + timeframe.slice(1) + 'ly'} Report</p>
                         <p className="text-slate-500">Date Range:</p>
                         <p className="text-slate-500">
                             {filteredOrders.length > 0

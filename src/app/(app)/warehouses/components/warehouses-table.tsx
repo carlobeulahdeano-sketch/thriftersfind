@@ -24,6 +24,7 @@ import { AddWarehouseDialog } from "./add-warehouse-dialog";
 import { ViewWarehouseDialog } from "./view-warehouse-dialog";
 import { EditWarehouseDialog } from "./edit-warehouse-dialog";
 import { StockAdjustmentDialog } from "./stock-adjustment-dialog";
+import { BulkAddStockDialog } from "./bulk-add-stock-dialog";
 import { WarehouseProduct } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { deleteWarehouseProduct } from "../actions";
@@ -47,6 +48,7 @@ export default function WarehouseProductsTable({ products: initialProducts, onRe
     const [currentPage, setCurrentPage] = React.useState(1);
     const itemsPerPage = 10;
     const [isAddDialogOpen, setAddDialogOpen] = React.useState(false);
+    const [isBulkAddDialogOpen, setIsBulkAddDialogOpen] = React.useState(false);
     const [editingProduct, setEditingProduct] = React.useState<WarehouseProduct | null>(null);
     const [viewingProduct, setViewingProduct] = React.useState<WarehouseProduct | null>(null);
     const [stockAdjustment, setStockAdjustment] = React.useState<{
@@ -134,10 +136,20 @@ export default function WarehouseProductsTable({ products: initialProducts, onRe
                             </Button>
                         )}
                     </div>
-                    <Button onClick={() => setAddDialogOpen(true)} className="bg-pink-600 hover:bg-pink-700 text-white">
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Product
-                    </Button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setIsBulkAddDialogOpen(true)}
+                            className="bg-muted hover:bg-muted/80 text-foreground"
+                        >
+                            <Package className="mr-2 h-4 w-4" />
+                            Bulk Add Stock
+                        </Button>
+                        <Button onClick={() => setAddDialogOpen(true)} className="bg-pink-600 hover:bg-pink-700 text-white">
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Product
+                        </Button>
+                    </div>
                 </div>
                 <CardContent className="p-0">
                     <Table>
@@ -309,6 +321,14 @@ export default function WarehouseProductsTable({ products: initialProducts, onRe
                     onSuccess={refreshProducts}
                 />
             )}
+            <BulkAddStockDialog
+                isOpen={isBulkAddDialogOpen}
+                onClose={() => setIsBulkAddDialogOpen(false)}
+                products={products}
+                onSuccess={() => {
+                    refreshProducts();
+                }}
+            />
         </>
     );
 }

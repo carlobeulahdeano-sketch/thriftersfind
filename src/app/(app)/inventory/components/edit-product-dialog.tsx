@@ -24,26 +24,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Product, Batch } from "@/lib/types";
+import type { Product, Batch, ProductCategory } from "@/lib/types";
 
 interface EditProductDialogProps {
   isOpen: boolean;
   onClose: () => void;
   product: Product | null;
   onSuccess?: () => void;
+  categories?: ProductCategory[];
 }
 
-export function EditProductDialog({ isOpen, onClose, product, onSuccess }: EditProductDialogProps) {
+export function EditProductDialog({ isOpen, onClose, product, onSuccess, categories = [] }: EditProductDialogProps) {
   const { toast } = useToast();
 
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
   const [description, setDescription] = useState("");
-  const [quantity, setQuantity] = useState("0");
-  const [cost, setCost] = useState("0.00");
-  const [retailPrice, setRetailPrice] = useState("0.00");
-  const [alertStock, setAlertStock] = useState("0");
+  const [quantity, setQuantity] = useState("");
+  const [cost, setCost] = useState("");
+  const [retailPrice, setRetailPrice] = useState("");
+  const [alertStock, setAlertStock] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
 
 
 
@@ -66,6 +68,7 @@ export function EditProductDialog({ isOpen, onClose, product, onSuccess }: EditP
       setNewImages([]);
       setNewImagePreviews([]);
       setImagesToRemove([]);
+      setSelectedCategoryId(product.categoryId || "");
     }
   }, [product]);
 
@@ -130,6 +133,7 @@ export function EditProductDialog({ isOpen, onClose, product, onSuccess }: EditP
         cost: parseFloat(cost) || 0,
         retailPrice: parseFloat(retailPrice) || 0,
         images: finalImages,
+        categoryId: selectedCategoryId && selectedCategoryId !== "none" ? selectedCategoryId : null,
       };
 
       await updateProduct(product.id, productData);
@@ -177,11 +181,25 @@ export function EditProductDialog({ isOpen, onClose, product, onSuccess }: EditP
             <Textarea id="edit-description" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
           <div className="grid gap-2">
+            <Label>Category</Label>
+            <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Category</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
             <Label>Quantity (QTY)</Label>
             <div className="grid gap-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-quantity" className="text-xs">Quantity</Label>
-                <Input id="edit-quantity" type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                <Input id="edit-quantity" type="number" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
               </div>
             </div>
           </div>
@@ -198,6 +216,7 @@ export function EditProductDialog({ isOpen, onClose, product, onSuccess }: EditP
                 <Input
                   id="edit-cost"
                   type="number"
+                  placeholder="0.00"
                   value={cost}
                   onChange={(e) => setCost(e.target.value)}
                   className="pl-7"
@@ -216,6 +235,7 @@ export function EditProductDialog({ isOpen, onClose, product, onSuccess }: EditP
                 <Input
                   id="edit-retailPrice"
                   type="number"
+                  placeholder="0.00"
                   value={retailPrice}
                   onChange={(e) => setRetailPrice(e.target.value)}
                   className="pl-7"
@@ -224,7 +244,7 @@ export function EditProductDialog({ isOpen, onClose, product, onSuccess }: EditP
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-alertStock">Alert Stock</Label>
-              <Input id="edit-alertStock" type="number" value={alertStock} onChange={(e) => setAlertStock(e.target.value)} />
+              <Input id="edit-alertStock" type="number" placeholder="0" value={alertStock} onChange={(e) => setAlertStock(e.target.value)} />
             </div>
           </div>
           <div className="grid gap-2">

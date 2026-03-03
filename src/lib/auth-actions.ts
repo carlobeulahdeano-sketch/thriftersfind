@@ -23,6 +23,10 @@ export async function login(prevState: any, formData: FormData) {
             return { error: "Invalid email or password" };
         }
 
+        if ((user as any).isActive === false) {
+            return { error: "Account is inactive. Please contact an administrator." };
+        }
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
@@ -37,6 +41,11 @@ export async function login(prevState: any, formData: FormData) {
             secure: process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_APP_URL?.startsWith('https') === true,
             maxAge: 60 * 60 * 24 * 7, // 1 week
             path: "/",
+        });
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { isOnline: true }
         });
 
         // Success
@@ -81,6 +90,19 @@ export async function login(prevState: any, formData: FormData) {
 
 export async function logout() {
     const cookieStore = await cookies();
+    const session = cookieStore.get("session")?.value;
+
+    if (session) {
+        try {
+            await prisma.user.update({
+                where: { id: session },
+                data: { isOnline: false }
+            });
+        } catch (error) {
+            console.error("Failed to update user status on logout", error);
+        }
+    }
+
     cookieStore.delete("session");
     redirect("/login");
 }

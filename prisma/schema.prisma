@@ -98,6 +98,18 @@ model Batch {
   @@map("batches")
 }
 
+model ProductCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  imageUrl    String?   @db.LongText
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  products    Product[]
+
+  @@map("product_categories")
+}
+
 model Product {
   id               String            @id @default(cuid())
   name             String
@@ -109,6 +121,7 @@ model Product {
   retailPrice      Float?
   images           Json?
   warehouseId      String?
+  categoryId       String?
   createdBy        Json?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @default(now()) @updatedAt
@@ -116,10 +129,12 @@ model Product {
   inventoryLogs    InventoryLog[]
   preOrders        PreOrder[]
   batch            Batch?            @relation(fields: [batchId], references: [id])
+  category         ProductCategory?  @relation(fields: [categoryId], references: [id])
   warehouseProduct WarehouseProduct? @relation(fields: [warehouseId], references: [id])
 
   @@index([warehouseId], map: "products_warehouseId_fkey")
   @@index([batchId], map: "products_batchId_fkey")
+  @@index([categoryId], map: "products_categoryId_fkey")
   @@map("products")
 }
 
@@ -132,6 +147,8 @@ model User {
   roleId           String?
   branchId         String?
   permissions      Json?
+  isActive         Boolean        @default(true)
+  isOnline         Boolean        @default(false)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @default(now()) @updatedAt
   inventoryLogs    InventoryLog[]

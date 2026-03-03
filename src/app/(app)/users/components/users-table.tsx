@@ -34,8 +34,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateUserDialog } from "./create-user-dialog";
 import { EditUserDialog } from "./edit-user-dialog";
-import { deleteUser, getUsers } from "../actions";
+import { deleteUser, getUsers, toggleUserStatus } from "../actions";
 import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
 
 interface UsersTableProps {
   users: User[];
@@ -168,7 +169,8 @@ export default function UsersTable({ users: initialUsers, currentUser, onUserAdd
               <TableRow className="hover:bg-transparent">
                 <TableHead className="font-semibold">User</TableHead>
                 <TableHead className="font-semibold">Role</TableHead>
-                <TableHead className="hidden md:table-cell font-semibold">Created</TableHead>
+                <TableHead className="font-semibold">Branch</TableHead>
+                <TableHead className="font-semibold">Status</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -195,7 +197,40 @@ export default function UsersTable({ users: initialUsers, currentUser, onUserAdd
                       {user.branch?.name || 'No Branch'}
                     </div>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={user.isActive !== false}
+                        onCheckedChange={async (checked) => {
+                          const originalValue = user.isActive;
+
+                          // Optimistic update
+                          setUsers(prev => prev.map(u => u.id === user.id ? { ...u, isActive: checked } : u));
+
+                          const result = await toggleUserStatus(user.id, checked);
+                          if (!result.success) {
+                            // Revert on failure
+                            setUsers(prev => prev.map(u => u.id === user.id ? { ...u, isActive: originalValue } : u));
+                            toast({
+                              variant: "destructive",
+                              title: "Error",
+                              description: result.error || "Failed to update user status.",
+                            });
+                          } else {
+                            toast({
+                              title: "Status updated",
+                              description: `${user.name} is now ${checked ? 'active' : 'inactive'}.`,
+                            });
+                            if (onUserUpdated) onUserUpdated();
+                          }
+                        }}
+                        disabled={currentUser?.id === user.id}
+                      />
+                      <span className="text-sm font-medium text-muted-foreground w-16">
+                        {user.isActive !== false ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

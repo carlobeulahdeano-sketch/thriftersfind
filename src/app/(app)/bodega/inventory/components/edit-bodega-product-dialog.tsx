@@ -32,10 +32,10 @@ export function EditBodegaProductDialog({ isOpen, onClose, product, onSuccess }:
     const [name, setName] = useState("");
     const [sku, setSku] = useState("");
     const [description, setDescription] = useState("");
-    const [quantity, setQuantity] = useState("0");
-    const [cost, setCost] = useState("0.00");
-    const [retailPrice, setRetailPrice] = useState("0.00");
-    const [alertStock, setAlertStock] = useState("0");
+    const [quantity, setQuantity] = useState("");
+    const [cost, setCost] = useState("");
+    const [retailPrice, setRetailPrice] = useState("");
+    const [alertStock, setAlertStock] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -169,20 +169,20 @@ export function EditBodegaProductDialog({ isOpen, onClose, product, onSuccess }:
                     </div>
                     <div className="grid gap-2">
                         <Label>Quantity (QTY)</Label>
-                        <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                        <Input type="number" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
                     </div>
                     <div className="grid grid-cols-3 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="edit-cost">Cost (PHP)</Label>
-                            <Input id="edit-cost" type="number" value={cost} onChange={(e) => setCost(e.target.value)} />
+                            <Input id="edit-cost" type="number" placeholder="0.00" value={cost} onChange={(e) => setCost(e.target.value)} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-retailPrice">Retail Price (PHP)</Label>
-                            <Input id="edit-retailPrice" type="number" value={retailPrice} onChange={(e) => setRetailPrice(e.target.value)} />
+                            <Input id="edit-retailPrice" type="number" placeholder="0.00" value={retailPrice} onChange={(e) => setRetailPrice(e.target.value)} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-alertStock">Alert Stock</Label>
-                            <Input id="edit-alertStock" type="number" value={alertStock} onChange={(e) => setAlertStock(e.target.value)} />
+                            <Input id="edit-alertStock" type="number" placeholder="0" value={alertStock} onChange={(e) => setAlertStock(e.target.value)} />
                         </div>
                     </div>
                     <div className="grid gap-2">

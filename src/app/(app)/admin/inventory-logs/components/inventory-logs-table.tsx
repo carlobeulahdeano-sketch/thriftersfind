@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { InventoryLog, Branch } from "@/lib/types";
+import { InventoryLog } from "@/lib/types";
 import { getInventoryLogs } from "../actions";
 import {
     Table,
@@ -25,16 +25,16 @@ import { format } from "date-fns";
 import { Loader2, Search } from "lucide-react";
 
 interface InventoryLogsTableProps {
-    branches: Branch[];
+    users: { id: string; name: string }[];
 }
 
-export function InventoryLogsTable({ branches }: InventoryLogsTableProps) {
+export function InventoryLogsTable({ users }: InventoryLogsTableProps) {
     const [logs, setLogs] = useState<InventoryLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState("");
-    const [branchId, setBranchId] = useState<string>("all");
+    const [userId, setUserId] = useState<string>("all");
     const [action, setAction] = useState<string>("all");
 
     const fetchLogs = async () => {
@@ -42,7 +42,7 @@ export function InventoryLogsTable({ branches }: InventoryLogsTableProps) {
         try {
             const res = await getInventoryLogs(page, 10, {
                 search,
-                branchId: branchId === "all" ? undefined : branchId,
+                userId: userId === "all" ? undefined : userId,
                 action: action === "all" ? undefined : action,
             });
             if (res.success && res.data) {
@@ -58,7 +58,7 @@ export function InventoryLogsTable({ branches }: InventoryLogsTableProps) {
 
     useEffect(() => {
         fetchLogs();
-    }, [page, branchId, action]);
+    }, [page, userId, action]);
 
     // Debounce search
     useEffect(() => {
@@ -88,15 +88,15 @@ export function InventoryLogsTable({ branches }: InventoryLogsTableProps) {
                 </div>
 
                 <div className="flex gap-2 w-full md:w-auto">
-                    <Select value={branchId} onValueChange={(val: string) => { setBranchId(val); setPage(1); }}>
+                    <Select value={userId} onValueChange={(val: string) => { setUserId(val); setPage(1); }}>
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Filter by Branch" />
+                            <SelectValue placeholder="Filter by User" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Branches</SelectItem>
-                            {branches.map((branch) => (
-                                <SelectItem key={branch.id} value={branch.id}>
-                                    {branch.name}
+                            <SelectItem value="all">All Users</SelectItem>
+                            {users.map((user) => (
+                                <SelectItem key={user.id} value={user.id}>
+                                    {user.name}
                                 </SelectItem>
                             ))}
                         </SelectContent>

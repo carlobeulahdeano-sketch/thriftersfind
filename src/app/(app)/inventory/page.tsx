@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 import InventoryTable from "./components/inventory-table";
+import { CategoriesTab } from "./components/categories-tab";
 import { getProducts } from "./actions";
-import type { Product } from "@/lib/types";
+import { getCategories } from "./category-actions";
+import type { Product, ProductCategory } from "@/lib/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(true);
   const [hasCheckedPermission, setHasCheckedPermission] = useState(false);
@@ -21,8 +25,12 @@ export default function InventoryPage() {
       if (!user?.permissions?.inventory) {
         setIsAuthorized(false);
       } else {
-        const productsData = await getProducts();
+        const [productsData, categoriesData] = await Promise.all([
+          getProducts(),
+          getCategories(),
+        ]);
         setProducts(productsData);
+        setCategories(categoriesData);
       }
     } catch (error) {
       console.error("Error fetching inventory data:", error);
@@ -68,10 +76,25 @@ export default function InventoryPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent w-fit">Product Inventory</h1>
       </div>
-      <InventoryTable
-        products={products}
-        onRefresh={fetchData}
-      />
+      <Tabs defaultValue="products" className="w-full">
+        <TabsList>
+          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
+        </TabsList>
+        <TabsContent value="products">
+          <InventoryTable
+            products={products}
+            onRefresh={fetchData}
+            categories={categories}
+          />
+        </TabsContent>
+        <TabsContent value="categories">
+          <CategoriesTab
+            categories={categories}
+            onRefresh={fetchData}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

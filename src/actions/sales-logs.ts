@@ -3,8 +3,12 @@
 import { prisma } from "@/lib/prisma"
 import { SalesLog } from "@prisma/client"
 
+export type SalesLogWithBranch = SalesLog & {
+    branchName?: string | null;
+}
+
 export type GetSalesLogsResult = {
-    logs: SalesLog[]
+    logs: SalesLogWithBranch[]
     totalLogs: number
     totalPages: number
     currentPage: number
@@ -28,10 +32,45 @@ export async function getSalesLogs(
             prisma.salesLog.count(),
         ])
 
+        // Extract user IDs to fetch branches
+        const userIds = new Set<string>();
+        for (const log of logs) {
+            let data: any = log.orders;
+            if (typeof data === 'string') {
+                try { data = JSON.parse(data); } catch (e) { }
+            }
+            if (data && data.createdBy && data.createdBy.uid) {
+                userIds.add(data.createdBy.uid);
+            }
+        }
+
+        const users = await prisma.user.findMany({
+            where: { id: { in: Array.from(userIds) } },
+            include: { branch: true }
+        });
+
+        const userBranchMap = new Map<string, string | null>();
+        for (const u of users) {
+            userBranchMap.set(u.id, u.branch?.name || null);
+        }
+
+        const logsWithBranch = logs.map(log => {
+            let data: any = log.orders;
+            if (typeof data === 'string') {
+                try { data = JSON.parse(data); } catch (e) { }
+            }
+            const uid = data?.createdBy?.uid;
+            const branchName = uid ? userBranchMap.get(uid) : null;
+            return {
+                ...log,
+                branchName
+            };
+        });
+
         const totalPages = Math.ceil(totalLogs / pageSize)
 
         return {
-            logs,
+            logs: logsWithBranch,
             totalLogs,
             totalPages,
             currentPage: page,

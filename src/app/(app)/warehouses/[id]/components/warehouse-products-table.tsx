@@ -25,6 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AddWarehouseProductDialog } from "./add-warehouse-product-dialog";
 import { EditWarehouseProductDialog } from "./edit-warehouse-product-dialog";
 import { TransferToInventoryDialog } from "./transfer-to-inventory-dialog";
+import { BulkAddStockDialog } from "./bulk-add-stock-dialog";
 import { WarehouseProduct } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { deleteWarehouseProduct } from "../actions";
@@ -54,6 +55,7 @@ export default function WarehouseProductsTable({
     const [currentPage, setCurrentPage] = React.useState(1);
     const itemsPerPage = 10;
     const [isAddDialogOpen, setAddDialogOpen] = React.useState(false);
+    const [isBulkAddDialogOpen, setIsBulkAddDialogOpen] = React.useState(false);
     const [editingProduct, setEditingProduct] = React.useState<WarehouseProduct | null>(null);
     const [transferringProduct, setTransferringProduct] = React.useState<WarehouseProduct | null>(null);
 
@@ -136,10 +138,19 @@ export default function WarehouseProductsTable({
                             </Button>
                         )}
                     </div>
-                    <Button onClick={() => setAddDialogOpen(true)}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Product
-                    </Button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setIsBulkAddDialogOpen(true)}
+                        >
+                            <Package className="mr-2 h-4 w-4" />
+                            Bulk Add Stock
+                        </Button>
+                        <Button onClick={() => setAddDialogOpen(true)}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Product
+                        </Button>
+                    </div>
                 </div>
                 <CardContent className="p-0">
                     <Table>
@@ -268,6 +279,14 @@ export default function WarehouseProductsTable({
                 onClose={() => setTransferringProduct(null)}
                 product={transferringProduct}
                 onSuccess={refreshProducts}
+            />
+            <BulkAddStockDialog
+                isOpen={isBulkAddDialogOpen}
+                onClose={() => setIsBulkAddDialogOpen(false)}
+                products={products}
+                onSuccess={() => {
+                    refreshProducts();
+                }}
             />
         </>
     );
