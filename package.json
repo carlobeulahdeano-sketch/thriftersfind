@@ -60,6 +60,9 @@
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.2"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19.0.0",

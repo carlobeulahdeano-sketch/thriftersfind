@@ -114,7 +114,7 @@ function DashboardPrintContent() {
             entry.revenue += order.totalAmount;
 
             if (order.batchId && order.batchId !== 'none') {
-                entry.batchIds.add(order.batchId);
+                entry.batchIds.add(String(order.batchId));
             }
 
             if (order.items && order.items.length > 0) {

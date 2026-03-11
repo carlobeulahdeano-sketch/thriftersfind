@@ -94,7 +94,7 @@ export default function InventoryTable({ products: initialProducts, onRefresh, c
     if (categoryFilter !== "all") {
       filtered = filtered.filter((product) => {
         if (categoryFilter === "uncategorized") return !product.category;
-        return product.category?.id === categoryFilter;
+        return String(product.category?.id) === categoryFilter;
       });
     }
     setProducts(filtered);
@@ -173,7 +173,7 @@ export default function InventoryTable({ products: initialProducts, onRefresh, c
                 <SelectItem value="all">All Categories</SelectItem>
                 <SelectItem value="uncategorized">Uncategorized</SelectItem>
                 {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
+                  <SelectItem key={category.id} value={String(category.id)}>
                     {category.name}
                   </SelectItem>
                 ))}
@@ -300,7 +300,7 @@ export default function InventoryTable({ products: initialProducts, onRefresh, c
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(product.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                          <AlertDialogAction onClick={() => handleDelete(String(product.id))} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>

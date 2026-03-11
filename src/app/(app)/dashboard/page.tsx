@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PhilippinePeso, Users, ShoppingCart, Archive, Package, Loader2, TrendingUp, ArrowUpRight, ShieldAlert } from "lucide-react";
+import { PhilippinePeso, Users, ShoppingCart, Archive, Package, Loader2, TrendingUp, ArrowUpRight, ShieldAlert, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Dynamically import charts to disable SSR and prevent hydration mismatches
@@ -46,6 +46,7 @@ import { ShippingStatus, Order, Customer, Batch } from "@/lib/types";
 import { startOfWeek, startOfMonth, startOfYear, endOfToday, isWithinInterval, format } from "date-fns";
 import { getBatches } from "../batches/actions";
 import { getAllOrders } from "../orders/actions";
+import { getLowStockProducts } from "../inventory/actions";
 import { ViewOrderDialog } from "../orders/components/view-order-dialog";
 import { ViewBatchItemsDialog } from "./components/view-batch-items-dialog";
 import { ViewHeldOrdersDialog } from "./components/view-held-orders-dialog";
@@ -71,6 +72,7 @@ export default function DashboardPage() {
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
   const [allBatches, setAllBatches] = useState<Batch[]>([]);
+  const [lowStockProducts, setLowStockProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
@@ -121,6 +123,9 @@ export default function DashboardPage() {
           setLoading(false);
           return;
         }
+
+        const lsProducts = await getLowStockProducts();
+        setLowStockProducts(lsProducts || []);
 
         setAllBatches(batches);
         setIsAuthorized(true);
@@ -278,6 +283,7 @@ export default function DashboardPage() {
   }, [viewBatch, allOrders]);
 
   const totalSales = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
+  const totalShippingFee = deliveredOrders.reduce((sum: number, order: any) => sum + (Number(order.shippingFee) || 0), 0);
   const totalOrders = deliveredOrders.length;
   const newCustomers = filteredCustomers.length;
   const heldOrdersCount = heldOrders.length;
@@ -350,7 +356,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
         <Card className="relative overflow-hidden border-l-4 border-l-cyan-400 shadow-lg hover:shadow-xl transition-all duration-300 group">
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-50/50 to-transparent dark:from-cyan-950/20 dark:to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
@@ -362,6 +368,25 @@ export default function DashboardPage() {
           <CardContent className="relative">
             <div className="text-3xl font-bold text-cyan-700 dark:text-cyan-300">
               ₱{totalSales.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              For {timeframe === 'all' ? 'all time' : `this ${timeframe}`}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-l-4 border-l-indigo-400 shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-950/20 dark:to-transparent" />
+          <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-muted-foreground">Total Shipping Fees</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Truck className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-indigo-700 dark:text-indigo-300">
+              ₱{totalShippingFee.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
@@ -613,6 +638,60 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Low Stock Products Section */}
+        <Card className="lg:col-span-7 border-t-4 border-t-red-500/50 shadow-lg overflow-hidden mt-6">
+          <CardHeader className="border-b bg-muted/30">
+            <CardTitle className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-red-500" />
+              Low Stock Products
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead className="font-semibold h-12">Product Details</TableHead>
+                    <TableHead className="text-right font-semibold">SKU</TableHead>
+                    <TableHead className="text-right font-semibold">Current Stock</TableHead>
+                    <TableHead className="text-right font-semibold">Alert Level</TableHead>
+                    <TableHead className="text-right font-semibold">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {lowStockProducts.map((item) => (
+                    <TableRow key={item.id} className="hover:bg-muted/50 transition-colors">
+                      <TableCell>
+                        <div className="font-medium text-red-600 dark:text-red-400 text-sm">{item.name}</div>
+                      </TableCell>
+                      <TableCell className="text-right text-xs text-muted-foreground">{item.sku}</TableCell>
+                      <TableCell className="text-right font-bold text-foreground">
+                        <span className={item.quantity === 0 ? "text-red-600" : ""}>{item.quantity}</span>
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground text-sm">{item.alertStock}</TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant={item.quantity === 0 ? "destructive" : "outline"} className={item.quantity === 0 ? "" : "text-amber-600 border-amber-600"}>
+                          {item.quantity === 0 ? "Out of Stock" : "Low Stock"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {lowStockProducts.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground h-32">
+                        <div className="flex flex-col items-center gap-2">
+                          <Package className="h-8 w-8 opacity-30" />
+                          <span>No products are currently low on stock</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>

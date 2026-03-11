@@ -51,14 +51,14 @@ export async function getProducts(): Promise<Product[]> {
       }
 
       return {
-        id: product.id,
+        id: String(product.id),
         name: product.name,
         sku: product.sku,
         description: product.description || "",
         quantity: typeof (product as any).quantity === 'number' ? (product as any).quantity : 0,
         warehouseId: (product as any).warehouseId || null,
         categoryId: (product as any).categoryId || null,
-        category: product.categoryName ? { id: product.categoryId, name: product.categoryName, description: null, createdAt: '', updatedAt: '' } : null,
+        category: product.categoryName ? { id: product.categoryId, name: product.categoryName, description: null, imageUrl: null, createdAt: '', updatedAt: '' } : null,
         totalStock: ((product as any).quantity || 0),
         alertStock: typeof product.alertStock === 'number' ? product.alertStock : 0,
         cost: typeof product.cost === 'number' ? product.cost : 0,
@@ -123,16 +123,17 @@ export async function searchProducts(query: string): Promise<Product[]> {
     });
 
     return products.map(product => ({
-      id: product.id,
+      id: String(product.id),
       name: product.name,
       sku: product.sku,
       description: product.description || "",
       quantity: product.quantity,
-      warehouseId: product.warehouseId,
       totalStock: product.quantity,
-      alertStock: product.alertStock,
-      cost: product.cost,
-      retailPrice: product.retailPrice || 0,
+      alertStock: typeof product.alertStock === 'number' ? product.alertStock : 0,
+      cost: typeof product.cost === 'number' ? product.cost : 0,
+      retailPrice: typeof product.retailPrice === 'number' ? product.retailPrice : 0,
+      categoryId: product.categoryId,
+      categoryName: (product as any).category?.name,
       images: Array.isArray(product.images) ? (product.images as unknown as string[]) : [],
     }));
   } catch (error) {
@@ -141,7 +142,7 @@ export async function searchProducts(query: string): Promise<Product[]> {
   }
 }
 
-export async function searchProductsSimple(query: string): Promise<{ id: string; name: string; sku: string; images: string[] }[]> {
+export async function searchProductsSimple(query: string): Promise<{ id: string; name: string; sku: string; images: string[]; categoryId?: number | null }[]> {
   try {
     const user = await getCurrentUser();
     if (!user) return [];
@@ -157,7 +158,8 @@ export async function searchProductsSimple(query: string): Promise<{ id: string;
         id: true,
         name: true,
         sku: true,
-        images: true
+        images: true,
+        categoryId: true,
       },
       take: 10,
       orderBy: { createdAt: 'desc' },
@@ -176,14 +178,69 @@ export async function searchProductsSimple(query: string): Promise<{ id: string;
         // ignore
       }
       return {
-        id: product.id,
+        id: String(product.id),
         name: product.name,
         sku: product.sku,
-        images
+        images,
+        categoryId: product.categoryId,
       };
     });
   } catch (error) {
     console.error("Error searching products simple:", error);
+    return [];
+  }
+}
+
+export async function getLowStockProducts(): Promise<Product[]> {
+  noStore();
+  try {
+    const user = await getCurrentUser();
+    if (!user) return [];
+
+    const products = await prisma.product.findMany({
+      where: {
+        alertStock: {
+          gt: 0,
+        },
+      },
+      orderBy: {
+        quantity: 'asc',
+      },
+    });
+
+    // Filter products where quantity <= alertStock
+    const lowStockProducts = products.filter(p => p.quantity <= p.alertStock);
+
+    return lowStockProducts.map(product => {
+      let images: string[] = [];
+      try {
+        if (Array.isArray(product.images)) {
+          images = product.images as unknown as string[];
+        } else if (typeof product.images === 'string') {
+          const parsed = JSON.parse(product.images);
+          if (Array.isArray(parsed)) images = parsed;
+        }
+      } catch (e) {
+        console.warn("Failed to parse images for product", product.id);
+      }
+
+      return {
+        id: String(product.id),
+        name: product.name,
+        sku: product.sku,
+        description: product.description || "",
+        quantity: product.quantity,
+        warehouseId: product.warehouseId,
+        categoryId: product.categoryId,
+        totalStock: product.quantity,
+        alertStock: typeof product.alertStock === 'number' ? product.alertStock : 0,
+        cost: typeof product.cost === 'number' ? product.cost : 0,
+        retailPrice: typeof product.retailPrice === 'number' ? product.retailPrice : 0,
+        images: images,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching low stock products:", error);
     return [];
   }
 }
@@ -195,40 +252,42 @@ export async function createProduct(productData: Omit<Product, 'id' | 'totalStoc
       throw new Error("Permission denied");
     }
     const createdBy = {
-      uid: user.id,
+      uid: String(user.id),
       name: user.name,
       email: user.email
     };
 
+    const skuToUse = productData.sku.trim();
+
     // Check if SKU already exists using raw query
-    const existingProducts: any[] = await prisma.$queryRaw`SELECT id FROM products WHERE sku = ${productData.sku} LIMIT 1`;
+    const existingProducts: any[] = await prisma.$queryRaw`SELECT id FROM products WHERE sku = ${skuToUse} LIMIT 1`;
     const existingProduct = existingProducts[0];
 
     if (existingProduct) {
-      throw new Error(`Product with SKU "${productData.sku}" already exists`);
+      throw new Error(`Product with SKU "${skuToUse}" already exists`);
     }
 
     // Set totalStock based on quantity
     const totalStock = (productData.quantity || 0);
-    const id = `c${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
 
-    // Use raw query to bypass outdated Prisma client validation for createdBy
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO products (id, name, sku, description, quantity, warehouseId, categoryId, alertStock, cost, retailPrice, images, createdBy, createdAt, updatedAt) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))`,
-      id,
-      productData.name,
-      productData.sku,
-      productData.description || null,
-      productData.quantity || 0,
-      productData.warehouseId || null,
-      (productData as any).categoryId || null,
-      productData.alertStock || 0,
-      productData.cost || 0,
-      productData.retailPrice || 0,
-      JSON.stringify(productData.images || []),
-      JSON.stringify(createdBy)
-    );
+    // Use Prisma client to create the product and get the auto-incremented ID
+    const newProduct = await prisma.product.create({
+      data: {
+        name: productData.name,
+        sku: skuToUse,
+        description: productData.description || null,
+        quantity: productData.quantity || 0,
+        warehouseId: productData.warehouseId ? parseInt(productData.warehouseId as any, 10) : null,
+        categoryId: (productData as any).categoryId ? parseInt((productData as any).categoryId, 10) : null,
+        alertStock: productData.alertStock || 0,
+        cost: productData.cost || 0,
+        retailPrice: productData.retailPrice || 0,
+        images: productData.images ? JSON.parse(JSON.stringify(productData.images)) : [],
+        createdBy: createdBy as any,
+      } as any,
+    });
+
+    const id = newProduct.id.toString();
 
     // Log inventory change
     await createInventoryLog({
@@ -239,7 +298,7 @@ export async function createProduct(productData: Omit<Product, 'id' | 'totalStoc
       newStock: productData.quantity || 0,
       reason: "Initial stock",
       referenceId: id,
-      branchId: user?.branchId || null,
+      branchId: user?.branchId ? String(user.branchId) : null,
     });
 
     revalidatePath("/inventory");
@@ -276,12 +335,14 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
     }
     // If SKU is being updated, check if it already exists (but not for the current product)
     if (productData.sku) {
-      const existingProducts: any[] = await prisma.$queryRaw`SELECT id FROM products WHERE sku = ${productData.sku} AND id != ${id} LIMIT 1`;
+      const skuToUse = productData.sku.trim();
+      const existingProducts: any[] = await prisma.$queryRaw`SELECT id FROM products WHERE sku = ${skuToUse} AND id != ${id} LIMIT 1`;
       const existingProduct = existingProducts[0];
 
       if (existingProduct) {
-        throw new Error(`Product with SKU "${productData.sku}" already exists`);
+        throw new Error(`Product with SKU "${skuToUse}" already exists`);
       }
+      productData.sku = skuToUse;
     }
 
     // Get current product to calculate new totalStock if quantity changes
@@ -311,11 +372,11 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
 
     if (updates.length > 0) {
       const sql = `UPDATE products SET ${updates.join(", ")} WHERE id = ?`;
-      values.push(id);
+      values.push(parseInt(id, 10));
       await prisma.$executeRawUnsafe(sql, ...values);
     }
 
-    const updatedProduct = await prisma.product.findUnique({ where: { id } });
+    const updatedProduct = await prisma.product.findUnique({ where: { id: parseInt(id, 10) as any } });
 
     if (!updatedProduct) throw new Error("Failed to retrieve updated product");
 
@@ -330,6 +391,7 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
         newStock: productData.quantity,
         reason: "Manual adjustment",
         referenceId: id,
+        branchId: user?.branchId ? String(user.branchId) : null,
       });
 
       // Check for low stock notification
@@ -406,7 +468,7 @@ export async function deleteProduct(id: string): Promise<void> {
         newStock: 0,
         reason: "Product deleted from branch, stock returned to warehouse",
         referenceId: id,
-        branchId: user?.branchId || null,
+        branchId: user?.branchId ? String(user.branchId) : null,
       });
 
       // Log for warehouse side as well (optional, but good for tracking)
@@ -424,7 +486,7 @@ export async function deleteProduct(id: string): Promise<void> {
     }
 
     // 5. Delete the product
-    await prisma.$executeRawUnsafe(`DELETE FROM products WHERE id = ?`, id);
+    await prisma.$executeRawUnsafe(`DELETE FROM products WHERE id = ?`, parseInt(id, 10));
 
     revalidatePath("/inventory");
     revalidatePath("/pre-orders");
@@ -469,7 +531,7 @@ export async function bulkAddStock(updates: { productId: string; quantityToAdd: 
         newStock: newQuantity,
         reason: "Bulk stock addition",
         referenceId: productId,
-        branchId: user?.branchId || null,
+        branchId: user?.branchId ? String(user.branchId) : null,
       });
 
       // Check for notifications

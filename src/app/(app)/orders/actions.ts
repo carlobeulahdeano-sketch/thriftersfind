@@ -2,11 +2,12 @@
 
 import { Order, PaymentMethod, PaymentStatus, ShippingStatus, OrderRemark } from "@/lib/types";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { getCurrentUser } from "@/lib/auth-server";
 import { createInventoryLog } from "@/lib/inventory-log-helper";
 
 export async function getOrders(): Promise<Order[]> {
+  noStore();
   const user = await getCurrentUser();
 
   if (!user || !user.permissions?.orders) {
@@ -29,11 +30,11 @@ export async function getOrders(): Promise<Order[]> {
     : orders.filter(order => {
       if (!(order as any).createdBy) return false;
       const createdByData = (order as any).createdBy as any;
-      return createdByData?.uid === user.id;
+      return String(createdByData?.uid) === String(user.id);
     });
 
   return filteredOrders.map(order => ({
-    id: order.id,
+    id: String(order.id),
     customerName: order.customerName,
     contactNumber: order.contactNumber || "",
     address: order.address || "",
@@ -67,6 +68,7 @@ export async function getOrders(): Promise<Order[]> {
 }
 
 export async function getAllOrders(): Promise<{ orders: Order[], isAuthorized: boolean }> {
+  noStore();
   const user = await getCurrentUser();
 
   if (!user) {
@@ -92,7 +94,7 @@ export async function getAllOrders(): Promise<{ orders: Order[], isAuthorized: b
   });
 
   const mapOrders = orders.map(order => ({
-    id: order.id,
+    id: String(order.id),
     customerName: order.customerName,
     contactNumber: order.contactNumber || "",
     address: order.address || "",
@@ -134,45 +136,42 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
       throw new Error("Permission denied");
     }
     const createdBy = user ? {
-      uid: user.id, // Match the 'uid' expected by types and filter
-      id: user.id,  // Also store 'id' for clarity
+      uid: String(user.id), // Match the 'uid' expected by types and filter
+      id: String(user.id),  // Also store 'id' for clarity
       name: user.name,
       email: user.email
     } : { uid: "system", name: "System" };
 
-    const orderId = `o${Math.random().toString(36).substring(2, 15)}`;
     const now = new Date();
 
     const newOrder = await prisma.$transaction(async (tx) => {
-      // 1. Create the order using raw SQL to bypass Prisma client validation
-      await tx.$executeRawUnsafe(
-        `INSERT INTO orders (id, customerName, contactNumber, address, orderDate, itemName, items, quantity, price, shippingFee, totalAmount, paymentMethod, paymentStatus, shippingStatus, batchId, createdAt, updatedAt, customerId, customerEmail, courierName, trackingNumber, remarks, rushShip, createdBy) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        orderId,
-        orderData.customerName,
-        orderData.contactNumber || null,
-        orderData.address || null,
-        orderData.orderDate ? new Date(orderData.orderDate) : null,
-        orderData.itemName,
-        orderData.items ? JSON.stringify(orderData.items) : null,
-        orderData.quantity,
-        orderData.price,
-        orderData.shippingFee,
-        orderData.totalAmount,
-        orderData.paymentMethod,
-        orderData.paymentStatus,
-        orderData.shippingStatus,
-        orderData.batchId,
-        now,
-        now,
-        orderData.customerId,
-        orderData.customerEmail || null,
-        orderData.courierName || null,
-        orderData.trackingNumber || null,
-        orderData.remarks || null,
-        orderData.rushShip ? 1 : 0,
-        JSON.stringify(createdBy)
-      );
+      // 1. Create the order using Prisma
+      const createdDbOrder = await tx.order.create({
+        data: {
+          customerName: orderData.customerName,
+          contactNumber: orderData.contactNumber || null,
+          address: orderData.address || null,
+          orderDate: orderData.orderDate ? new Date(orderData.orderDate) : null,
+          itemName: orderData.itemName,
+          items: orderData.items ? JSON.stringify(orderData.items) : undefined,
+          quantity: orderData.quantity,
+          price: orderData.price,
+          shippingFee: orderData.shippingFee,
+          totalAmount: orderData.totalAmount,
+          paymentMethod: orderData.paymentMethod,
+          paymentStatus: orderData.paymentStatus,
+          shippingStatus: orderData.shippingStatus,
+          batchId: orderData.batchId ? Number(orderData.batchId) : null,
+          customerId: Number(orderData.customerId),
+          customerEmail: orderData.customerEmail || null,
+          courierName: orderData.courierName || null,
+          trackingNumber: orderData.trackingNumber || null,
+          remarks: orderData.remarks || null,
+          rushShip: orderData.rushShip ? true : false,
+          createdBy: createdBy as any
+        }
+      });
+      const orderId = String(createdDbOrder.id);
 
       // 2. Deduct from inventory if items are provided
       if (orderData.items && orderData.items.length > 0) {
@@ -184,7 +183,7 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
           const updateData = { quantity: { decrement: quantityToDeduct } };
 
           const updatedProduct = await tx.product.update({
-            where: { id: productId },
+            where: { id: Number(productId) },
             data: updateData,
             select: { id: true, name: true, quantity: true, alertStock: true, retailPrice: true }
           });
@@ -192,17 +191,22 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
           // 3. Create notifications if stock is low or out
           const totalStock = updatedProduct.quantity;
           if (totalStock <= 0 || totalStock <= updatedProduct.alertStock) {
-            const notifId = `n${Math.random().toString(36).substring(2, 15)}`;
             const title = totalStock <= 0 ? "Out of Stock Alert" : "Low Stock Alert";
             const message = totalStock <= 0
               ? `Product "${updatedProduct.name}" is now out of stock!`
               : `Product "${updatedProduct.name}" has only ${totalStock} left in stock.`;
             const type = totalStock <= 0 ? "out_of_stock" : "low_stock";
 
-            await tx.$executeRawUnsafe(
-              `INSERT INTO notifications (id, title, message, type, \`read\`, createdAt, updatedAt) VALUES (?, ?, ?, ?, 0, ?, ?)`,
-              notifId, title, message, type, now, now
-            );
+            await tx.notification.create({
+              data: {
+                title,
+                message,
+                type,
+                read: false,
+                createdAt: now,
+                updatedAt: now
+              }
+            });
           }
 
           // Log inventory change
@@ -214,23 +218,23 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
             previousStock: previousStock,
             newStock: updatedProduct.quantity,
             reason: `Order #${orderId.substring(0, 8)}`,
-            referenceId: orderId,
-            orderId: orderId,
-            branchId: user?.branchId || null,
+            referenceId: String(orderId),
+            orderId: String(orderId),
+            branchId: user?.branchId ? String(user.branchId) : null,
           }, tx, user);
         }
       }
 
       // Update Batch Totals for Delivered orders
-      const isValidBatchId = (bid: string | null | undefined) => bid && bid !== 'none' && bid !== 'hold';
+      const isValidBatchId = (bid: string | number | null | undefined) => bid && bid !== 'none' && bid !== 'hold';
       if (orderData.shippingStatus === 'Delivered') {
         // Update Batch stats if valid batch
         if (isValidBatchId(orderData.batchId)) {
           const targetBatchId = orderData.batchId!;
-          const batch = await tx.batch.findUnique({ where: { id: targetBatchId } });
+          const batch = await tx.batch.findUnique({ where: { id: Number(targetBatchId) } });
           if (batch) {
             await tx.batch.update({
-              where: { id: targetBatchId },
+              where: { id: Number(targetBatchId) },
               data: {
                 totalOrders: (batch.totalOrders || 0) + 1,
                 totalSales: (batch.totalSales || 0) + orderData.totalAmount
@@ -244,7 +248,7 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
 
         // Update Customer totalSpent
         await tx.customer.update({
-          where: { id: orderData.customerId },
+          where: { id: Number(orderData.customerId) },
           data: {
             totalSpent: { increment: orderData.totalAmount }
           }
@@ -252,38 +256,35 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
         console.log(`[CustomerUpdate] Updated Customer ${orderData.customerId}: totalSpent +${orderData.totalAmount}`);
       }
 
-      // 4. Create Sales Log (Raw SQL)
-      const logId = `sl${Math.random().toString(36).substring(2, 15)}`;
-      const ordersJson = JSON.stringify({
+      // 4. Create Sales Log (Prisma SQL)
+      const ordersObj = {
         id: orderId,
         orderDate: orderData.orderDate,
         paymentStatus: orderData.paymentStatus,
         paymentMethod: orderData.paymentMethod,
         shippingStatus: orderData.shippingStatus,
         createdBy: createdBy
-      });
-      const shipmentsJson = JSON.stringify({
+      };
+      const shipmentsObj = {
         address: orderData.address,
         courier: orderData.courierName,
         tracking: orderData.trackingNumber,
         shippingFee: orderData.shippingFee
-      });
-      const orderItemsJson = orderData.items ? JSON.stringify(orderData.items) : null;
+      };
 
-      await tx.$executeRawUnsafe(
-        `INSERT INTO sales_logs (id, orderId, description, products, orders, customerName, totalAmount, shipments, order_items, createdAt) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        logId,
-        orderId,
-        "Order Created",
-        orderData.itemName,
-        ordersJson,
-        orderData.customerName,
-        orderData.totalAmount,
-        shipmentsJson,
-        orderItemsJson,
-        now
-      );
+      await tx.salesLog.create({
+        data: {
+          orderId: Number(orderId),
+          description: "Order Created",
+          products: orderData.itemName,
+          orders: ordersObj as any,
+          customerName: orderData.customerName,
+          totalAmount: orderData.totalAmount,
+          shipments: shipmentsObj as any,
+          order_items: orderData.items as any,
+          createdAt: now
+        }
+      });
 
       return { id: orderId, createdAt: now };
     }, { timeout: 15000 });
@@ -306,11 +307,11 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'> & {
 
 
 
-export async function updateOrder(id: string, data: Partial<Order>): Promise<Order> {
+export async function updateOrder(id: string | number, data: Partial<Order>): Promise<Order> {
   try {
     const updatedOrderResult = await prisma.$transaction(async (tx) => {
       // 1. Fetch existing order to revert its effects on batches if needed
-      const existingOrder = await tx.order.findUnique({ where: { id } });
+      const existingOrder = await tx.order.findUnique({ where: { id: Number(id) } });
       if (!existingOrder) throw new Error("Order not found");
 
       // 2. Manage Batch Totals based on shippingStatus (Delivered only)
@@ -328,15 +329,15 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
       const statusChanged = (data.shippingStatus !== undefined && existingOrder.shippingStatus !== data.shippingStatus);
 
       // Helper to check if batch is valid for stats
-      const isValidBatch = (bid: string | null) => bid && bid !== 'none' && bid !== 'hold';
+      const isValidBatch = (bid: string | number | null | undefined) => bid && bid !== 'none' && bid !== 'hold';
 
       if (wasCountable && !isNowCountable) {
         // Condition 1: Transition FROM Countable TO non-Countable (Cancelled) -> Revert stats
         if (isValidBatch(oldBatchId)) {
-          const batch = await tx.batch.findUnique({ where: { id: oldBatchId! } });
+          const batch = await tx.batch.findUnique({ where: { id: Number(oldBatchId!) } });
           if (batch) {
             await tx.batch.update({
-              where: { id: oldBatchId! },
+              where: { id: Number(oldBatchId!) },
               data: {
                 totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
                 totalSales: Math.max(0, (batch.totalSales || 0) - oldAmount)
@@ -346,16 +347,16 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
         }
         // Update Customer totalSpent
         await tx.customer.update({
-          where: { id: existingOrder.customerId },
+          where: { id: Number(existingOrder.customerId) },
           data: { totalSpent: { decrement: oldAmount } }
         });
       } else if (!wasCountable && isNowCountable) {
         // Condition 2: Transition FROM non-Countable TO Countable -> Apply stats
         if (isValidBatch(newBatchId)) {
-          const batch = await tx.batch.findUnique({ where: { id: newBatchId! } });
+          const batch = await tx.batch.findUnique({ where: { id: Number(newBatchId!) } });
           if (batch) {
             await tx.batch.update({
-              where: { id: newBatchId! },
+              where: { id: Number(newBatchId!) },
               data: {
                 totalOrders: (batch.totalOrders || 0) + 1,
                 totalSales: (batch.totalSales || 0) + newAmount
@@ -365,7 +366,7 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
         }
         // Update Customer totalSpent
         await tx.customer.update({
-          where: { id: data.customerId || existingOrder.customerId },
+          where: { id: Number(data.customerId || existingOrder.customerId) },
           data: { totalSpent: { increment: newAmount } }
         });
       } else if (wasCountable && isNowCountable) {
@@ -377,18 +378,18 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
         if (customerChanged) {
           // Revert old customer
           await tx.customer.update({
-            where: { id: oldCustomerId },
+            where: { id: Number(oldCustomerId) },
             data: { totalSpent: { decrement: oldAmount } }
           });
           // Apply to new customer
           await tx.customer.update({
-            where: { id: newCustomerId },
+            where: { id: Number(newCustomerId) },
             data: { totalSpent: { increment: newAmount } }
           });
         } else if (amountChanged) {
           // Same customer, different amount
           await tx.customer.update({
-            where: { id: oldCustomerId },
+            where: { id: Number(oldCustomerId) },
             data: { totalSpent: { increment: newAmount - oldAmount } }
           });
         }
@@ -396,10 +397,10 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
         if (batchChanged) {
           // Revert old
           if (isValidBatch(oldBatchId)) {
-            const batch = await tx.batch.findUnique({ where: { id: oldBatchId! } });
+            const batch = await tx.batch.findUnique({ where: { id: Number(oldBatchId!) } });
             if (batch) {
               await tx.batch.update({
-                where: { id: oldBatchId! },
+                where: { id: Number(oldBatchId!) },
                 data: {
                   totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
                   totalSales: Math.max(0, (batch.totalSales || 0) - oldAmount)
@@ -409,10 +410,10 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
           }
           // Apply new
           if (isValidBatch(newBatchId)) {
-            const batch = await tx.batch.findUnique({ where: { id: newBatchId! } });
+            const batch = await tx.batch.findUnique({ where: { id: Number(newBatchId!) } });
             if (batch) {
               await tx.batch.update({
-                where: { id: newBatchId! },
+                where: { id: Number(newBatchId!) },
                 data: {
                   totalOrders: (batch.totalOrders || 0) + 1,
                   totalSales: (batch.totalSales || 0) + newAmount
@@ -423,10 +424,10 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
         } else if (amountChanged) {
           // Same batch, different amount
           if (isValidBatch(newBatchId)) {
-            const batch = await tx.batch.findUnique({ where: { id: newBatchId! } });
+            const batch = await tx.batch.findUnique({ where: { id: Number(newBatchId!) } });
             if (batch) {
               await tx.batch.update({
-                where: { id: newBatchId! },
+                where: { id: Number(newBatchId!) },
                 data: {
                   totalSales: (batch.totalSales || 0) + (newAmount - oldAmount)
                 }
@@ -438,7 +439,7 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
 
       // 3. Update the order
       const updatedOrder = await tx.order.update({
-        where: { id },
+        where: { id: Number(id) },
         data: {
           customerName: data.customerName,
           contactNumber: data.contactNumber,
@@ -452,8 +453,8 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
           paymentMethod: data.paymentMethod,
           paymentStatus: data.paymentStatus,
           shippingStatus: data.shippingStatus,
-          batchId: data.batchId,
-          customerId: data.customerId,
+          batchId: data.batchId ? Number(data.batchId) : undefined,
+          customerId: data.customerId ? Number(data.customerId) : undefined,
           customerEmail: data.customerEmail,
           courierName: data.courierName,
           trackingNumber: data.trackingNumber,
@@ -467,40 +468,37 @@ export async function updateOrder(id: string, data: Partial<Order>): Promise<Ord
       // Create Sales Log (omitted for brevity, copied from original)
       // ...
       const now = new Date();
-      const logId = `sl${Math.random().toString(36).substring(2, 15)}`;
       // Parse items if string
       const items = (updatedOrder as any).items ? (typeof (updatedOrder as any).items === 'string' ? JSON.parse((updatedOrder as any).items) : (updatedOrder as any).items) : [];
 
-      const ordersJson = JSON.stringify({
+      const ordersObj = {
         id: updatedOrder.id,
         orderDate: updatedOrder.orderDate,
         paymentStatus: updatedOrder.paymentStatus,
         paymentMethod: updatedOrder.paymentMethod,
         shippingStatus: updatedOrder.shippingStatus,
         createdBy: (updatedOrder as any).createdBy
-      });
-      const shipmentsJson = JSON.stringify({
+      };
+      const shipmentsObj = {
         address: updatedOrder.address,
         courier: updatedOrder.courierName,
         tracking: updatedOrder.trackingNumber,
         shippingFee: updatedOrder.shippingFee
-      });
-      const orderItemsJson = JSON.stringify(items);
+      };
 
-      await tx.$executeRawUnsafe(
-        `INSERT INTO sales_logs (id, orderId, description, products, orders, customerName, totalAmount, shipments, order_items, createdAt) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        logId,
-        updatedOrder.id,
-        "Order Updated",
-        updatedOrder.itemName,
-        ordersJson,
-        updatedOrder.customerName,
-        updatedOrder.totalAmount,
-        shipmentsJson,
-        orderItemsJson,
-        now
-      );
+      await tx.salesLog.create({
+        data: {
+          orderId: Number(updatedOrder.id),
+          description: "Order Updated",
+          products: updatedOrder.itemName,
+          orders: ordersObj as any,
+          customerName: updatedOrder.customerName,
+          totalAmount: updatedOrder.totalAmount,
+          shipments: shipmentsObj as any,
+          order_items: items as any,
+          createdAt: now
+        }
+      });
 
 
 
@@ -548,7 +546,7 @@ export async function cancelOrder(orderId: string): Promise<void> {
     await prisma.$transaction(async (tx) => {
       // 1. Get the order with items
       const order = await tx.order.findUnique({
-        where: { id: orderId }
+        where: { id: Number(orderId) }
       });
 
       if (!order) {
@@ -604,7 +602,7 @@ export async function cancelOrder(orderId: string): Promise<void> {
 
         try {
           const updatedProd = await tx.product.update({
-            where: { id: productId },
+            where: { id: Number(productId) },
             data: updateData,
             select: { id: true, quantity: true, name: true }
           });
@@ -630,14 +628,14 @@ export async function cancelOrder(orderId: string): Promise<void> {
       }
 
       // Update Batch Totals (Decrement) if it was countable (Delivered)
-      const isValidBatchId = (bid: string | null | undefined) => bid && bid !== 'none' && bid !== 'hold';
+      const isValidBatchId = (bid: string | number | null | undefined) => bid && bid !== 'none' && bid !== 'hold';
       if (order.shippingStatus === 'Delivered') {
         if (isValidBatchId(order.batchId)) {
           const targetBatchId = order.batchId!;
-          const batch = await tx.batch.findUnique({ where: { id: targetBatchId } });
+          const batch = await tx.batch.findUnique({ where: { id: Number(targetBatchId) } });
           if (batch) {
             await tx.batch.update({
-              where: { id: targetBatchId },
+              where: { id: Number(targetBatchId) },
               data: {
                 totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
                 totalSales: Math.max(0, (batch.totalSales || 0) - order.totalAmount)
@@ -648,7 +646,7 @@ export async function cancelOrder(orderId: string): Promise<void> {
 
         // Update Customer totalSpent
         await tx.customer.update({
-          where: { id: order.customerId },
+          where: { id: Number(order.customerId) },
           data: { totalSpent: { decrement: order.totalAmount } }
         });
         console.log(`[CustomerUpdate] Updated Customer ${order.customerId}: totalSpent -${order.totalAmount} (Cancellation)`);
@@ -656,7 +654,7 @@ export async function cancelOrder(orderId: string): Promise<void> {
 
       // 4. Update order status
       await tx.order.update({
-        where: { id: orderId },
+        where: { id: Number(orderId) },
         data: {
           shippingStatus: "Cancelled"
         }
@@ -665,38 +663,35 @@ export async function cancelOrder(orderId: string): Promise<void> {
 
       // 5. Create Sales Log for Cancellation
       const now = new Date();
-      const logId = `sl${Math.random().toString(36).substring(2, 15)}`;
 
-      const ordersJson = JSON.stringify({
+      const ordersObj = {
         id: orderId,
         orderDate: order.orderDate,
         paymentStatus: order.paymentStatus,
         paymentMethod: order.paymentMethod,
         shippingStatus: "Cancelled",
         createdBy: (order as any).createdBy
-      });
-      const shipmentsJson = JSON.stringify({
+      };
+      const shipmentsObj = {
         address: order.address,
         courier: order.courierName,
         tracking: order.trackingNumber,
         shippingFee: order.shippingFee
-      });
-      const orderItemsJson = JSON.stringify(items);
+      };
 
-      await tx.$executeRawUnsafe(
-        `INSERT INTO sales_logs (id, orderId, description, products, orders, customerName, totalAmount, shipments, order_items, createdAt) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        logId,
-        orderId,
-        "Order Cancelled",
-        order.itemName,
-        ordersJson,
-        order.customerName,
-        order.totalAmount,
-        shipmentsJson,
-        orderItemsJson,
-        now
-      );
+      await tx.salesLog.create({
+        data: {
+          orderId: Number(orderId),
+          description: "Order Cancelled",
+          products: order.itemName,
+          orders: ordersObj as any,
+          customerName: order.customerName,
+          totalAmount: order.totalAmount,
+          shipments: shipmentsObj as any,
+          order_items: items as any,
+          createdAt: now
+        }
+      });
     });
 
     revalidatePath("/orders");

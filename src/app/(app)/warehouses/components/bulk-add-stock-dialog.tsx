@@ -83,7 +83,7 @@ export function BulkAddStockDialog({
         }
     };
 
-    const removeProduct = (id: string) => {
+    const removeProduct = (id: string | number) => {
         setSelectedProducts((prev) => prev.filter((p) => p.id !== id));
         setQuantities((prev) => {
             const newQuantities = { ...prev };
@@ -114,7 +114,7 @@ export function BulkAddStockDialog({
                 return;
             }
 
-            const result = await bulkAddWarehouseStock(itemsToUpdate);
+            const result = await bulkAddWarehouseStock(itemsToUpdate.map(i => ({...i, id: String(i.id)})));
 
             if (!result.success) {
                 throw new Error(result.error || "Failed to add stock");
@@ -286,7 +286,7 @@ export function BulkAddStockDialog({
                                                         type="number"
                                                         min="0"
                                                         value={quantities[product.id] === 0 ? "" : quantities[product.id] || ""}
-                                                        onChange={(e) => handleQuantityChange(product.id, e.target.value)}
+                                                        onChange={(e) => handleQuantityChange(String(product.id), e.target.value)}
                                                         disabled={isLoading}
                                                         placeholder="Qty"
                                                         className="text-center h-9 font-semibold text-purple-600 dark:text-purple-400 bg-purple-500/5 focus-visible:ring-purple-500"

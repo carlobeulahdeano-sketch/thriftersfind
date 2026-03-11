@@ -43,7 +43,6 @@ import { Label } from "@/components/ui/label";
 import { updateOrder, cancelOrder } from "../actions";
 import { ViewOrderDialog } from "./view-order-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -83,14 +82,20 @@ interface OrderTableProps {
   products: Product[];
   stations: Station[];
   batches: Batch[];
+  onRefresh?: () => Promise<void>;
 }
 
-export default function OrderTable({ orders, customers, products, stations, batches }: OrderTableProps) {
-  const router = useRouter();
+export default function OrderTable({ orders, customers, products, stations, batches, onRefresh }: OrderTableProps) {
+  const [localOrders, setLocalOrders] = React.useState<Order[]>(orders);
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [paymentStatusFilter, setPaymentStatusFilter] = React.useState<string>("all");
-  const [shippingStatusFilter, setShippingStatusFilter] = React.useState<string>("all");
-  const [batchFilter, setBatchFilter] = React.useState<string>("all");
+
+  // Keep local orders in sync when parent re-fetches
+  React.useEffect(() => {
+    setLocalOrders(orders);
+  }, [orders]);
+  const [paymentStatusFilter, setPaymentStatusFilter] = React.useState<string | number>("all");
+  const [shippingStatusFilter, setShippingStatusFilter] = React.useState<string | number>("all");
+  const [batchFilter, setBatchFilter] = React.useState<string | number>("all");
   const [dateFilter, setDateFilter] = React.useState<DateRange | undefined>(undefined);
 
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -104,10 +109,10 @@ export default function OrderTable({ orders, customers, products, stations, batc
   const [isSmsDialogOpen, setSmsDialogOpen] = React.useState(false);
   const [orderForSms, setOrderForSms] = React.useState<Order | null>(null);
   const { toast } = useToast();
-  const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = React.useState<string | number | null>(null);
 
   const filteredOrders = React.useMemo(() => {
-    let newFilteredOrders = orders;
+    let newFilteredOrders = localOrders;
 
     if (paymentStatusFilter !== "all") {
       newFilteredOrders = newFilteredOrders.filter(order => order.paymentStatus === paymentStatusFilter);
@@ -139,13 +144,13 @@ export default function OrderTable({ orders, customers, products, stations, batc
     if (searchTerm) {
       newFilteredOrders = newFilteredOrders.filter(
         (order) =>
-          order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          String(order.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
           order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     return newFilteredOrders;
-  }, [searchTerm, paymentStatusFilter, shippingStatusFilter, batchFilter, dateFilter, orders]);
+  }, [searchTerm, paymentStatusFilter, shippingStatusFilter, batchFilter, dateFilter, localOrders]);
 
   React.useEffect(() => {
     setCurrentPage(1);
@@ -170,17 +175,28 @@ export default function OrderTable({ orders, customers, products, stations, batc
 
   const handleMarkAsReceived = async (order: Order) => {
     setIsUpdating(order.id);
+    // Optimistic update: update UI immediately
+    setLocalOrders(prev =>
+      prev.map(o =>
+        String(o.id) === String(order.id)
+          ? { ...o, paymentStatus: "Paid" as const, shippingStatus: "Delivered" as const }
+          : o
+      )
+    );
     try {
-      await updateOrder(order.id, {
+      await updateOrder(String(order.id), {
         paymentStatus: "Paid",
         shippingStatus: "Delivered",
       });
       toast({
         title: "Order Updated",
-        description: `Order #${order.id.substring(0, 7)} marked as received.`,
+        description: `Order #${String(order.id).substring(0, 7)} marked as received.`,
       });
-      router.refresh(); // Ensure the UI updates immediately
+      // Re-fetch fresh data from server
+      if (onRefresh) await onRefresh();
     } catch (error: any) {
+      // Revert optimistic update on error
+      setLocalOrders(orders);
       toast({
         variant: "destructive",
         title: "Update Failed",
@@ -195,14 +211,25 @@ export default function OrderTable({ orders, customers, products, stations, batc
     if (!orderToCancel) return;
     const orderId = orderToCancel.id;
     setIsUpdating(orderId);
+    // Optimistic update: mark as cancelled immediately
+    setLocalOrders(prev =>
+      prev.map(o =>
+        String(o.id) === String(orderId)
+          ? { ...o, shippingStatus: "Cancelled" as const }
+          : o
+      )
+    );
     try {
-      await cancelOrder(orderId);
+      await cancelOrder(String(orderId));
       toast({
         title: "Order Cancelled",
-        description: `Order #${orderId.substring(0, 7)} and its items have been returned to stock.`,
+        description: `Order #${String(orderId).substring(0, 7)} and its items have been returned to stock.`,
       });
-      router.refresh(); // Ensure the UI updates immediately
+      // Re-fetch fresh data from server
+      if (onRefresh) await onRefresh();
     } catch (error: any) {
+      // Revert optimistic update on error
+      setLocalOrders(orders);
       toast({
         variant: "destructive",
         title: "Cancellation Failed",
@@ -244,7 +271,7 @@ export default function OrderTable({ orders, customers, products, stations, batc
                 <SelectItem value="all">All Batches</SelectItem>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
                 {batches?.map(b => (
-                  <SelectItem key={b.id} value={b.id}>
+                  <SelectItem key={b.id} value={String(b.id)}>
                     {b.batchName} ({format(new Date(b.manufactureDate), 'MMM d')})
                   </SelectItem>
                 ))}
@@ -332,7 +359,7 @@ export default function OrderTable({ orders, customers, products, stations, batc
             <TableBody>
               {paginatedOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id.substring(0, 7)}...</TableCell>
+                  <TableCell className="font-medium">{String(order.id).substring(0, 7)}...</TableCell>
                   <TableCell>
                     <div className="flex flex-col">
                       <span>{order.customerName}</span>
@@ -448,6 +475,7 @@ export default function OrderTable({ orders, customers, products, stations, batc
         products={products}
         stations={stations}
         batches={batches}
+        onSuccess={onRefresh}
       />
 
       <ViewOrderDialog
@@ -463,6 +491,7 @@ export default function OrderTable({ orders, customers, products, stations, batc
         products={products}
         stations={stations}
         batches={batches}
+        onSuccess={onRefresh}
       />
 
       <AlertDialog open={isCancelDialogOpen} onOpenChange={setCancelDialogOpen}>
@@ -470,7 +499,7 @@ export default function OrderTable({ orders, customers, products, stations, batc
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will cancel order #{orderToCancel?.id.substring(0, 7)} and return all items back to inventory stock. This action cannot be undone.
+              This will cancel order #{orderToCancel?.id ? String(orderToCancel.id).substring(0, 7) : ''} and return all items back to inventory stock. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

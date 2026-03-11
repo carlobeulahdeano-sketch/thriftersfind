@@ -11,7 +11,7 @@ export async function GET(
     const { id: customerId } = await params;
 
     const customer = await prisma.customer.findUnique({
-      where: { id: customerId },
+      where: { id: Number(customerId) },
     });
 
     if (!customer) {
@@ -65,7 +65,7 @@ export async function PUT(
 
     // Check if customer exists
     const existingCustomer = await prisma.customer.findUnique({
-      where: { id: customerId }
+      where: { id: Number(customerId) }
     });
 
     if (!existingCustomer) {
@@ -95,7 +95,7 @@ export async function PUT(
 
     // Update customer
     const updatedCustomer = await prisma.customer.update({
-      where: { id: customerId },
+      where: { id: Number(customerId) },
       data: updateData,
     });
 
@@ -142,7 +142,7 @@ export async function DELETE(
 
     // Check if customer exists
     const existingCustomer = await prisma.customer.findUnique({
-      where: { id: customerId }
+      where: { id: Number(customerId) }
     });
 
     if (!existingCustomer) {
@@ -154,7 +154,7 @@ export async function DELETE(
 
     // Delete the customer
     await prisma.customer.delete({
-      where: { id: customerId }
+      where: { id: Number(customerId) }
     });
 
     return NextResponse.json({

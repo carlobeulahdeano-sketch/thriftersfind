@@ -62,7 +62,7 @@ export function DeductQuantityDialog({ isOpen, onClose, product, onSuccess }: De
         try {
             const newTotalQuantity = (product.quantity || 0) - qty;
 
-            await updateProduct(product.id, {
+            await updateProduct(String(product.id), {
                 quantity: newTotalQuantity
             });
 

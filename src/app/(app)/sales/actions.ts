@@ -87,6 +87,10 @@ export type BatchAnalytics = {
     totalSales: number;
     totalCapital: number;
     netProfit: number;
+    totalPreOrders: number;
+    preOrderSales: number;
+    preOrderCapital: number;
+    preOrderProfit: number;
     bestSellingProduct: {
         name: string;
         quantitySold: number;
@@ -123,6 +127,15 @@ export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promi
                     where: {
                         shippingStatus: 'Delivered'
                     }
+                },
+                preOrders: {
+                    where: {
+                        paymentStatus: 'Paid'
+                    },
+                    include: {
+                        items: true,
+                        product: true
+                    }
                 }
             },
             orderBy: {
@@ -133,6 +146,8 @@ export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promi
         const analytics = batches.map(batch => {
             let batchTotalSales = 0;
             let batchTotalCapital = 0;
+            let batchPreOrderSales = 0;
+            let batchPreOrderCapital = 0;
             const productSalesMap = new Map<string, { name: string; quantity: number; sales: number }>();
 
             batch.orders.forEach((order: any) => {
@@ -155,6 +170,25 @@ export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promi
                 }
             });
 
+            if (batch.preOrders) {
+                batch.preOrders.forEach((preOrder: any) => {
+                    batchPreOrderSales += preOrder.totalAmount;
+
+                    if (preOrder.items && Array.isArray(preOrder.items)) {
+                        preOrder.items.forEach((item: any) => {
+                            const qty = typeof item.quantity === 'string' ? parseInt(item.quantity) : (item.quantity || 0);
+                            const cost = preOrder.product?.cost || 0;
+                            batchPreOrderCapital += qty * cost;
+
+                            const productName = item.productName || preOrder.product?.name || "Unknown Product";
+                            const current = productSalesMap.get(productName) || { name: productName, quantity: 0, sales: 0 };
+                            current.quantity += qty;
+                            productSalesMap.set(productName, current);
+                        });
+                    }
+                });
+            }
+
             // Convert map to array and sort
             const allProducts = Array.from(productSalesMap.values());
             allProducts.sort((a, b) => b.quantity - a.quantity);
@@ -165,7 +199,7 @@ export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promi
             } : null;
 
             return {
-                id: batch.id,
+                id: String(batch.id),
                 batchName: batch.batchName,
                 status: batch.status,
                 manufactureDate: batch.manufactureDate,
@@ -173,6 +207,10 @@ export async function getBatchAnalytics(startDate?: Date, endDate?: Date): Promi
                 totalSales: batchTotalSales,
                 totalCapital: batchTotalCapital,
                 netProfit: batchTotalSales - batchTotalCapital,
+                totalPreOrders: batch.preOrders?.length || 0,
+                preOrderSales: batchPreOrderSales,
+                preOrderCapital: batchPreOrderCapital,
+                preOrderProfit: batchPreOrderSales - batchPreOrderCapital,
                 bestSellingProduct,
                 topProducts: allProducts.slice(0, 10)
             };

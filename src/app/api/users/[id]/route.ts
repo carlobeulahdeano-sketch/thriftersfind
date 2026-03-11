@@ -14,7 +14,7 @@ export async function GET(
     const canInclude = (prisma.user as any).fields?.role?.isRelation;
 
     const user = await (prisma.user as any).findUnique({
-      where: { id: userId },
+      where: { id: Number(userId) },
       include: canInclude ? {
         role: true,
         branch: true,
@@ -75,7 +75,7 @@ export async function PUT(
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: Number(userId) }
     });
 
     if (!existingUser) {
@@ -90,7 +90,7 @@ export async function PUT(
       const emailCheck = await prisma.user.findFirst({
         where: {
           email: email,
-          id: { not: userId }
+          id: { not: Number(userId) }
         }
       });
 
@@ -121,7 +121,7 @@ export async function PUT(
 
     // Update user
     const updatedUser = await (prisma.user as any).update({
-      where: { id: userId },
+      where: { id: Number(userId) },
       data: updateData,
       include: canInclude ? {
         role: true,
@@ -174,7 +174,7 @@ export async function DELETE(
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: Number(userId) }
     });
 
     if (!existingUser) {
@@ -186,7 +186,7 @@ export async function DELETE(
 
     // Delete the user
     await prisma.user.delete({
-      where: { id: userId }
+      where: { id: Number(userId) }
     });
 
     return NextResponse.json({

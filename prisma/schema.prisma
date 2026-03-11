@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Customer {
-  id           String     @id @default(cuid())
+  id           Int        @id @default(autoincrement())
   name         String
   email        String     @unique
   phone        String?
@@ -27,11 +27,12 @@ model Customer {
   orders       Order[]
   preOrders    PreOrder[]
 
+  @@index([createdAt])
   @@map("customers")
 }
 
 model Order {
-  id             String         @id @default(cuid())
+  id             Int            @id @default(autoincrement())
   customerName   String
   contactNumber  String?
   address        String?
@@ -45,16 +46,16 @@ model Order {
   paymentMethod  String?
   paymentStatus  String?
   shippingStatus String?
-  batchId        String?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @default(now()) @updatedAt
-  customerId     String
   customerEmail  String?
   courierName    String?
   trackingNumber String?
   remarks        String?
   rushShip       Boolean        @default(false)
   createdBy      Json?
+  customerId     Int
+  batchId        Int?
   inventoryLogs  InventoryLog[]
   batch          Batch?         @relation(fields: [batchId], references: [id])
   customer       Customer       @relation(fields: [customerId], references: [id])
@@ -62,18 +63,20 @@ model Order {
 
   @@index([batchId], map: "orders_batchId_fkey")
   @@index([customerId], map: "orders_customerId_fkey")
+  @@index([createdAt])
+  @@index([orderDate])
   @@map("orders")
 }
 
 model Notification {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   title     String
   message   String
   type      String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  userId    String?
+  userId    Int?
   user      User?    @relation(fields: [userId], references: [id])
 
   @@index([userId])
@@ -81,7 +84,7 @@ model Notification {
 }
 
 model Batch {
-  id                String             @id @default(cuid())
+  id                Int                @id @default(autoincrement())
   batchName         String
   status            String
   totalOrders       Int?
@@ -95,23 +98,26 @@ model Batch {
   products          Product[]
   warehouseProducts WarehouseProduct[]
 
+  @@index([createdAt])
+  @@index([manufactureDate])
   @@map("batches")
 }
 
 model ProductCategory {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  description String?
-  imageUrl    String?   @db.LongText
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now()) @updatedAt
-  products    Product[]
+  id                Int                @id @default(autoincrement())
+  name              String             @unique
+  description       String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @default(now()) @updatedAt
+  imageUrl          String?            @db.LongText
+  products          Product[]
+  warehouseProducts WarehouseProduct[]
 
   @@map("product_categories")
 }
 
 model Product {
-  id               String            @id @default(cuid())
+  id               Int               @id @default(autoincrement())
   name             String
   sku              String
   description      String?
@@ -120,12 +126,12 @@ model Product {
   cost             Float
   retailPrice      Float?
   images           Json?
-  warehouseId      String?
-  categoryId       String?
   createdBy        Json?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @default(now()) @updatedAt
-  batchId          String?
+  warehouseId      Int?
+  categoryId       Int?
+  batchId          Int?
   inventoryLogs    InventoryLog[]
   preOrders        PreOrder[]
   batch            Batch?            @relation(fields: [batchId], references: [id])
@@ -135,22 +141,23 @@ model Product {
   @@index([warehouseId], map: "products_warehouseId_fkey")
   @@index([batchId], map: "products_batchId_fkey")
   @@index([categoryId], map: "products_categoryId_fkey")
+  @@index([createdAt])
   @@map("products")
 }
 
 model User {
-  id               String         @id @default(cuid())
+  id               Int            @id @default(autoincrement())
   name             String
   email            String         @unique
   password         String
   role             String?
-  roleId           String?
-  branchId         String?
   permissions      Json?
-  isActive         Boolean        @default(true)
-  isOnline         Boolean        @default(false)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @default(now()) @updatedAt
+  isActive         Boolean        @default(true)
+  isOnline         Boolean        @default(false)
+  branchId         Int?
+  roleId           Int?
   inventoryLogs    InventoryLog[]
   receivedMessages Message[]      @relation("ReceivedMessages")
   sentMessages     Message[]      @relation("SentMessages")
@@ -164,12 +171,12 @@ model User {
 }
 
 model Message {
-  id         String   @id @default(cuid())
+  id         Int      @id @default(autoincrement())
   content    String   @db.LongText
-  senderId   String
-  receiverId String
   read       Boolean  @default(false)
   createdAt  DateTime @default(now())
+  senderId   Int
+  receiverId Int
   receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
   sender     User     @relation("SentMessages", fields: [senderId], references: [id])
 
@@ -179,7 +186,7 @@ model Message {
 }
 
 model Branch {
-  id            String         @id @default(cuid())
+  id            Int            @id @default(autoincrement())
   name          String         @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @default(now()) @updatedAt
@@ -190,7 +197,7 @@ model Branch {
 }
 
 model Role {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -200,7 +207,7 @@ model Role {
 }
 
 model ArchiveData {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   tableName String
   data      Json
   createdAt DateTime @default(now())
@@ -210,7 +217,7 @@ model ArchiveData {
 }
 
 model Station {
-  id            String   @id @default(cuid())
+  id            Int      @id @default(autoincrement())
   name          String
   location      String
   type          String
@@ -225,33 +232,36 @@ model Station {
 }
 
 model WarehouseProduct {
-  id               String         @id @default(cuid())
+  id               Int              @id @default(autoincrement())
   productName      String
   sku              String
-  quantity         Int            @default(0)
+  quantity         Int              @default(0)
   manufacture_date DateTime?
-  image            String?        @db.LongText
+  image            String?          @db.LongText
   location         String?
   cost             Float
   retailPrice      Float?
   images           Json?
   createdBy        Json?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @default(now()) @updatedAt
-  batchId          String?
-  alertStock       Int            @default(0)
-  productId        String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @default(now()) @updatedAt
+  alertStock       Int              @default(0)
+  batchId          Int?
+  productId        Int?
+  categoryId       Int?
   inventoryLogs    InventoryLog[]
   products         Product[]
-  batch            Batch?         @relation(fields: [batchId], references: [id])
+  batch            Batch?           @relation(fields: [batchId], references: [id])
+  category         ProductCategory? @relation(fields: [categoryId], references: [id])
 
   @@index([batchId], map: "warehouse_products_batchId_fkey")
   @@index([productId], map: "warehouse_products_productId_fkey")
+  @@index([categoryId], map: "warehouse_products_categoryId_fkey")
   @@map("warehouse_products")
 }
 
 model DatabaseOperation {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   type      String
   fileName  String
   fileSize  String
@@ -263,9 +273,7 @@ model DatabaseOperation {
 }
 
 model SalesLog {
-  id           String    @id @default(cuid())
-  orderId      String?
-  preOrderId   String?
+  id           Int       @id @default(autoincrement())
   products     String?
   description  String?
   orders       Json?
@@ -274,6 +282,8 @@ model SalesLog {
   shipments    Json?
   order_items  Json?
   createdAt    DateTime  @default(now())
+  orderId      Int?
+  preOrderId   Int?
   order        Order?    @relation(fields: [orderId], references: [id])
   preOrder     PreOrder? @relation(fields: [preOrderId], references: [id])
 
@@ -284,7 +294,7 @@ model SalesLog {
 }
 
 model AdminLog {
-  id           String   @id @default(cuid())
+  id           Int      @id @default(autoincrement())
   action       String
   module       String?
   description  String?
@@ -303,7 +313,7 @@ model AdminLog {
 }
 
 model PreOrder {
-  id            String         @id @default(cuid())
+  id            Int            @id @default(autoincrement())
   customerName  String
   contactNumber String?
   address       String?
@@ -312,14 +322,14 @@ model PreOrder {
   paymentMethod String?
   paymentStatus String?        @default("Unpaid")
   depositAmount Float?         @default(0)
-  customerId    String
   customerEmail String?
   remarks       String?
   createdBy     Json?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @default(now()) @updatedAt
-  batchId       String?
-  productId     String?
+  customerId    Int
+  batchId       Int?
+  productId     Int?
   inventoryLogs InventoryLog[]
   items         PreOrderItem[]
   batch         Batch?         @relation(fields: [batchId], references: [id])
@@ -330,12 +340,13 @@ model PreOrder {
   @@index([customerId], map: "pre_orders_customerId_fkey")
   @@index([batchId], map: "pre_orders_batchId_fkey")
   @@index([productId], map: "pre_orders_productId_fkey")
+  @@index([createdAt])
+  @@index([orderDate])
   @@map("pre_orders")
 }
 
 model PreOrderItem {
-  id           String   @id @default(cuid())
-  preOrderId   String
+  id           Int      @id @default(autoincrement())
   productName  String
   quantity     Int
   pricePerUnit Float
@@ -343,6 +354,7 @@ model PreOrderItem {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now()) @updatedAt
   images       Json?
+  preOrderId   Int
   preOrder     PreOrder @relation(fields: [preOrderId], references: [id], onDelete: Cascade)
 
   @@index([preOrderId], map: "pre_order_items_preOrderId_fkey")
@@ -350,10 +362,8 @@ model PreOrderItem {
 }
 
 model InventoryLog {
-  id                 String            @id @default(cuid())
+  id                 Int               @id @default(autoincrement())
   action             String
-  productId          String?
-  warehouseProductId String?
   quantityChange     Int
   previousStock      Int
   newStock           Int
@@ -361,10 +371,12 @@ model InventoryLog {
   referenceId        String?
   performedBy        Json?
   createdAt          DateTime          @default(now())
-  orderId            String?
-  preOrderId         String?
-  userId             String?
-  branchId           String?
+  productId          Int?
+  warehouseProductId Int?
+  orderId            Int?
+  preOrderId         Int?
+  userId             Int?
+  branchId           Int?
   branch             Branch?           @relation(fields: [branchId], references: [id])
   order              Order?            @relation(fields: [orderId], references: [id])
   preOrder           PreOrder?         @relation(fields: [preOrderId], references: [id])

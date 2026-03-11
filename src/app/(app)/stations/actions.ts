@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export interface Station {
-    id: string;
+    id: string | number;
     name: string;
     location: string;
     type: string;
@@ -99,7 +99,7 @@ export async function updateStation(
         }
 
         await prisma.station.update({
-            where: { id },
+            where: { id: Number(id) },
             data: {
                 ...(data.name !== undefined && { name: data.name }),
                 ...(data.location !== undefined && { location: data.location }),
@@ -119,7 +119,7 @@ export async function updateStation(
     }
 }
 
-export async function deleteStation(id: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteStation(id: string | number): Promise<{ success: boolean; error?: string }> {
     try {
         if (!id) {
             return { success: false, error: "Station ID is required" };
@@ -127,7 +127,7 @@ export async function deleteStation(id: string): Promise<{ success: boolean; err
 
         // Use deleteMany to avoid throwing P2025 error if the record is already deleted
         const result = await prisma.station.deleteMany({
-            where: { id },
+            where: { id: Number(id) },
         });
 
         if (result.count === 0) {

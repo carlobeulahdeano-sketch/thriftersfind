@@ -31,6 +31,8 @@ export function BatchAnalyticsTable({ data }: BatchAnalyticsTableProps) {
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Orders</TableHead>
                                 <TableHead className="text-right">Total Sales</TableHead>
+                                <TableHead className="text-right border-l pl-4 border-gray-600">Pre-Orders</TableHead>
+                                <TableHead className="text-right border-gray-600">Pre-Order Sales</TableHead>
                                 <TableHead className="text-right">Total Capital</TableHead>
                                 <TableHead className="text-right">Net Profit</TableHead>
                                 <TableHead>Best Seller</TableHead>
@@ -49,6 +51,10 @@ export function BatchAnalyticsTable({ data }: BatchAnalyticsTableProps) {
                                     <TableCell className="text-right">{batch.totalOrders}</TableCell>
                                     <TableCell className="text-right font-medium text-green-600">
                                         ₱{batch.totalSales.toLocaleString()}
+                                    </TableCell>
+                                    <TableCell className="text-right border-l pl-4 border-gray-600">{batch.totalPreOrders}</TableCell>
+                                    <TableCell className="text-right font-medium text-violet-500 border-gray-600">
+                                        ₱{(batch.preOrderSales || 0).toLocaleString()}
                                     </TableCell>
                                     <TableCell className="text-right text-muted-foreground">
                                         ₱{batch.totalCapital.toLocaleString()}
@@ -72,7 +78,7 @@ export function BatchAnalyticsTable({ data }: BatchAnalyticsTableProps) {
                             ))}
                             {data.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
+                                    <TableCell colSpan={10} className="text-center h-24 text-muted-foreground">
                                         No batch data found.
                                     </TableCell>
                                 </TableRow>

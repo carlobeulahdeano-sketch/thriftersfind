@@ -75,7 +75,7 @@ export function SelectProductsDialog({ isOpen, onClose, onSelect }: SelectProduc
     };
 
     const handleConfirm = () => {
-        const selected = products.filter(p => selectedProductIds.has(p.id));
+        const selected = products.filter(p => selectedProductIds.has(String(p.id)));
         onSelect(selected);
         onClose();
     };
@@ -110,7 +110,7 @@ export function SelectProductsDialog({ isOpen, onClose, onSelect }: SelectProduc
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                             {filteredProducts.map((product) => {
-                                const isSelected = selectedProductIds.has(product.id);
+                                const isSelected = selectedProductIds.has(String(product.id));
                                 return (
                                     <div
                                         key={product.id}
@@ -118,7 +118,7 @@ export function SelectProductsDialog({ isOpen, onClose, onSelect }: SelectProduc
                                             "group relative border rounded-lg cursor-pointer overflow-hidden transition-all hover:shadow-md",
                                             isSelected ? "ring-2 ring-primary border-primary bg-primary/5" : "bg-card hover:border-primary/50"
                                         )}
-                                        onClick={() => toggleSelection(product.id)}
+                                        onClick={() => toggleSelection(String(product.id))}
                                     >
                                         <div className="aspect-square bg-muted relative">
                                             {product.images && product.images.length > 0 ? (

@@ -18,7 +18,7 @@ export async function getInventoryLogs(
         const where: Prisma.InventoryLogWhereInput = {};
 
         if (filters?.userId) {
-            where.userId = filters.userId;
+            where.userId = Number(filters.userId);
         }
 
         if (filters?.action) {

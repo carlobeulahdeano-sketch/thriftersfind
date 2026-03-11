@@ -33,14 +33,14 @@ export async function getSalesLogs(
         ])
 
         // Extract user IDs to fetch branches
-        const userIds = new Set<string>();
+        const userIds = new Set<number>();
         for (const log of logs) {
             let data: any = log.orders;
             if (typeof data === 'string') {
                 try { data = JSON.parse(data); } catch (e) { }
             }
             if (data && data.createdBy && data.createdBy.uid) {
-                userIds.add(data.createdBy.uid);
+                userIds.add(Number(data.createdBy.uid));
             }
         }
 
@@ -51,7 +51,7 @@ export async function getSalesLogs(
 
         const userBranchMap = new Map<string, string | null>();
         for (const u of users) {
-            userBranchMap.set(u.id, u.branch?.name || null);
+            userBranchMap.set(String(u.id), (u as any).branch?.name || null);
         }
 
         const logsWithBranch = logs.map(log => {

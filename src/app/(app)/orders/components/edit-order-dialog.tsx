@@ -28,7 +28,6 @@ import { cn } from "@/lib/utils";
 import { SelectProductDialog } from "./select-product-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { updateOrder, getSmartSuggestions } from "../actions";
-import { useRouter } from "next/navigation";
 import { createCustomer } from "../../customers/actions";
 import { Station } from "../../stations/actions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -41,6 +40,7 @@ interface EditOrderDialogProps {
   products: Product[];
   stations: Station[];
   batches: Batch[];
+  onSuccess?: () => Promise<void>;
 }
 
 const paymentStatuses: PaymentStatus[] = ["Hold", "Paid", "Unpaid", "PAID PENDING"];
@@ -57,9 +57,9 @@ export function EditOrderDialog({
   products,
   stations,
   batches,
+  onSuccess,
 }: EditOrderDialogProps) {
   const { toast } = useToast();
-  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -75,13 +75,13 @@ export function EditOrderDialog({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("Unpaid");
   const [shippingStatus, setShippingStatus] = useState<ShippingStatus>("Pending");
-  const [batchId, setBatchId] = useState<string | null>(null);
+  const [batchId, setBatchId] = useState<string | number | null>(null);
   const [courierName, setCourierName] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
   const [remarks, setRemarks] = useState<OrderRemark>('');
   const [rushShip, setRushShip] = useState(false);
   const [isPickup, setIsPickup] = useState(false);
-  const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
+  const [selectedStationId, setSelectedStationId] = useState<string | number | null>(null);
 
   const [comboboxOpen, setComboboxOpen] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -134,7 +134,7 @@ export function EditOrderDialog({
       setPaymentMethod(order.paymentMethod);
       setPaymentStatus(order.paymentStatus);
       setShippingStatus(order.shippingStatus);
-      setBatchId(order.batchId || (order.paymentStatus === 'Hold' ? 'hold' : null));
+      setBatchId(String(order.batchId || (order.paymentStatus === 'Hold' ? 'hold' : null)));
       setCourierName(order.courierName || "");
       setTrackingNumber(order.trackingNumber || "");
       setRemarks(order.remarks || '');
@@ -269,14 +269,14 @@ export function EditOrderDialog({
         })),
       };
 
-      const result = await updateOrder(order.id, orderData);
+      const result = await updateOrder(String(order.id), orderData);
 
       toast({
         title: "Order Updated",
-        description: `Order ${result.id.substring(0, 7)} has been successfully updated.`,
+        description: `Order ${String(result.id).substring(0, 7)} has been successfully updated.`,
       });
       onClose();
-      router.refresh();
+      if (onSuccess) await onSuccess();
     } catch (error) {
       toast({
         variant: "destructive",
@@ -319,7 +319,7 @@ export function EditOrderDialog({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="text-2xl font-bold border-b pb-4">Edit Order {order.id.substring(0, 7)}...</DialogTitle>
+            <DialogTitle className="text-2xl font-bold border-b pb-4">Edit Order {String(order.id).substring(0, 7)}...</DialogTitle>
             <DialogDescription className="pt-2">
               Update details for this order.
             </DialogDescription>
@@ -474,7 +474,7 @@ export function EditOrderDialog({
                             type="number"
                             min="0"
                             value={item.quantity}
-                            onChange={(e) => updateItemQuantity(item.product.id, e.target.value)}
+                            onChange={(e) => updateItemQuantity(String(item.product.id), e.target.value)}
                             onFocus={(e) => e.target.select()}
                             className="w-16 h-8 text-center"
                             disabled={!item.product.id}
@@ -483,7 +483,7 @@ export function EditOrderDialog({
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => removeItem(item.product.id)}
+                            onClick={() => removeItem(String(item.product.id))}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>}
@@ -556,7 +556,7 @@ export function EditOrderDialog({
                         <SelectItem value="delivery">Standard Delivery</SelectItem>
                         {stations.length > 0 && <div className="border-t my-1" />}
                         {stations.map((station) => (
-                          <SelectItem key={station.id} value={station.id}>
+                          <SelectItem key={station.id} value={String(station.id)}>
                             Pickup at {station.name}
                           </SelectItem>
                         ))}
@@ -607,7 +607,7 @@ export function EditOrderDialog({
                     <div className="grid gap-2">
                       <Label htmlFor="batchId">Delivery Batch</Label>
                       <Select
-                        onValueChange={(value: string) => setBatchId(value)}
+                        onValueChange={(value: string) => setBatchId(String(value))}
                         value={batchId || ''}
                         disabled={customerName === "Walk In Customer"}
                       >
@@ -620,7 +620,7 @@ export function EditOrderDialog({
                           {/* Add actual batches here */}
                           {batches && batches.length > 0 && <div className="border-t my-1" />}
                           {batches && batches.filter(b => b.status === "Open" && !b.batchName.toLowerCase().includes("batch test")).map(b => (
-                            <SelectItem key={b.id} value={b.id}>{b.batchName}</SelectItem>
+                            <SelectItem key={b.id} value={String(b.id)}>{b.batchName}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

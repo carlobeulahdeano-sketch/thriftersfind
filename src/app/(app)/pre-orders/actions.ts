@@ -36,7 +36,7 @@ export async function getPreOrders() {
             throw new Error("Unauthorized");
         }
 
-        const isSuperAdmin = user.role?.name === "Super Admin";
+        const isSuperAdmin = user.role?.name?.toLowerCase() === "super admin";
 
         const preOrders = await prisma.preOrder.findMany({
             where: isSuperAdmin
@@ -110,24 +110,25 @@ export async function createPreOrder(data: CreatePreOrderData) {
                     paymentMethod: data.paymentMethod,
                     paymentStatus: data.paymentStatus || "Unpaid",
                     depositAmount: data.depositAmount || 0,
-                    customerId: data.customerId,
+                    customerId: Number(data.customerId),
                     customerEmail: data.customerEmail,
                     remarks: data.remarks,
                     createdBy: {
                         uid: user.id,
                         name: user.name,
                     },
-                    batchId: data.batchId && data.batchId !== 'none' ? data.batchId : null,
-                    productId: data.productId || null,
+                    batchId: data.batchId && data.batchId !== 'none' ? Number(data.batchId) : null,
+                    productId: data.productId ? Number(data.productId) : null,
                 },
             });
 
             // Update Batch Totals ONLY if paymentStatus is 'Paid'
             if (data.paymentStatus === 'Paid' && data.batchId && data.batchId !== 'none') {
-                const batch = await tx.batch.findUnique({ where: { id: data.batchId } });
+                const batchIdNum = Number(data.batchId);
+                const batch = await tx.batch.findUnique({ where: { id: batchIdNum } });
                 if (batch) {
                     await tx.batch.update({
-                        where: { id: data.batchId },
+                        where: { id: batchIdNum },
                         data: {
                             totalOrders: (batch.totalOrders || 0) + 1,
                             totalSales: (batch.totalSales || 0) + data.totalAmount
@@ -173,7 +174,7 @@ export async function updatePreOrder(
         }
 
         const preOrder = await prisma.$transaction(async (tx) => {
-            const existingPreOrder = await tx.preOrder.findUnique({ where: { id } });
+            const existingPreOrder = await tx.preOrder.findUnique({ where: { id: Number(id) } });
             if (!existingPreOrder) throw new Error("Pre-order not found");
 
             const wasPaid = existingPreOrder.paymentStatus === 'Paid';
@@ -185,15 +186,16 @@ export async function updatePreOrder(
             const oldAmount = existingPreOrder.totalAmount;
             const newAmount = data.totalAmount !== undefined ? data.totalAmount : oldAmount;
 
-            const isValidBatch = (bid: string | null) => bid && bid !== 'none';
+            const isValidBatch = (bid: string | number | null) => bid && String(bid) !== 'none';
 
             // Status transitions
             if (wasPaid && !isNowPaid) {
                 if (isValidBatch(oldBatchId)) {
-                    const batch = await tx.batch.findUnique({ where: { id: oldBatchId! } });
+                    const bidNum = Number(oldBatchId);
+                    const batch = await tx.batch.findUnique({ where: { id: bidNum } });
                     if (batch) {
                         await tx.batch.update({
-                            where: { id: oldBatchId! },
+                            where: { id: bidNum },
                             data: {
                                 totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
                                 totalSales: Math.max(0, (batch.totalSales || 0) - oldAmount)
@@ -203,10 +205,11 @@ export async function updatePreOrder(
                 }
             } else if (!wasPaid && isNowPaid) {
                 if (isValidBatch(newBatchId)) {
-                    const batch = await tx.batch.findUnique({ where: { id: newBatchId! } });
+                    const bidNum = Number(newBatchId);
+                    const batch = await tx.batch.findUnique({ where: { id: bidNum } });
                     if (batch) {
                         await tx.batch.update({
-                            where: { id: newBatchId! },
+                            where: { id: bidNum },
                             data: {
                                 totalOrders: (batch.totalOrders || 0) + 1,
                                 totalSales: (batch.totalSales || 0) + newAmount
@@ -217,10 +220,11 @@ export async function updatePreOrder(
             } else if (wasPaid && isNowPaid) {
                 if (oldBatchId !== newBatchId) {
                     if (isValidBatch(oldBatchId)) {
-                        const batch = await tx.batch.findUnique({ where: { id: oldBatchId! } });
+                        const bidNum = Number(oldBatchId);
+                        const batch = await tx.batch.findUnique({ where: { id: bidNum } });
                         if (batch) {
                             await tx.batch.update({
-                                where: { id: oldBatchId! },
+                                where: { id: bidNum },
                                 data: {
                                     totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
                                     totalSales: Math.max(0, (batch.totalSales || 0) - oldAmount)
@@ -229,10 +233,11 @@ export async function updatePreOrder(
                         }
                     }
                     if (isValidBatch(newBatchId)) {
-                        const batch = await tx.batch.findUnique({ where: { id: newBatchId! } });
+                        const bidNum = Number(newBatchId);
+                        const batch = await tx.batch.findUnique({ where: { id: bidNum } });
                         if (batch) {
                             await tx.batch.update({
-                                where: { id: newBatchId! },
+                                where: { id: bidNum },
                                 data: {
                                     totalOrders: (batch.totalOrders || 0) + 1,
                                     totalSales: (batch.totalSales || 0) + newAmount
@@ -242,10 +247,11 @@ export async function updatePreOrder(
                     }
                 } else if (oldAmount !== newAmount) {
                     if (isValidBatch(newBatchId)) {
-                        const batch = await tx.batch.findUnique({ where: { id: newBatchId! } });
+                        const bidNum = Number(newBatchId);
+                        const batch = await tx.batch.findUnique({ where: { id: bidNum } });
                         if (batch) {
                             await tx.batch.update({
-                                where: { id: newBatchId! },
+                                where: { id: bidNum },
                                 data: {
                                     totalSales: (batch.totalSales || 0) + (newAmount - oldAmount)
                                 }
@@ -256,7 +262,7 @@ export async function updatePreOrder(
             }
 
             return await tx.preOrder.update({
-                where: { id },
+                where: { id: Number(id) },
                 data: {
                     customerName: data.customerName,
                     contactNumber: data.contactNumber,
@@ -268,8 +274,8 @@ export async function updatePreOrder(
                     depositAmount: data.depositAmount,
                     customerEmail: data.customerEmail,
                     remarks: data.remarks,
-                    batchId: data.batchId && data.batchId !== 'none' ? data.batchId : (data.batchId === 'none' ? null : undefined),
-                    productId: data.productId !== undefined ? data.productId : undefined,
+                    batchId: data.batchId && data.batchId !== 'none' ? Number(data.batchId) : (data.batchId === 'none' ? null : undefined),
+                    productId: data.productId !== undefined ? Number(data.productId) : undefined,
                 },
             });
         });
@@ -292,12 +298,13 @@ export async function deletePreOrder(id: string) {
         // Delete pre-order (items and inventory will be cascade deleted)
         // Revert batch stats if it was Paid
         await prisma.$transaction(async (tx) => {
-            const preOrder = await tx.preOrder.findUnique({ where: { id } });
-            if (preOrder && preOrder.paymentStatus === 'Paid' && preOrder.batchId && preOrder.batchId !== 'none') {
-                const batch = await tx.batch.findUnique({ where: { id: preOrder.batchId } });
+            const preOrder = await tx.preOrder.findUnique({ where: { id: Number(id) } });
+            if (preOrder && preOrder.paymentStatus === 'Paid' && preOrder.batchId && String(preOrder.batchId) !== 'none') {
+                const batchIdNum = Number(preOrder.batchId);
+                const batch = await tx.batch.findUnique({ where: { id: batchIdNum } });
                 if (batch) {
                     await tx.batch.update({
-                        where: { id: preOrder.batchId },
+                        where: { id: batchIdNum },
                         data: {
                             totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
                             totalSales: Math.max(0, (batch.totalSales || 0) - preOrder.totalAmount)
@@ -306,7 +313,7 @@ export async function deletePreOrder(id: string) {
                 }
             }
             await tx.preOrder.delete({
-                where: { id },
+                where: { id: Number(id) },
             });
         });
 
@@ -358,7 +365,7 @@ export async function recordPreOrderPayment(preOrderId: string, amount: number) 
 
         // Fetch the current pre-order
         const preOrder = await prisma.preOrder.findUnique({
-            where: { id: preOrderId },
+            where: { id: Number(preOrderId) },
         });
 
         if (!preOrder) {
@@ -379,7 +386,7 @@ export async function recordPreOrderPayment(preOrderId: string, amount: number) 
         // Update the pre-order and manage batch stats if it becomes Paid
         const updatedPreOrder = await prisma.$transaction(async (tx) => {
             const upo = await tx.preOrder.update({
-                where: { id: preOrderId },
+                where: { id: Number(preOrderId) },
                 data: {
                     depositAmount: newDepositAmount,
                     paymentStatus,
@@ -389,22 +396,24 @@ export async function recordPreOrderPayment(preOrderId: string, amount: number) 
             const wasPaidBefore = preOrder.paymentStatus === 'Paid';
             const isPaidNow = paymentStatus === 'Paid';
 
-            if (!wasPaidBefore && isPaidNow && upo.batchId && upo.batchId !== 'none') {
-                const batch = await tx.batch.findUnique({ where: { id: upo.batchId } });
+            if (!wasPaidBefore && isPaidNow && upo.batchId && String(upo.batchId) !== 'none') {
+                const batchIdNum = Number(upo.batchId);
+                const batch = await tx.batch.findUnique({ where: { id: batchIdNum } });
                 if (batch) {
                     await tx.batch.update({
-                        where: { id: upo.batchId },
+                        where: { id: batchIdNum },
                         data: {
                             totalOrders: (batch.totalOrders || 0) + 1,
                             totalSales: (batch.totalSales || 0) + upo.totalAmount
                         }
                     });
                 }
-            } else if (wasPaidBefore && !isPaidNow && upo.batchId && upo.batchId !== 'none') {
-                const batch = await tx.batch.findUnique({ where: { id: upo.batchId } });
+            } else if (wasPaidBefore && !isPaidNow && upo.batchId && String(upo.batchId) !== 'none') {
+                const batchIdNum = Number(upo.batchId);
+                const batch = await tx.batch.findUnique({ where: { id: batchIdNum } });
                 if (batch) {
                     await tx.batch.update({
-                        where: { id: upo.batchId },
+                        where: { id: batchIdNum },
                         data: {
                             totalOrders: Math.max(0, (batch.totalOrders || 0) - 1),
                             totalSales: Math.max(0, (batch.totalSales || 0) - upo.totalAmount)

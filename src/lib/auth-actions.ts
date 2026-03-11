@@ -36,7 +36,7 @@ export async function login(prevState: any, formData: FormData) {
         // In a real app, you'd use a session library or JWT
         // For now, we'll set a simple cookie to simulate a session
         const cookieStore = await cookies();
-        cookieStore.set("session", user.id, {
+        cookieStore.set("session", String(user.id), {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_APP_URL?.startsWith('https') === true,
             maxAge: 60 * 60 * 24 * 7, // 1 week
@@ -95,7 +95,7 @@ export async function logout() {
     if (session) {
         try {
             await prisma.user.update({
-                where: { id: session },
+                where: { id: Number(session) },
                 data: { isOnline: false }
             });
         } catch (error) {

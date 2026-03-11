@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Printer, X, Download, ShieldAlert } from "lucide-react";
+import { Printer, X, Download, ShieldAlert, Loader2, CheckCircle2 } from "lucide-react";
 import { Order, Customer } from "@/lib/types";
 import { getCustomers } from "../../customers/actions";
 import { getSalesData } from "../../sales/actions";
@@ -83,9 +83,13 @@ function PrintReportContent() {
         try {
             // @ts-ignore
             const html2pdf = (await import('html2pdf.js')).default;
-            const pdfBlobUrl = await html2pdf().set(opt).from(element).output('bloburl');
+            await html2pdf().set(opt).from(element).save();
             setStatus('done');
-            window.location.href = pdfBlobUrl;
+
+            // Try to close the window after a short delay
+            setTimeout(() => {
+                window.close();
+            }, 1500);
         } catch (error) {
             console.error("PDF generation failed", error);
             setStatus('done');
@@ -120,144 +124,168 @@ function PrintReportContent() {
     }
 
     return (
-        <div className="min-h-screen bg-white">
-            {/* 
-                Render Invoice Visible immediately. 
-                html2pdf will capture this. 
-                Once done, we redirect to blob.
-             */}
-            <div id="report-content" className="bg-white p-[40px] max-w-[210mm] min-h-[297mm] text-slate-800 font-sans mx-auto">
-                {/* Header Section */}
-                <div className="flex justify-between items-start mb-8">
-                    <div>
-                        <h1 className="text-4xl font-bold text-slate-700 tracking-tight">Sales Report</h1>
-                        <p className="text-slate-500 mt-1 font-medium">{format(new Date(), "MM/dd/yyyy")}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {/* Placeholder Logo */}
-                        <div className="h-10 w-10 bg-slate-800 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">TF</span>
+        <div className="min-h-screen bg-slate-100 flex flex-col items-center">
+            {/* Status Overlay */}
+            {(status === 'loading' || status === 'generating') && (
+                <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+                    <Loader2 className="h-12 w-12 text-blue-600 animate-spin mb-4" />
+                    <h2 className="text-2xl font-bold text-slate-800">
+                        {status === 'loading' ? 'Loading Data...' : 'Generating PDF...'}
+                    </h2>
+                    <p className="text-slate-500 mt-2">Please wait while we prepare your report.</p>
+                </div>
+            )}
+
+            {status === 'done' && (
+                <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center text-center p-4">
+                    <CheckCircle2 className="h-20 w-20 text-green-500 mb-6" />
+                    <h2 className="text-3xl font-bold text-slate-800 mb-2">Download Complete!</h2>
+                    <p className="text-slate-600 mb-8 max-w-md">
+                        Your report has been downloaded. You can safely close this tab or we will close it for you shortly.
+                    </p>
+                    <button
+                        onClick={() => window.close()}
+                        className="px-6 py-3 bg-slate-900 text-white rounded-md font-medium hover:bg-slate-800 transition-colors"
+                    >
+                        Close Tab
+                    </button>
+                </div>
+            )}
+
+            <div className="opacity-0 pointer-events-none absolute -z-10">
+                <div id="report-content" className="bg-white p-[40px] w-[210mm] min-h-[297mm] text-slate-800 font-sans mx-auto">
+                    {/* Header Section */}
+                    <div className="flex justify-between items-start mb-8">
+                        <div>
+                            <h1 className="text-4xl font-bold text-slate-700 tracking-tight">Sales Report</h1>
+                            <p className="text-slate-500 mt-1 font-medium">{format(new Date(), "MM/dd/yyyy")}</p>
                         </div>
-                        <span className="text-2xl font-bold text-slate-700">ThriftersFind</span>
-                    </div>
-                </div>
-
-                {/* Info Block (Gray Background) */}
-                <div className="bg-slate-50 p-8 mb-8 grid grid-cols-2 gap-12 rounded-sm text-sm">
-                    <div>
-                        <h3 className="text-slate-400 font-bold uppercase tracking-wider mb-2 text-xs">Report For</h3>
-                        <p className="font-bold text-slate-700 text-base">ThriftersFind Store</p>
-                        <p className="text-slate-500">Inventory & Sales Management</p>
-                        <p className="text-slate-500">Anaheim Store</p>
-                        <p className="text-slate-500">1720 W La Palma Ave, Anaheim, CA</p>
-                    </div>
-                    <div>
-                        <h3 className="text-slate-400 font-bold uppercase tracking-wider mb-2 text-xs">Period Details</h3>
-                        <p className="font-bold text-slate-700 text-base">{timeframe === 'all' ? 'All Time' : timeframe.charAt(0).toUpperCase() + timeframe.slice(1) + 'ly'} Report</p>
-                        <p className="text-slate-500">Date Range:</p>
-                        <p className="text-slate-500">
-                            {filteredOrders.length > 0
-                                ? `${format(new Date(filteredOrders[filteredOrders.length - 1].orderDate), "MMM d")} - ${format(new Date(), "MMM d, yyyy")}`
-                                : format(new Date(), "MMM d, yyyy")}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Details Strip */}
-                <div className="border-y-2 border-slate-200 py-3 mb-8 flex justify-between text-sm text-slate-600">
-                    <div className="flex flex-col">
-                        <span className="font-bold text-slate-800 text-xs uppercase">Generated By</span>
-                        <span>System Admin</span>
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="font-bold text-slate-800 text-xs uppercase">Total Orders</span>
-                        <span>{totalOrders}</span>
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="font-bold text-slate-800 text-xs uppercase">Report Scope</span>
-                        <span>All Products</span>
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="font-bold text-slate-800 text-xs uppercase">Status</span>
-                        <span>Confirmed</span>
-                    </div>
-                    <div className="flex flex-col text-right">
-                        <span className="font-bold text-slate-800 text-xs uppercase">Terms</span>
-                        <span>Confidential</span>
-                    </div>
-                </div>
-
-                {/* Table Section */}
-                <div className="mb-8">
-                    <table className="w-full text-sm">
-                        <thead className="bg-slate-600 text-white">
-                            <tr>
-                                <th className="py-3 px-4 text-left font-semibold w-1/4">Order ID / Customer</th>
-                                <th className="py-3 px-4 text-left font-semibold">Date</th>
-                                <th className="py-3 px-4 text-center font-semibold">Status</th>
-                                <th className="py-3 px-4 text-right font-semibold">Discount</th>
-                                <th className="py-3 px-4 text-right font-semibold">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-slate-600">
-                            {filteredOrders.map((order, index) => (
-                                <tr key={order.id} className={index % 2 === 0 ? "bg-white" : "bg-slate-50"}>
-                                    <td className="py-3 px-4 font-medium text-slate-800">
-                                        <div>{order.id.substring(0, 8).toUpperCase()}</div>
-                                        <div className="text-xs text-slate-400 font-normal">{order.customerName}</div>
-                                    </td>
-                                    <td className="py-3 px-4">{format(new Date(order.orderDate), "MM/dd/yyyy")}</td>
-                                    <td className="py-3 px-4 text-center">
-                                        <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                            {order.paymentStatus}
-                                        </span>
-                                    </td>
-                                    <td className="py-3 px-4 text-right">-</td>
-                                    <td className="py-3 px-4 text-right font-bold text-slate-800">₱{order.totalAmount.toLocaleString()}</td>
-                                </tr>
-                            ))}
-                            {/* Empty Rows for visual spacing if list is short */}
-                            {Array.from({ length: Math.max(0, 5 - filteredOrders.length) }).map((_, i) => (
-                                <tr key={`empty-${i}`} className={(filteredOrders.length + i) % 2 === 0 ? "bg-white" : "bg-slate-50"}>
-                                    <td className="py-4 px-4">&nbsp;</td>
-                                    <td className="py-4 px-4">&nbsp;</td>
-                                    <td className="py-4 px-4">&nbsp;</td>
-                                    <td className="py-4 px-4">&nbsp;</td>
-                                    <td className="py-4 px-4">&nbsp;</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Totals Section */}
-                <div className="break-inside-avoid">
-                    <div className="flex justify-end">
-                        <div className="w-1/3">
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-slate-500 font-medium">Sub Total</span>
-                                <span className="text-slate-700 font-bold">₱{totalSales.toLocaleString()}</span>
+                        <div className="flex items-center gap-2">
+                            {/* Placeholder Logo */}
+                            <div className="h-10 w-10 bg-slate-800 rounded-full flex items-center justify-center">
+                                <span className="text-white font-bold text-lg">TF</span>
                             </div>
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-slate-500 font-medium">Shipping (Est)</span>
-                                <span className="text-slate-700 font-bold"> - </span>
-                            </div>
-                            <div className="flex justify-between py-2 mt-2 border-t-2 border-b-4 border-double border-slate-300">
-                                <span className="text-slate-800 font-bold text-lg">Total Due</span>
-                                <span className="text-slate-800 font-bold text-lg">₱{totalSales.toLocaleString()}</span>
-                            </div>
+                            <span className="text-2xl font-bold text-slate-700">ThriftersFind</span>
                         </div>
                     </div>
-                </div>
 
-                <div className="mt-12 pt-8 flex items-end justify-between text-xs text-slate-400">
-                    <div className="text-center">
-                        <div className="h-12 w-32 border-b border-slate-300 mb-2 mx-auto"></div>
-                        <p>Authorized Signature</p>
+                    {/* Info Block (Gray Background) */}
+                    <div className="bg-slate-50 p-8 mb-8 grid grid-cols-2 gap-12 rounded-sm text-sm">
+                        <div>
+                            <h3 className="text-slate-400 font-bold uppercase tracking-wider mb-2 text-xs">Report For</h3>
+                            <p className="font-bold text-slate-700 text-base">ThriftersFind Store</p>
+                            <p className="text-slate-500">Inventory & Sales Management</p>
+                            <p className="text-slate-500">Anaheim Store</p>
+                            <p className="text-slate-500">1720 W La Palma Ave, Anaheim, CA</p>
+                        </div>
+                        <div>
+                            <h3 className="text-slate-400 font-bold uppercase tracking-wider mb-2 text-xs">Period Details</h3>
+                            <p className="font-bold text-slate-700 text-base">{timeframe === 'all' ? 'All Time' : timeframe.charAt(0).toUpperCase() + timeframe.slice(1) + 'ly'} Report</p>
+                            <p className="text-slate-500">Date Range:</p>
+                            <p className="text-slate-500">
+                                {filteredOrders.length > 0
+                                    ? `${format(new Date(filteredOrders[filteredOrders.length - 1].orderDate), "MMM d")} - ${format(new Date(), "MMM d, yyyy")}`
+                                    : format(new Date(), "MMM d, yyyy")}
+                            </p>
+                        </div>
                     </div>
-                    <div className="text-right">
-                        <p>Digitally signed by System Admin</p>
-                        <p>Date: {format(new Date(), "PP pp")}</p>
+
+                    {/* Details Strip */}
+                    <div className="border-y-2 border-slate-200 py-3 mb-8 flex justify-between text-sm text-slate-600">
+                        <div className="flex flex-col">
+                            <span className="font-bold text-slate-800 text-xs uppercase">Generated By</span>
+                            <span>System Admin</span>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-slate-800 text-xs uppercase">Total Orders</span>
+                            <span>{totalOrders}</span>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-slate-800 text-xs uppercase">Report Scope</span>
+                            <span>All Products</span>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-slate-800 text-xs uppercase">Status</span>
+                            <span>Confirmed</span>
+                        </div>
+                        <div className="flex flex-col text-right">
+                            <span className="font-bold text-slate-800 text-xs uppercase">Terms</span>
+                            <span>Confidential</span>
+                        </div>
+                    </div>
+
+                    {/* Table Section */}
+                    <div className="mb-8">
+                        <table className="w-full text-sm">
+                            <thead className="bg-slate-600 text-white">
+                                <tr>
+                                    <th className="py-3 px-4 text-left font-semibold w-1/4">Order ID / Customer</th>
+                                    <th className="py-3 px-4 text-left font-semibold">Date</th>
+                                    <th className="py-3 px-4 text-center font-semibold">Status</th>
+                                    <th className="py-3 px-4 text-right font-semibold">Discount</th>
+                                    <th className="py-3 px-4 text-right font-semibold">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-slate-600">
+                                {filteredOrders.map((order, index) => (
+                                    <tr key={order.id} className={index % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                                        <td className="py-3 px-4 font-medium text-slate-800">
+                                            <div>{String(order.id).substring(0, 8).toUpperCase()}</div>
+                                            <div className="text-xs text-slate-400 font-normal">{order.customerName}</div>
+                                        </td>
+                                        <td className="py-3 px-4">{format(new Date(order.orderDate), "MM/dd/yyyy")}</td>
+                                        <td className="py-3 px-4 text-center">
+                                            <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                {order.paymentStatus}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-4 text-right">-</td>
+                                        <td className="py-3 px-4 text-right font-bold text-slate-800">₱{order.totalAmount.toLocaleString()}</td>
+                                    </tr>
+                                ))}
+                                {/* Empty Rows for visual spacing if list is short */}
+                                {Array.from({ length: Math.max(0, 5 - filteredOrders.length) }).map((_, i) => (
+                                    <tr key={`empty-${i}`} className={(filteredOrders.length + i) % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                                        <td className="py-4 px-4">&nbsp;</td>
+                                        <td className="py-4 px-4">&nbsp;</td>
+                                        <td className="py-4 px-4">&nbsp;</td>
+                                        <td className="py-4 px-4">&nbsp;</td>
+                                        <td className="py-4 px-4">&nbsp;</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Totals Section */}
+                    <div className="break-inside-avoid">
+                        <div className="flex justify-end">
+                            <div className="w-1/3">
+                                <div className="flex justify-between py-2 border-b border-slate-100">
+                                    <span className="text-slate-500 font-medium">Sub Total</span>
+                                    <span className="text-slate-700 font-bold">₱{totalSales.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between py-2 border-b border-slate-100">
+                                    <span className="text-slate-500 font-medium">Shipping (Est)</span>
+                                    <span className="text-slate-700 font-bold"> - </span>
+                                </div>
+                                <div className="flex justify-between py-2 mt-2 border-t-2 border-b-4 border-double border-slate-300">
+                                    <span className="text-slate-800 font-bold text-lg">Total Due</span>
+                                    <span className="text-slate-800 font-bold text-lg">₱{totalSales.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-12 pt-8 flex items-end justify-between text-xs text-slate-400">
+                        <div className="text-center">
+                            <div className="h-12 w-32 border-b border-slate-300 mb-2 mx-auto"></div>
+                            <p>Authorized Signature</p>
+                        </div>
+                        <div className="text-right">
+                            <p>Digitally signed by System Admin</p>
+                            <p>Date: {format(new Date(), "PP pp")}</p>
+                        </div>
                     </div>
                 </div>
             </div>

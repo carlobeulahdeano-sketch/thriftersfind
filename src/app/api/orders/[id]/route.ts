@@ -10,7 +10,7 @@ export async function GET(
     const { id: orderId } = await params;
 
     const order = await prisma.order.findUnique({
-      where: { id: orderId },
+      where: { id: Number(orderId) },
       include: {
         customer: true,
         batch: true,
@@ -71,7 +71,7 @@ export async function PUT(
 
     // Check if order exists
     const existingOrder = await prisma.order.findUnique({
-      where: { id: orderId }
+      where: { id: Number(orderId) }
     });
 
     if (!existingOrder) {
@@ -108,7 +108,7 @@ export async function PUT(
 
     // Update order
     const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
+      where: { id: Number(orderId) },
       data: updateData,
       include: {
         customer: true,
@@ -162,7 +162,7 @@ export async function DELETE(
 
     // Check if order exists
     const existingOrder = await prisma.order.findUnique({
-      where: { id: orderId }
+      where: { id: Number(orderId) }
     });
 
     if (!existingOrder) {
@@ -174,7 +174,7 @@ export async function DELETE(
 
     // Delete the order
     await prisma.order.delete({
-      where: { id: orderId }
+      where: { id: Number(orderId) }
     });
 
     return NextResponse.json({

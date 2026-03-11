@@ -189,7 +189,7 @@ export default function BatchesTable({ batches: initialBatches }: BatchesTablePr
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setViewingBatch(batch)}>View Details</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setEditingBatch(batch)}>Edit</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(batch.id, batch.batchName)} className="text-red-600">Delete</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDelete(String(batch.id), batch.batchName)} className="text-red-600">Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

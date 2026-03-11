@@ -10,8 +10,13 @@ export async function getCurrentUser(): Promise<User | null> {
         return null;
     }
 
+    const parsedId = parseInt(sessionId as string, 10);
+    if (isNaN(parsedId)) {
+        return null;
+    }
+
     const user = await (prisma.user as any).findUnique({
-        where: { id: sessionId },
+        where: { id: parsedId },
         include: {
             role_rel: true,
             branch: true,
@@ -22,18 +27,25 @@ export async function getCurrentUser(): Promise<User | null> {
         return null;
     }
 
+    // Resolve role: prefer the role_rel relation, fall back to the legacy role string column
+    const resolvedRole = user.role_rel
+        ? {
+            id: user.role_rel.id,
+            name: user.role_rel.name,
+            createdAt: user.role_rel.createdAt?.toISOString() || new Date().toISOString(),
+            updatedAt: user.role_rel.updatedAt?.toISOString() || new Date().toISOString(),
+        }
+        : user.role
+            ? { id: 0, name: user.role as string, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+            : null;
+
     return {
         id: user.id,
         name: user.name,
         email: user.email,
         password: user.password,
         roleId: user.roleId,
-        role: user.role_rel ? {
-            id: user.role_rel.id,
-            name: user.role_rel.name,
-            createdAt: user.role_rel.createdAt?.toISOString() || new Date().toISOString(),
-            updatedAt: user.role_rel.updatedAt?.toISOString() || new Date().toISOString(),
-        } : null,
+        role: resolvedRole,
         branchId: user.branchId,
         branch: user.branch ? {
             id: user.branch.id,

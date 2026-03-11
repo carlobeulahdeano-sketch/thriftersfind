@@ -15,7 +15,7 @@ export async function getNotifications() {
         const notifications = await prisma.notification.findMany({
             where: {
                 OR: [
-                    { userId: user.id },
+                    { userId: Number(user.id) },
                     { userId: null }
                 ],
                 read: false
@@ -40,7 +40,7 @@ export async function markAllNotificationsAsRead() {
         await prisma.notification.updateMany({
             where: {
                 OR: [
-                    { userId: user.id },
+                    { userId: Number(user.id) },
                     { userId: null }
                 ],
                 read: false
@@ -64,7 +64,7 @@ export async function createNotification(data: { title: string; message: string;
                 title: data.title,
                 message: data.message,
                 type: data.type,
-                userId: data.userId || null,
+                userId: data.userId ? Number(data.userId) : null,
                 read: false,
             }
         });

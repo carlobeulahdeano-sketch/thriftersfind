@@ -17,10 +17,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
 
+  const parsedId = parseInt(sessionId as string, 10);
+  if (isNaN(parsedId)) {
+    redirect("/login");
+  }
+
   let user;
   try {
     user = await prisma.user.findUnique({
-      where: { id: sessionId },
+      where: { id: parsedId as any },
       include: {
         role_rel: true,
         branch: true,
@@ -44,25 +49,32 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   const transformedUser: User = {
-    id: user.id,
+    id: String(user.id),
     name: user.name,
     email: user.email,
     password: user.password,
-    roleId: user.roleId,
+    roleId: user.roleId ? String(user.roleId) : null,
     role: user.role_rel ? {
-      id: user.role_rel.id,
+      id: String(user.role_rel.id),
       name: user.role_rel.name,
       createdAt: user.role_rel.createdAt?.toISOString() || new Date().toISOString(),
       updatedAt: user.role_rel.updatedAt?.toISOString() || new Date().toISOString(),
+    } : user.role ? {
+      id: "legacy",
+      name: user.role,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     } : null,
-    branchId: user.branchId,
+    branchId: user.branchId ? String(user.branchId) : null,
     branch: user.branch ? {
-      id: user.branch.id,
+      id: String(user.branch.id),
       name: user.branch.name,
       createdAt: user.branch.createdAt?.toISOString() || new Date().toISOString(),
-      updatedAt: user.branch.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: user.branch.updatedAt?.toISOString() || new Date().toISOString(),
     } : null,
     permissions: user.permissions as any,
+    isActive: user.isActive,
+    isOnline: user.isOnline,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
   };

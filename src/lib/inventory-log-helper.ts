@@ -28,18 +28,18 @@ export async function createInventoryLog(params: {
 
         const data = {
             action: params.action,
-            productId: params.productId,
-            warehouseProductId: params.warehouseProductId,
+            productId: params.productId != null ? Number(params.productId) : null,
+            warehouseProductId: params.warehouseProductId != null ? Number(params.warehouseProductId) : null,
             quantityChange: params.quantityChange,
             previousStock: params.previousStock,
             newStock: params.newStock,
             reason: params.reason,
             referenceId: params.referenceId,
             performedBy: performedBy as any,
-            orderId: params.orderId,
-            preOrderId: params.preOrderId,
-            userId: userId,
-            branchId: userBranchId,
+            orderId: params.orderId != null ? Number(params.orderId) : null,
+            preOrderId: params.preOrderId != null ? Number(params.preOrderId) : null,
+            userId: userId != null ? Number(userId) : null,
+            branchId: userBranchId != null ? Number(userBranchId) : null,
         };
 
         if (tx) {

@@ -6,7 +6,7 @@ import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { createInventoryLog } from "@/lib/inventory-log-helper";
 import { notifyChatEvent } from "@/lib/chat-emitter";
 
-export async function sendMessage(receiverId: string, content: string) {
+export async function sendMessage(receiverId: string | number, content: string) {
     try {
         const currentUser = await getCurrentUser();
         if (!currentUser) {
@@ -16,27 +16,27 @@ export async function sendMessage(receiverId: string, content: string) {
         const message = await prisma.message.create({
             data: {
                 content,
-                senderId: currentUser.id,
-                receiverId,
+                senderId: Number(currentUser.id),
+                receiverId: Number(receiverId),
             },
         });
 
         // Push real-time SSE event to the receiver
-        notifyChatEvent(receiverId, {
+        notifyChatEvent(String(receiverId), {
             type: "new-message",
-            senderId: currentUser.id,
+            senderId: String(currentUser.id),
             senderName: currentUser.name,
-            messageId: message.id,
+            messageId: String(message.id),
             content,
             createdAt: message.createdAt.toISOString(),
         });
 
         // Also notify the sender (for multi-tab support)
-        notifyChatEvent(currentUser.id, {
+        notifyChatEvent(String(currentUser.id), {
             type: "new-message",
-            senderId: currentUser.id,
+            senderId: String(currentUser.id),
             senderName: currentUser.name,
-            messageId: message.id,
+            messageId: String(message.id),
             content,
             createdAt: message.createdAt.toISOString(),
         });
@@ -62,8 +62,8 @@ export async function getMessages(otherUserId: string) {
         const messages = await prisma.message.findMany({
             where: {
                 OR: [
-                    { senderId: currentUser.id, receiverId: otherUserId },
-                    { senderId: otherUserId, receiverId: currentUser.id },
+                    { senderId: Number(currentUser.id), receiverId: Number(otherUserId) },
+                    { senderId: Number(otherUserId), receiverId: Number(currentUser.id) },
                 ],
             },
             orderBy: {
@@ -95,7 +95,7 @@ export async function getUnreadCounts() {
         const unreadMessages = await prisma.message.groupBy({
             by: ['senderId'],
             where: {
-                receiverId: currentUser.id,
+                receiverId: Number(currentUser.id),
                 read: false,
             },
             _count: {
@@ -105,7 +105,7 @@ export async function getUnreadCounts() {
 
         const counts: Record<string, number> = {};
         unreadMessages.forEach(group => {
-            counts[group.senderId] = group._count.id;
+            counts[String(group.senderId)] = (group._count as any).id;
         });
 
         return counts;
@@ -122,8 +122,8 @@ export async function markMessagesAsRead(senderId: string) {
 
         const result = await prisma.message.updateMany({
             where: {
-                senderId: senderId,
-                receiverId: currentUser.id,
+                senderId: Number(senderId),
+                receiverId: Number(currentUser.id),
                 read: false
             },
             data: {
@@ -206,12 +206,13 @@ export async function transferStock(
                 throw new Error("Invalid transfer quantity");
             }
 
-            // 2. Check if product exists in inventory by SKU AND createdBy uid (to match branch)
-            // Note: Since we dropped the unique SKU index, we can now look for the branch-specific product
+            // Check if product exists in inventory by SKU AND createdBy uid (to match branch)
+            // Fix: Use JSON_UNQUOTE to handle string/number mismatches in JSON
+            const skuToFind = warehouseProduct.sku.trim();
             const inventoryProducts: any[] = await tx.$queryRawUnsafe(
-                `SELECT * FROM products WHERE sku = ? AND JSON_EXTRACT(createdBy, '$.uid') = ? LIMIT 1`,
-                warehouseProduct.sku,
-                creator.id
+                `SELECT * FROM products WHERE sku = ? AND JSON_UNQUOTE(JSON_EXTRACT(createdBy, '$.uid')) = ? LIMIT 1`,
+                skuToFind,
+                String(creator.id)
             );
             const inventoryProduct = inventoryProducts[0];
 
@@ -219,12 +220,29 @@ export async function transferStock(
             if (inventoryProduct) {
                 productId = inventoryProduct.id;
                 console.log(`[transferStock] Updating existing product for ${creator.name}: ${productId}`);
-                // Update existing product quantity
-                await tx.$executeRawUnsafe(
-                    `UPDATE products SET quantity = quantity + ?, updatedAt = NOW(3) WHERE id = ?`,
-                    transferQty,
-                    productId
-                );
+                // Update existing product quantity and sync missing details
+
+                let updateQuery = `UPDATE products SET quantity = quantity + ?, updatedAt = NOW(3)`;
+                const updateParams: any[] = [transferQty];
+
+                if (!inventoryProduct.categoryId && warehouseProduct.categoryId) {
+                    updateQuery += `, categoryId = ?`;
+                    updateParams.push(warehouseProduct.categoryId);
+                }
+                if (!inventoryProduct.cost && warehouseProduct.cost) {
+                    updateQuery += `, cost = ?`;
+                    updateParams.push(warehouseProduct.cost);
+                }
+                if (!inventoryProduct.retailPrice && warehouseProduct.retailPrice) {
+                    updateQuery += `, retailPrice = ?`;
+                    updateParams.push(warehouseProduct.retailPrice);
+                }
+
+                // Append the WHERE clause
+                updateQuery += ` WHERE id = ?`;
+                updateParams.push(productId);
+
+                await tx.$executeRawUnsafe(updateQuery, ...updateParams);
             } else {
                 let images = [];
                 if (warehouseProduct.image) {
@@ -240,24 +258,24 @@ export async function transferStock(
                     }
                 }
 
-                productId = `c${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-                console.log(`[transferStock] Creating new product in inventory for ${creator.name}: ${productId}`);
+                console.log(`[transferStock] Creating new product in inventory for ${creator.name}`);
                 // Create new product in inventory
-                await tx.$executeRawUnsafe(
-                    `INSERT INTO products (id, name, sku, description, quantity, warehouseId, alertStock, cost, retailPrice, images, createdBy, createdAt, updatedAt) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))`,
-                    productId,
-                    warehouseProduct.productName,
-                    warehouseProduct.sku,
-                    `Transferred from Warehouse Product`,
-                    transferQty,
-                    null,
-                    10,
-                    warehouseProduct.cost || 0,
-                    warehouseProduct.retailPrice || 0,
-                    JSON.stringify(images),
-                    JSON.stringify(createdBy)
-                );
+                const createdProduct = await tx.product.create({
+                    data: {
+                        name: warehouseProduct.productName,
+                        sku: warehouseProduct.sku,
+                        description: `Transferred from Warehouse Product`,
+                        quantity: transferQty,
+                        categoryId: warehouseProduct.categoryId || null,
+                        warehouseId: null,
+                        alertStock: 10,
+                        cost: warehouseProduct.cost || 0,
+                        retailPrice: warehouseProduct.retailPrice || 0,
+                        images: images as any,
+                        createdBy: createdBy as any,
+                    }
+                });
+                productId = String(createdProduct.id);
             }
 
             // 2.5 Log inventory change
@@ -282,18 +300,18 @@ export async function transferStock(
             const finalProduct = inventoryProduct || await prisma.product.findFirst({ where: { sku: warehouseProduct.sku } });
 
             // Create notification for the transfer
-            const notificationId = `n${Math.random().toString(36).substring(2, 15)}`;
             const now = new Date();
-            await tx.$executeRawUnsafe(
-                `INSERT INTO notifications (id, title, message, type, \`read\`, createdAt, updatedAt, userId) VALUES (?, ?, ?, ?, 0, ?, ?, ?)`,
-                notificationId,
-                "Stock Transfer Received",
-                `You received ${transferQty} unit(s) of ${warehouseProduct.productName} from Warehouse.`,
-                "transfer",
-                now,
-                now,
-                creator.id
-            );
+            await tx.notification.create({
+                data: {
+                    title: "Stock Transfer Received",
+                    message: `You received ${transferQty} unit(s) of ${warehouseProduct.productName} from Warehouse.`,
+                    type: "transfer",
+                    read: false,
+                    createdAt: now,
+                    updatedAt: now,
+                    userId: Number(creator.id)
+                }
+            });
 
             // Reduce quantity in warehouse
             const newQuantity = warehouseProduct.quantity - transferQty;
@@ -367,21 +385,38 @@ export async function bulkTransferStock(
                 console.log(`[bulkTransferStock] Transferring (${transferQty}) for ${warehouseProduct.productName}`);
 
                 // Check if product exists in inventory by SKU and target User
+                const skuToFind = warehouseProduct.sku.trim();
                 const inventoryProducts: any[] = await tx.$queryRawUnsafe(
-                    `SELECT * FROM products WHERE sku = ? AND JSON_EXTRACT(createdBy, '$.uid') = ? LIMIT 1`,
-                    warehouseProduct.sku,
-                    creator.id
+                    `SELECT * FROM products WHERE sku = ? AND JSON_UNQUOTE(JSON_EXTRACT(createdBy, '$.uid')) = ? LIMIT 1`,
+                    skuToFind,
+                    String(creator.id)
                 );
                 const inventoryProduct = inventoryProducts[0];
 
                 let targetProductId = '';
                 if (inventoryProduct) {
                     targetProductId = inventoryProduct.id;
-                    await tx.$executeRawUnsafe(
-                        `UPDATE products SET quantity = quantity + ?, updatedAt = NOW(3) WHERE id = ?`,
-                        transferQty,
-                        targetProductId
-                    );
+
+                    let updateQuery = `UPDATE products SET quantity = quantity + ?, updatedAt = NOW(3)`;
+                    const updateParams: any[] = [transferQty];
+
+                    if (!inventoryProduct.categoryId && warehouseProduct.categoryId) {
+                        updateQuery += `, categoryId = ?`;
+                        updateParams.push(warehouseProduct.categoryId);
+                    }
+                    if (!inventoryProduct.cost && warehouseProduct.cost) {
+                        updateQuery += `, cost = ?`;
+                        updateParams.push(warehouseProduct.cost);
+                    }
+                    if (!inventoryProduct.retailPrice && warehouseProduct.retailPrice) {
+                        updateQuery += `, retailPrice = ?`;
+                        updateParams.push(warehouseProduct.retailPrice);
+                    }
+
+                    updateQuery += ` WHERE id = ?`;
+                    updateParams.push(targetProductId);
+
+                    await tx.$executeRawUnsafe(updateQuery, ...updateParams);
                 } else {
                     let images = [];
                     if (warehouseProduct.image) {
@@ -397,22 +432,22 @@ export async function bulkTransferStock(
                         }
                     }
 
-                    targetProductId = `c${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-                    await tx.$executeRawUnsafe(
-                        `INSERT INTO products (id, name, sku, description, quantity, warehouseId, alertStock, cost, retailPrice, images, createdBy, createdAt, updatedAt) 
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))`,
-                        targetProductId,
-                        warehouseProduct.productName,
-                        warehouseProduct.sku,
-                        `Transferred from Warehouse Product`,
-                        transferQty,
-                        null,
-                        10,
-                        warehouseProduct.cost || 0,
-                        warehouseProduct.retailPrice || 0,
-                        JSON.stringify(images),
-                        JSON.stringify(createdBy)
-                    );
+                    const createdProduct = await tx.product.create({
+                        data: {
+                            name: warehouseProduct.productName,
+                            sku: warehouseProduct.sku,
+                            description: `Transferred from Warehouse Product`,
+                            quantity: transferQty,
+                            categoryId: warehouseProduct.categoryId || null,
+                            warehouseId: null,
+                            alertStock: 10,
+                            cost: warehouseProduct.cost || 0,
+                            retailPrice: warehouseProduct.retailPrice || 0,
+                            images: images as any,
+                            createdBy: createdBy as any,
+                        }
+                    });
+                    targetProductId = String(createdProduct.id);
                 }
 
                 // Log inventory change
@@ -428,18 +463,18 @@ export async function bulkTransferStock(
                 }, tx, currentUser);
 
                 // Create notification for the bulk transfer
-                const notificationId = `n${Math.random().toString(36).substring(2, 15)}`;
                 const now = new Date();
-                await tx.$executeRawUnsafe(
-                    `INSERT INTO notifications (id, title, message, type, \`read\`, createdAt, updatedAt, userId) VALUES (?, ?, ?, ?, 0, ?, ?, ?)`,
-                    notificationId,
-                    "Bulk Stock Transfer",
-                    `You received ${transferQty} unit(s) of ${warehouseProduct.productName} (Bulk Transfer).`,
-                    "transfer",
-                    now,
-                    now,
-                    creator.id
-                );
+                await tx.notification.create({
+                    data: {
+                        title: "Bulk Stock Transfer",
+                        message: `You received ${transferQty} unit(s) of ${warehouseProduct.productName} (Bulk Transfer).`,
+                        type: "transfer",
+                        read: false,
+                        createdAt: now,
+                        updatedAt: now,
+                        userId: Number(creator.id)
+                    }
+                });
 
                 const newQuantity = warehouseProduct.quantity - transferQty;
                 if (newQuantity <= 0) {
@@ -469,14 +504,14 @@ export async function getProductBySku(sku: string, targetUserId?: string) {
         if (!userId) {
             const currentUser = await getCurrentUser();
             if (!currentUser) return null;
-            userId = currentUser.id;
+            userId = String(currentUser.id);
         }
 
         // Use raw query to match branch-specific product ownership (createdBy.uid)
         const products: any[] = await prisma.$queryRawUnsafe(
-            `SELECT * FROM products WHERE sku = ? AND JSON_EXTRACT(createdBy, '$.uid') = ? LIMIT 1`,
-            sku,
-            userId
+            `SELECT * FROM products WHERE sku = ? AND JSON_UNQUOTE(JSON_EXTRACT(createdBy, '$.uid')) = ? LIMIT 1`,
+            sku.trim(),
+            String(userId)
         );
 
         return products[0] || null;

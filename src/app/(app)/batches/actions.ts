@@ -2,10 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { Batch } from "@/lib/types";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { getCurrentUser } from "@/lib/auth-server";
 
 export async function getBatches(): Promise<{ batches: Batch[], isAuthorized: boolean }> {
+    noStore();
     try {
         const user = await getCurrentUser();
 
@@ -96,7 +97,7 @@ export async function createBatch(data: {
     }
 }
 
-export async function updateBatch(id: string, data: {
+export async function updateBatch(id: string | number, data: {
     batchName?: string;
     manufactureDate?: string;
     status?: string;
@@ -107,7 +108,7 @@ export async function updateBatch(id: string, data: {
             return { success: false, error: "Permission denied" };
         }
         await prisma.batch.update({
-            where: { id },
+            where: { id: Number(id) },
             data: {
                 batchName: data.batchName,
                 // @ts-ignore - Prisma client needs regeneration
@@ -124,14 +125,14 @@ export async function updateBatch(id: string, data: {
     }
 }
 
-export async function deleteBatch(id: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteBatch(id: string | number): Promise<{ success: boolean; error?: string }> {
     try {
         const user = await getCurrentUser();
         if (!user || !user.permissions?.batches) {
             return { success: false, error: "Permission denied" };
         }
         await prisma.batch.delete({
-            where: { id },
+            where: { id: Number(id) },
         });
 
         revalidatePath("/batches");

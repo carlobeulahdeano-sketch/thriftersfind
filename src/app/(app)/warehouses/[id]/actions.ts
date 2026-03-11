@@ -54,7 +54,7 @@ export async function createWarehouseProduct(data: {
                 where: { sku: data.sku },
                 select: { id: true }
             });
-            if (linkedProduct) finalProductId = linkedProduct.id;
+            if (linkedProduct) finalProductId = String(linkedProduct.id);
         }
 
         await prisma.warehouseProduct.create({
@@ -67,7 +67,7 @@ export async function createWarehouseProduct(data: {
                 retailPrice: data.retailPrice,
                 images: data.images,
                 createdBy: data.createdBy,
-                productId: finalProductId,
+                productId: finalProductId ? Number(finalProductId) : null,
             },
         });
 
@@ -94,7 +94,7 @@ export async function updateWarehouseProduct(
     }
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const product = await prisma.warehouseProduct.findUnique({ where: { id } });
+        const product = await prisma.warehouseProduct.findUnique({ where: { id: Number(id) } });
         if (!product) {
             return { success: false, error: "Product not found" };
         }
@@ -104,7 +104,7 @@ export async function updateWarehouseProduct(
             const existing = await prisma.warehouseProduct.findFirst({
                 where: {
                     sku: data.sku,
-                    NOT: { id }
+                    NOT: { id: Number(id) }
                 }
             });
 
@@ -114,7 +114,7 @@ export async function updateWarehouseProduct(
         }
 
         await prisma.warehouseProduct.update({
-            where: { id },
+            where: { id: Number(id) },
             data: {
                 ...(data.productName !== undefined && { productName: data.productName }),
                 ...(data.sku !== undefined && { sku: data.sku }),
@@ -123,7 +123,7 @@ export async function updateWarehouseProduct(
                 ...(data.cost !== undefined && { cost: data.cost }),
                 ...(data.retailPrice !== undefined && { retailPrice: data.retailPrice }),
                 ...(data.images !== undefined && { images: data.images }),
-                ...(data.productId !== undefined && { productId: data.productId }),
+                ...(data.productId !== undefined && { productId: data.productId ? Number(data.productId) : null }),
             },
         });
 
@@ -135,15 +135,15 @@ export async function updateWarehouseProduct(
     }
 }
 
-export async function deleteWarehouseProduct(id: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteWarehouseProduct(id: string | number): Promise<{ success: boolean; error?: string }> {
     try {
-        const product = await prisma.warehouseProduct.findUnique({ where: { id } });
+        const product = await prisma.warehouseProduct.findUnique({ where: { id: Number(id) } });
         if (!product) {
             return { success: false, error: "Product not found" };
         }
 
         await prisma.warehouseProduct.delete({
-            where: { id },
+            where: { id: Number(id) },
         });
 
         revalidatePath(`/warehouses`);
@@ -161,7 +161,7 @@ export async function transferToInventory(
 ): Promise<{ success: boolean; error?: string }> {
     try {
         const warehouseProduct = await prisma.warehouseProduct.findUnique({
-            where: { id: warehouseProductId }
+            where: { id: Number(warehouseProductId) }
         });
 
         if (!warehouseProduct) {
@@ -181,8 +181,13 @@ export async function transferToInventory(
         }
 
         if (!inventoryProduct) {
+            const skuToFind = warehouseProduct.sku.trim();
             inventoryProduct = await prisma.product.findFirst({
-                where: { sku: warehouseProduct.sku }
+                where: {
+                    sku: {
+                        equals: skuToFind
+                    }
+                }
             });
 
             // If found by SKU, backfill the link
@@ -197,14 +202,35 @@ export async function transferToInventory(
         if (inventoryProduct) {
             // Update existing product quantity
             const updateData: any = {};
-            updateData[destination] = (inventoryProduct as any)[destination] + quantity;
+
+            // Fix: Map 'warehouse' destination to 'quantity' since the field doesn't exist in the Product model
+            // This prevents the 'NaN' issues and duplication when 'destination' is 'warehouse'
+            const targetField = "quantity";
+            updateData[targetField] = (inventoryProduct.quantity || 0) + quantity;
+
+            // Sync other details per user request: "the same details will also add"
+            if (!inventoryProduct.categoryId) updateData.categoryId = (warehouseProduct as any).categoryId;
+            if (inventoryProduct.cost === 0 || !inventoryProduct.cost) updateData.cost = warehouseProduct.cost;
+            if (!inventoryProduct.retailPrice) updateData.retailPrice = warehouseProduct.retailPrice;
+
+            // Sync images if empty
+            let hasImages = false;
+            try {
+                const images = inventoryProduct.images;
+                if (Array.isArray(images) && images.length > 0) hasImages = true;
+                else if (typeof images === 'string' && JSON.parse(images).length > 0) hasImages = true;
+            } catch (e) { }
+
+            if (!hasImages) {
+                updateData.images = warehouseProduct.images;
+            }
 
             // Update batchId if provided from warehouse
             if (warehouseProduct.batchId) {
                 updateData.batchId = warehouseProduct.batchId;
             }
 
-            // Update alertStock to match warehouse product (fixes legacy default of 10)
+            // Update alertStock to match warehouse product
             updateData.alertStock = warehouseProduct.alertStock || 0;
 
             await prisma.product.update({
@@ -215,17 +241,15 @@ export async function transferToInventory(
             // Create new product in inventory
             const productData: any = {
                 name: warehouseProduct.productName,
-                sku: warehouseProduct.sku,
+                sku: warehouseProduct.sku.trim(),
                 cost: warehouseProduct.cost,
                 retailPrice: warehouseProduct.retailPrice,
                 images: warehouseProduct.images,
-                quantity: 0,
-                // branch2 removed
-                warehouse: 0,
+                quantity: quantity, // Fixed: use quantity directly
                 alertStock: warehouseProduct.alertStock || 0,
                 batchId: warehouseProduct.batchId || null,
+                categoryId: (warehouseProduct as any).categoryId || null,
             };
-            productData[destination] = quantity;
 
             const newProduct = await prisma.product.create({ data: productData });
 
@@ -234,6 +258,8 @@ export async function transferToInventory(
                 where: { id: warehouseProduct.id },
                 data: { productId: newProduct.id }
             });
+            // After creating new product, log the id for reference
+            const createdProductIdStr = String(newProduct.id);
         }
 
         // Reduce quantity in warehouse
@@ -242,12 +268,12 @@ export async function transferToInventory(
         if (newQuantity === 0) {
             // Delete warehouse product if quantity reaches 0
             await prisma.warehouseProduct.delete({
-                where: { id: warehouseProductId }
+                where: { id: Number(warehouseProductId) }
             });
         } else {
             // Update warehouse product quantity
             await prisma.warehouseProduct.update({
-                where: { id: warehouseProductId },
+                where: { id: Number(warehouseProductId) },
                 data: { quantity: newQuantity }
             });
         }
@@ -268,10 +294,10 @@ export async function transferToInventory(
         if (finalProduct) {
             await createInventoryLog({
                 action: "TRANSFER_IN",
-                productId: finalProduct.id,
+                productId: String(finalProduct.id),
                 quantityChange: quantity,
-                previousStock: (inventoryProduct as any)?.[destination] || 0,
-                newStock: ((inventoryProduct as any)?.[destination] || 0) + quantity,
+                previousStock: (inventoryProduct as any)?.quantity || 0,
+                newStock: ((inventoryProduct as any)?.quantity || 0) + quantity,
                 reason: `Transfer from warehouse`,
                 referenceId: warehouseProductId,
             });
@@ -305,7 +331,7 @@ export async function bulkAddWarehouseStock(
         await prisma.$transaction(async (tx) => {
             for (const item of items) {
                 const product = await tx.warehouseProduct.findUnique({
-                    where: { id: item.id }
+                    where: { id: Number(item.id) }
                 });
 
                 if (!product) {
@@ -315,7 +341,7 @@ export async function bulkAddWarehouseStock(
                 const newQuantity = product.quantity + item.quantityToAdd;
 
                 await tx.warehouseProduct.update({
-                    where: { id: item.id },
+                    where: { id: Number(item.id) },
                     data: { quantity: newQuantity }
                 });
 

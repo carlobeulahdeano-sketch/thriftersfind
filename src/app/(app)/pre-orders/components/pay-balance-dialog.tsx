@@ -19,7 +19,7 @@ interface PayBalanceDialogProps {
 
 export function PayBalanceDialog({ isOpen, onClose, preOrder, onSuccess }: PayBalanceDialogProps) {
     const { toast } = useToast();
-    const [amount, setAmount] = React.useState<string>("");
+    const [amount, setAmount] = React.useState<string | number>("");
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     // Calculate remaining balance
@@ -39,7 +39,7 @@ export function PayBalanceDialog({ isOpen, onClose, preOrder, onSuccess }: PayBa
 
         if (!preOrder) return;
 
-        const paymentAmount = parseFloat(amount);
+        const paymentAmount = parseFloat(String(amount));
 
         if (isNaN(paymentAmount) || paymentAmount <= 0) {
             toast({
@@ -62,7 +62,7 @@ export function PayBalanceDialog({ isOpen, onClose, preOrder, onSuccess }: PayBa
         setIsSubmitting(true);
 
         try {
-            await recordPreOrderPayment(preOrder.id, paymentAmount);
+            await recordPreOrderPayment(String(preOrder.id), paymentAmount);
             toast({
                 title: "Payment Recorded",
                 description: `Successfully recorded payment of ₱${paymentAmount.toLocaleString()}`,

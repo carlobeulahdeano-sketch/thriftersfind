@@ -24,12 +24,18 @@ export function BatchSalesChart({ data }: BatchSalesChartProps) {
     const salesData = sortedData.map(item => item.totalSales);
     const capitalData = sortedData.map(item => item.totalCapital);
     const profitData = sortedData.map(item => item.netProfit);
+    const preOrderSalesData = sortedData.map(item => item.preOrderSales || 0);
 
     const series = [
         {
             name: 'Total Sales',
             data: salesData,
             color: '#16a34a' // Green
+        },
+        {
+            name: 'Pre-Order Sales',
+            data: preOrderSalesData,
+            color: '#8b5cf6' // Violet
         },
         {
             name: 'Total Capital',

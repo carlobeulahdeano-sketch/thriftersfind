@@ -54,7 +54,7 @@ export function TransferToInventoryDialog({ isOpen, onClose, product, onSuccess 
 
         setIsSubmitting(true);
         try {
-            const result = await transferToInventory(product.id, destination, transferQty);
+            const result = await transferToInventory(String(product.id), destination, transferQty);
 
             if (result.success) {
                 toast({

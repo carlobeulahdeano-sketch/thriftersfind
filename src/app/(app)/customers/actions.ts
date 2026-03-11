@@ -39,7 +39,7 @@ export async function getCustomers(): Promise<Customer[]> {
 
     // If it IS "Walk In Customer", only show if created by current user
     const createdBy = (customer as any).createdBy as { uid: string } | null;
-    return createdBy?.uid === user.id;
+    return String(createdBy?.uid) === String(user.id);
   });
 
   return filteredCustomers.map(customer => ({
@@ -182,7 +182,7 @@ export async function updateCustomer(
     }
 
     const updatedCustomer = await prisma.customer.update({
-      where: { id: customerId },
+      where: { id: Number(customerId) },
       data: {
         name: customerData.name,
         email: customerData.email,
@@ -251,7 +251,7 @@ export async function getCustomerOrdersByYear(
   year?: number
 ): Promise<YearlyOrderSummary[]> {
   const customer = await prisma.customer.findUnique({
-    where: { id: customerId },
+    where: { id: Number(customerId) },
     include: {
       orders: {
         orderBy: { createdAt: 'desc' }
@@ -298,7 +298,7 @@ export async function getCustomerOrdersByYear(
     .sort((a, b) => b.year - a.year); // Sort by year descending
 }
 
-export async function toggleCustomerStatus(customerId: string, isActive: boolean): Promise<boolean> {
+export async function toggleCustomerStatus(customerId: string | number, isActive: boolean): Promise<boolean> {
   try {
     const user = await getCurrentUser();
     if (!user || (!user.permissions?.customers && !user.permissions?.dashboard)) {

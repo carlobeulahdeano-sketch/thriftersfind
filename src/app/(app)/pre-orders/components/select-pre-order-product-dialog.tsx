@@ -46,13 +46,13 @@ export function SelectPreOrderProductDialog({ isOpen, onClose, onProductSelect, 
         });
     };
 
-    const updateQuantity = (productId: string, quantity: number | string) => {
+    const updateQuantity = (productId: string | number, quantity: number | string) => {
         setSelectedProducts(prev => prev.map(item =>
             item.product.id === productId ? { ...item, quantity: quantity === "" ? "" : Math.max(0, parseInt(quantity.toString()) || 0) } : item
         ));
     };
 
-    const removeProduct = (productId: string) => {
+    const removeProduct = (productId: string | number) => {
         setSelectedProducts(prev => prev.filter(item => item.product.id !== productId));
     };
 

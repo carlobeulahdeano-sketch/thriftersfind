@@ -90,7 +90,7 @@ export function ViewCustomerDialog({
     if (isOrderHistoryModalOpen && customer) {
       setIsLoadingOrders(true);
       const yearFilter = selectedYear === "all" ? undefined : parseInt(selectedYear);
-      getCustomerOrdersByYear(customer.id, yearFilter)
+      getCustomerOrdersByYear(String(customer.id), yearFilter)
         .then(data => {
           setYearlyOrders(data);
         })
@@ -104,7 +104,7 @@ export function ViewCustomerDialog({
     if (!customer) return;
     const newStatus = !customer.isActive;
 
-    const success = await toggleCustomerStatus(customer.id, newStatus);
+    const success = await toggleCustomerStatus(String(customer.id), newStatus);
 
     if (success) {
       toast({
@@ -126,7 +126,7 @@ export function ViewCustomerDialog({
 
   if (!customer) return null;
 
-  const totalOrders = customer.orderHistory?.reduce((sum, item) => sum + item.orderCount, 0) || 0;
+  const totalOrders = customer.orderHistory?.length || 0;
 
   return (
     <>
@@ -386,7 +386,7 @@ export function ViewCustomerDialog({
                               <TableRow key={order.orderId} className="hover:bg-slate-50">
                                 <TableCell>
                                   <Badge variant="outline" className="font-mono text-xs">
-                                    {order.orderId.substring(0, 8)}
+                                    {String(order.orderId).substring(0, 8)}
                                   </Badge>
                                 </TableCell>
                                 <TableCell className="max-w-[300px]">

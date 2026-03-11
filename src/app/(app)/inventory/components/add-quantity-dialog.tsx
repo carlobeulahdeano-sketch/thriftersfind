@@ -53,7 +53,7 @@ export function AddQuantityDialog({ isOpen, onClose, product, onSuccess }: AddQu
         try {
             const newTotalQuantity = (product.quantity || 0) + qty;
 
-            await updateProduct(product.id, {
+            await updateProduct(String(product.id), {
                 quantity: newTotalQuantity
             });
 

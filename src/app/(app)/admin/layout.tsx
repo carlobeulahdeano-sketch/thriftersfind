@@ -14,8 +14,14 @@ export default async function AdminLayout({
         redirect("/login");
     }
 
+    const parsedId = parseInt(sessionId as string, 10);
+    // Important logic addition ensuring strings UUIDs resolve clean!
+    if (isNaN(parsedId)) {
+        redirect("/login");
+    }
+
     const user = await prisma.user.findUnique({
-        where: { id: sessionId },
+        where: { id: parsedId as any },
         include: {
             role_rel: true,
         },

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     // Verify user exists
     const user = await prisma.user.findUnique({
-        where: { id: sessionId },
+        where: { id: Number(sessionId) },
         select: { id: true },
     });
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
             controller.enqueue(encoder.encode(": connected\n\n"));
 
             // Subscribe to chat events for this user
-            const unsubscribe = subscribeToChatEvents(userId, (event: ChatEvent) => {
+            const unsubscribe = subscribeToChatEvents(String(userId), (event: ChatEvent) => {
                 try {
                     const data = JSON.stringify(event);
                     controller.enqueue(encoder.encode(`event: ${event.type}\ndata: ${data}\n\n`));

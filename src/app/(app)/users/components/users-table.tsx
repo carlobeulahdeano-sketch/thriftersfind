@@ -107,7 +107,7 @@ export default function UsersTable({ users: initialUsers, currentUser, onUserAdd
     if (!userToDelete) return;
 
     try {
-      const result = await deleteUser(userToDelete.id);
+      const result = await deleteUser(String(userToDelete.id));
       if (result.success) {
         toast({
           title: "User deleted",
@@ -207,7 +207,7 @@ export default function UsersTable({ users: initialUsers, currentUser, onUserAdd
                           // Optimistic update
                           setUsers(prev => prev.map(u => u.id === user.id ? { ...u, isActive: checked } : u));
 
-                          const result = await toggleUserStatus(user.id, checked);
+                          const result = await toggleUserStatus(String(user.id), checked);
                           if (!result.success) {
                             // Revert on failure
                             setUsers(prev => prev.map(u => u.id === user.id ? { ...u, isActive: originalValue } : u));

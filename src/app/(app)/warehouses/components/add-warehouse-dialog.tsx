@@ -46,8 +46,8 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
     const [retailPrice, setRetailPrice] = useState("");
 
     // EXISTING PRODUCT STATES
-    const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string; sku: string; images: string[] } | null>(null);
-    const [searchResults, setSearchResults] = useState<{ id: string; name: string; sku: string; images: string[] }[]>([]);
+    const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string; sku: string; images: string[]; categoryId?: number | null } | null>(null);
+    const [searchResults, setSearchResults] = useState<{ id: string; name: string; sku: string; images: string[]; categoryId?: number | null }[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,7 +101,7 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
         setImagePreview(null);
     };
 
-    const handleSelectProduct = (product: { id: string; name: string; sku: string; images: string[] }) => {
+    const handleSelectProduct = (product: { id: string; name: string; sku: string; images: string[]; categoryId?: number | null }) => {
         if (selectedProduct?.id === product.id) {
             setSelectedProduct(null);
         } else {
@@ -163,7 +163,8 @@ export function AddWarehouseDialog({ isOpen, onClose, onSuccess }: AddWarehouseD
                 alertStock: alertStock ? parseInt(alertStock) : 0,
                 cost: cost ? parseFloat(cost) : 0,
                 retailPrice: retailPrice ? parseFloat(retailPrice) : null,
-                productId: activeTab === "existing" ? selectedProduct!.id : undefined
+                productId: activeTab === "existing" ? selectedProduct!.id : undefined,
+                categoryId: activeTab === "existing" ? selectedProduct!.categoryId : undefined
             });
 
             if (result.success) {

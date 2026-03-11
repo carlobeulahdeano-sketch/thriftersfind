@@ -8,6 +8,8 @@ export default async function InventoryLogsPage() {
         select: { id: true, name: true },
     });
 
+    const mappedUsers = users.map(u => ({ ...u, id: String(u.id) }));
+
     return (
         <div className="flex flex-col gap-8 p-2">
             <div className="flex items-center justify-between">
@@ -26,7 +28,7 @@ export default async function InventoryLogsPage() {
                     <CardTitle>Log History</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <InventoryLogsTable users={users} />
+                    <InventoryLogsTable users={mappedUsers} />
                 </CardContent>
             </Card>
         </div>

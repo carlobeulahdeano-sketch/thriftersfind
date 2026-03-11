@@ -218,7 +218,7 @@ export default function WarehouseProductsTable({
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                                     <AlertDialogAction
-                                                        onClick={() => handleDelete(product.id)}
+                                                        onClick={() => handleDelete(String(product.id))}
                                                         className="bg-destructive hover:bg-destructive/90"
                                                     >
                                                         Delete

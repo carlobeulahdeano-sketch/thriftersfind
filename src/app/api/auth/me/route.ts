@@ -11,8 +11,13 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ user: null }, { status: 401 });
         }
 
-        const user = await prisma.user.findUnique({
-            where: { id: sessionId },
+        const parsedId = parseInt(sessionId as string, 10);
+        if (isNaN(parsedId)) {
+            return NextResponse.json({ user: null }, { status: 401 });
+        }
+
+        const user = await (prisma.user as any).findUnique({
+            where: { id: parsedId },
             include: {
                 role_rel: true,
                 branch: true,

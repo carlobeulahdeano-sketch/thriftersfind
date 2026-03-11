@@ -14,7 +14,7 @@ export type CourierData = {
 };
 
 export type InventoryItem = {
-  id: string;
+  id: string | number;
   name: string;
   sku: string;
   description: string;
@@ -45,13 +45,13 @@ export type UserPermissions = {
 };
 
 export type User = {
-  id: string;
+  id: string | number;
   name: string;
   email: string;
   password: string;
-  roleId?: string | null;
+  roleId?: string | number | null;
   role?: Role | null;
-  branchId?: string | null;
+  branchId?: string | number | null;
   branch?: Branch | null;
   permissions?: UserPermissions | null;
   isActive?: boolean;
@@ -61,21 +61,21 @@ export type User = {
 };
 
 export type Role = {
-  id: string;
+  id: string | number;
   name: string;
   createdAt: string;
   updatedAt: string;
 };
 
 export type Branch = {
-  id: string;
+  id: string | number;
   name: string;
   createdAt: string;
   updatedAt: string;
 };
 
 export type OrderHistoryItem = {
-  orderId: string;
+  orderId: string | number;
   date: string;
   amount: number;
   items: string;
@@ -92,7 +92,7 @@ export type YearlyOrderSummary = {
 };
 
 export type Customer = {
-  id: string;
+  id: string | number;
   name: string;
   email: string;
   phone: string;
@@ -122,7 +122,7 @@ export type OrderItem = {
 };
 
 export type Order = {
-  id: string; // Order ID / Reference No.
+  id: string | number; // Order ID / Reference No.
   customerName: string;
   contactNumber: string;
   address: string; // Address / Location
@@ -136,13 +136,13 @@ export type Order = {
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   shippingStatus: ShippingStatus;
-  batchId: string | null;
+  batchId: string | number | null;
   createdAt?: any; // Timestamp
   createdBy?: {
-    uid: string;
+    uid: string | number;
     name: string;
   };
-  customerId: string;
+  customerId: string | number;
   customerEmail?: string;
   courierName?: string;
   trackingNumber?: string;
@@ -152,7 +152,7 @@ export type Order = {
 };
 
 export type Batch = {
-  id: string;
+  id: string | number;
   batchName: string;
   manufactureDate: string;
   status: 'Open' | 'Closed' | 'Delivered' | 'Cancelled';
@@ -161,7 +161,7 @@ export type Batch = {
 }
 
 export type ProductCategory = {
-  id: string;
+  id: string | number;
   name: string;
   description: string | null;
   imageUrl: string | null;
@@ -171,13 +171,13 @@ export type ProductCategory = {
 }
 
 export type Product = {
-  id: string;
+  id: string | number;
   name: string;
   sku: string;
   description: string;
   quantity: number;
-  warehouseId?: string | null;
-  categoryId?: string | null;
+  warehouseId?: string | number | null;
+  categoryId?: string | number | null;
   category?: ProductCategory | null;
   totalStock: number;
   alertStock: number;
@@ -187,7 +187,7 @@ export type Product = {
 }
 
 export type PreOrderProduct = {
-  id: string;
+  id: string | number;
   name: string;
   sku: string;
   description: string | null;
@@ -202,7 +202,7 @@ export type PreOrderProduct = {
 
 
 export type Station = {
-  id: string;
+  id: string | number;
   name: string;
   location: string;
   type: string;
@@ -213,7 +213,7 @@ export type Station = {
 };
 
 export type PreOrder = {
-  id: string;
+  id: string | number;
   customerName: string;
   contactNumber: string | null;
   address: string | null;
@@ -222,21 +222,21 @@ export type PreOrder = {
   paymentMethod: string | null;
   paymentStatus: string | null;
   depositAmount: number | null;
-  customerId: string;
+  customerId: string | number;
   customerEmail: string | null;
   remarks: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
   customer?: Customer;
   items: PreOrderItem[];
-  batchId?: string | null;
+  batchId?: string | number | null;
   batch?: Batch;
   salesLogs?: any[];
 };
 
 export type PreOrderItem = {
-  id: string;
-  preOrderId: string;
+  id: string | number;
+  preOrderId: string | number;
   productName: string;
   quantity: number;
   pricePerUnit: number;
@@ -247,10 +247,10 @@ export type PreOrderItem = {
 };
 
 export type InventoryLog = {
-  id: string;
+  id: string | number;
   action: string;
-  productId?: string | null;
-  warehouseProductId?: string | null;
+  productId?: string | number | null;
+  warehouseProductId?: string | number | null;
   quantityChange: number;
   previousStock: number;
   newStock: number;
@@ -258,22 +258,22 @@ export type InventoryLog = {
   referenceId?: string | null;
   performedBy?: any; // Json
   createdAt: string | Date;
-  orderId?: string | null;
-  preOrderId?: string | null;
-  userId?: string | null;
-  branchId?: string | null;
+  orderId?: string | number | null;
+  preOrderId?: string | number | null;
+  userId?: string | number | null;
+  branchId?: string | number | null;
 
   product?: Product | null;
   warehouseProduct?: { productName: string; sku: string } | null;
-  order?: { id: string; } | null;
-  preOrder?: { id: string; } | null;
+  order?: { id: string | number; } | null;
+  preOrder?: { id: string | number; } | null;
   user?: { name: string; email: string } | null;
   branch?: { name: string; } | null;
 };
 
 export type WarehouseProduct = {
-  id: string;
-  warehouseId?: string | null;
+  id: string | number;
+  warehouseId?: string | number | null;
   productName: string;
   sku: string;
   quantity: number;
@@ -282,12 +282,12 @@ export type WarehouseProduct = {
   location?: string | null;
   cost: number;
   retailPrice?: number | null;
-  batchId?: string | null;
+  batchId?: string | number | null;
   images?: any;
   createdBy?: any;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   alertStock?: number;
   manufacturer?: string | null;
-  productId?: string | null;
+  productId?: string | number | null;
 };

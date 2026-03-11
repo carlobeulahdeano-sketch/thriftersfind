@@ -61,7 +61,7 @@ export default function PreOrderTable({ orders, customers, stations, batches, on
         return orders.filter((order) => {
             const matchesSearch =
                 order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                String(order.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
                 order.items.some(item => item.productName.toLowerCase().includes(searchTerm.toLowerCase())) ||
                 order.paymentMethod?.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -187,7 +187,7 @@ export default function PreOrderTable({ orders, customers, stations, batches, on
                                                         </div>
                                                     ))}
                                                     <div className="text-xs text-muted-foreground pl-5.5 mt-1">
-                                                        {order.id.substring(0, 8)} • {format(new Date(order.createdAt), 'MMM dd, yyyy')}
+                                                        {String(order.id).substring(0, 8)} • {format(new Date(order.createdAt), 'MMM dd, yyyy')}
                                                     </div>
                                                 </div>
                                             </TableCell>

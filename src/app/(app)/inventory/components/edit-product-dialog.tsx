@@ -68,7 +68,7 @@ export function EditProductDialog({ isOpen, onClose, product, onSuccess, categor
       setNewImages([]);
       setNewImagePreviews([]);
       setImagesToRemove([]);
-      setSelectedCategoryId(product.categoryId || "");
+      setSelectedCategoryId(product.categoryId ? String(product.categoryId) : "");
     }
   }, [product]);
 
@@ -136,7 +136,7 @@ export function EditProductDialog({ isOpen, onClose, product, onSuccess, categor
         categoryId: selectedCategoryId && selectedCategoryId !== "none" ? selectedCategoryId : null,
       };
 
-      await updateProduct(product.id, productData);
+      await updateProduct(String(product.id), productData);
 
       toast({
         title: "Product Updated",
@@ -189,7 +189,7 @@ export function EditProductDialog({ isOpen, onClose, product, onSuccess, categor
               <SelectContent>
                 <SelectItem value="none">No Category</SelectItem>
                 {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

@@ -32,7 +32,7 @@ export function ViewOrderDialog({ isOpen, onClose, order }: ViewOrderDialogProps
                     <div className="flex items-center justify-between">
                         <DialogTitle className="text-2xl font-bold">Order Details</DialogTitle>
                         <Badge variant="outline" className="font-mono text-sm px-3 py-1">
-                            #{order.id.substring(0, 8)}
+                            #{String(order.id).substring(0, 8)}
                         </Badge>
                     </div>
                 </DialogHeader>

@@ -114,7 +114,7 @@ export function EditStationDialog({ isOpen, onClose, station, onSuccess }: EditS
 
         setIsSubmitting(true);
         try {
-            const result = await updateStation(station.id, {
+            const result = await updateStation(String(station.id), {
                 name,
                 location,
                 type,

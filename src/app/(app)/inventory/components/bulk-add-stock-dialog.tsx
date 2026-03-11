@@ -52,25 +52,25 @@ export function BulkAddStockDialog({ isOpen, onClose, products: allProducts, onS
         });
     };
 
-    const updateQuantity = (productId: string, quantity: number | string) => {
+    const updateQuantity = (productId: string | number, quantity: number | string) => {
         setSelectedProducts(prev => prev.map(item =>
             item.product.id === productId ? { ...item, quantityToAdd: quantity === "" ? "" : Math.max(0, parseInt(quantity.toString()) || 0) } : item
         ));
     };
 
-    const incrementQuantity = (productId: string) => {
+    const incrementQuantity = (productId: string | number) => {
         setSelectedProducts(prev => prev.map(item =>
             item.product.id === productId ? { ...item, quantityToAdd: (typeof item.quantityToAdd === 'string' ? 0 : item.quantityToAdd) + 1 } : item
         ));
     };
 
-    const decrementQuantity = (productId: string) => {
+    const decrementQuantity = (productId: string | number) => {
         setSelectedProducts(prev => prev.map(item =>
             item.product.id === productId ? { ...item, quantityToAdd: Math.max(0, (typeof item.quantityToAdd === 'string' ? 0 : item.quantityToAdd) - 1) } : item
         ));
     };
 
-    const removeProduct = (productId: string) => {
+    const removeProduct = (productId: string | number) => {
         setSelectedProducts(prev => prev.filter(item => item.product.id !== productId));
     };
 
@@ -78,7 +78,7 @@ export function BulkAddStockDialog({ isOpen, onClose, products: allProducts, onS
         if (selectedProducts.length === 0) return;
 
         const updates = selectedProducts.map(item => ({
-            productId: item.product.id,
+            productId: String(item.product.id),
             quantityToAdd: typeof item.quantityToAdd === 'string' ? (parseInt(item.quantityToAdd) || 0) : item.quantityToAdd
         })).filter(u => u.quantityToAdd > 0);
 

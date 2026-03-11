@@ -254,7 +254,7 @@ export function AddProductDialog({ isOpen, onClose, onSuccess, simpleMode = fals
                   <SelectContent>
                     <SelectItem value="none">No Category</SelectItem>
                     {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                      <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

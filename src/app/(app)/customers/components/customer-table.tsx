@@ -199,7 +199,7 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
                       </Badge>
                       <Switch
                         checked={customer.isActive !== false}
-                        onCheckedChange={() => handleToggleStatus(customer.id, customer.isActive !== false)}
+                        onCheckedChange={() => handleToggleStatus(String(customer.id), customer.isActive !== false)}
                         className="scale-75 data-[state=checked]:bg-green-600"
                       />
                     </div>

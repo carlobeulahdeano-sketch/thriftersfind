@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import OrderTable from "./components/order-table";
 import { getOrders } from "./actions";
 import { getCustomers } from "../customers/actions";
@@ -23,8 +23,32 @@ export default function OrdersPage() {
   const [isAuthorized, setIsAuthorized] = useState(true);
   const [hasCheckedPermission, setHasCheckedPermission] = useState(false);
 
+  const fetchAllData = useCallback(async (isInitial = false) => {
+    try {
+      const [ordersData, customersData, productsData, stationsData, batchesData] = await Promise.all([
+        getOrders(),
+        getCustomers(),
+        getProducts(),
+        getStations(),
+        getBatches(),
+      ]);
+      setOrders(ordersData);
+      setCustomers(customersData);
+      setProducts(productsData);
+      setStations(stationsData);
+      setBatches(batchesData.batches);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      if (isInitial) {
+        setHasCheckedPermission(true);
+        setIsLoading(false);
+      }
+    }
+  }, []);
+
   useEffect(() => {
-    async function fetchData() {
+    async function init() {
       try {
         const response = await fetch('/api/auth/me');
         if (!response.ok) {
@@ -34,30 +58,20 @@ export default function OrdersPage() {
 
         if (!user?.permissions?.orders) {
           setIsAuthorized(false);
+          setHasCheckedPermission(true);
+          setIsLoading(false);
           return;
         }
 
-        const [ordersData, customersData, productsData, stationsData, batchesData] = await Promise.all([
-          getOrders(),
-          getCustomers(),
-          getProducts(),
-          getStations(),
-          getBatches(),
-        ]);
-        setOrders(ordersData);
-        setCustomers(customersData);
-        setProducts(productsData);
-        setStations(stationsData);
-        setBatches(batchesData.batches);
+        await fetchAllData(true);
       } catch (error) {
         console.error("Error fetching data:", error);
-      } finally {
         setHasCheckedPermission(true);
         setIsLoading(false);
       }
     }
-    fetchData();
-  }, []);
+    init();
+  }, [fetchAllData]);
 
   if (!hasCheckedPermission || isLoading) {
     return (
@@ -104,6 +118,7 @@ export default function OrdersPage() {
             products={products}
             stations={stations}
             batches={batches}
+            onRefresh={fetchAllData}
           />
         </TabsContent>
         <TabsContent value="recent-sales">

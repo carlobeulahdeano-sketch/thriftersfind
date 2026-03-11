@@ -195,7 +195,7 @@ export function ViewHeldOrdersDialog({
                                                 <TableCell className="px-6">
                                                     <div className="flex flex-col">
                                                         <span className="font-semibold text-primary">{order.customerName}</span>
-                                                        <span className="text-[10px] text-muted-foreground">ID: {order.id.slice(0, 8)}</span>
+                                                        <span className="text-[10px] text-muted-foreground">ID: {String(order.id).slice(0, 8)}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-sm">

@@ -61,7 +61,7 @@ export function StockAdjustmentDialog({
                 return;
             }
 
-            const result = await adjustWarehouseStock(product.id, adjustment);
+            const result = await adjustWarehouseStock(String(product.id), adjustment);
 
             if (result.success) {
                 toast({

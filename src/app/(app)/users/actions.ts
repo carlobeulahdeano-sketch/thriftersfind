@@ -132,6 +132,17 @@ export async function createUser(userData: {
     }
   }
 
+  // Verify Branch exists if provided
+  let branchConnect = undefined;
+  if (userData.branchId && userData.branchId !== 'none') {
+    const branchIdNum = Number(userData.branchId);
+    const branchExists = await (prisma as any).branch.findUnique({ where: { id: branchIdNum } });
+    if (!branchExists) {
+      return { user: null, error: "The selected branch does not exist in the database." };
+    }
+    branchConnect = { connect: { id: branchIdNum } };
+  }
+
   // Create user
   // We set `role` string AND `role_rel` relation.
   const newUser = await prisma.user.create({
@@ -141,7 +152,7 @@ export async function createUser(userData: {
       password: hashedPassword,
       role: userData.role, // Set the legacy string field
       role_rel: roleConnect, // Connect the relation
-      branch: userData.branchId && userData.branchId !== 'none' ? { connect: { id: userData.branchId } } : undefined,
+      branch: branchConnect,
       permissions: userData.permissions || undefined,
     } as any,
     include: {
@@ -162,7 +173,7 @@ export async function createUser(userData: {
           name: currentUser.name,
           role: currentUser.role?.name || 'Unknown'
         },
-        targetId: newUser.id,
+        targetId: String(newUser.id),
         targetType: 'USER',
         newData: {
           name: newUser.name,
@@ -249,7 +260,7 @@ export async function updateUser(
 
   // Check if user exists
   const existingUser = await prisma.user.findUnique({
-    where: { id },
+    where: { id: Number(id) },
     include: {
       role_rel: true,
       branch: true
@@ -264,7 +275,7 @@ export async function updateUser(
   const emailCheck = await prisma.user.findFirst({
     where: {
       email: userData.email,
-      id: { not: id }
+      id: { not: Number(id) }
     }
   });
 
@@ -274,9 +285,13 @@ export async function updateUser(
 
   // Find Role connection logic
   let roleConnect = undefined;
-  // If roleId is provided, use it directly (preferred)
   if (userData.roleId && userData.roleId !== 'none') {
-    roleConnect = { connect: { id: userData.roleId } };
+    const roleIdNum = Number(userData.roleId);
+    const roleRecord = await (prisma as any).role.findUnique({ where: { id: roleIdNum } });
+    if (!roleRecord) {
+      return { user: null, error: "The selected role does not exist in the database." };
+    }
+    roleConnect = { connect: { id: roleIdNum } };
   }
   // Fallback to finding by name if role string is provided (legacy support)
   else if (userData.role) {
@@ -298,7 +313,12 @@ export async function updateUser(
   };
 
   if (userData.branchId && userData.branchId !== 'none') {
-    updateData.branch = { connect: { id: userData.branchId } };
+    const branchIdNum = Number(userData.branchId);
+    const branchExists = await (prisma as any).branch.findUnique({ where: { id: branchIdNum } });
+    if (!branchExists) {
+      return { user: null, error: "The selected branch does not exist in the database." };
+    }
+    updateData.branch = { connect: { id: branchIdNum } };
   } else if (userData.branchId === 'none' || userData.branchId === null) {
     updateData.branch = { disconnect: true };
   }
@@ -319,7 +339,7 @@ export async function updateUser(
 
   // Update user
   const updatedUser = await prisma.user.update({
-    where: { id },
+    where: { id: Number(id) },
     data: updateData,
     include: {
       role_rel: true,
@@ -355,7 +375,7 @@ export async function updateUser(
           name: currentUser.name,
           role: currentUser.role?.name || 'Unknown'
         },
-        targetId: updatedUser.id,
+        targetId: String(updatedUser.id),
         targetType: 'USER',
         previousData: previousData,
         newData: newData,
@@ -401,7 +421,7 @@ export async function updateUser(
   };
 }
 
-export async function deleteUser(id: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteUser(id: string | number): Promise<{ success: boolean; error?: string }> {
   try {
     // 1. Authentication & Permission Check
     const currentUser = await getCurrentUser();
@@ -411,7 +431,7 @@ export async function deleteUser(id: string): Promise<{ success: boolean; error?
     if (!hasPermission) return { success: false, error: "Permission denied." };
 
     const existingUser = await prisma.user.findUnique({
-      where: { id }
+      where: { id: Number(id) }
     });
 
     if (!existingUser) {
@@ -437,8 +457,8 @@ export async function deleteUser(id: string): Promise<{ success: boolean; error?
       await prisma.message.deleteMany({
         where: {
           OR: [
-            { senderId: id },
-            { receiverId: id }
+            { senderId: Number(id) },
+            { receiverId: Number(id) }
           ]
         }
       });
@@ -452,7 +472,7 @@ export async function deleteUser(id: string): Promise<{ success: boolean; error?
     // 2. Anonymize inventory logs (set userId to null)
     try {
       await prisma.inventoryLog.updateMany({
-        where: { userId: id },
+        where: { userId: Number(id) },
         data: { userId: null }
       });
     } catch (logError) {
@@ -460,7 +480,7 @@ export async function deleteUser(id: string): Promise<{ success: boolean; error?
     }
 
     await prisma.user.delete({
-      where: { id }
+      where: { id: Number(id) }
     });
 
     // 2. Admin Logging
@@ -475,7 +495,7 @@ export async function deleteUser(id: string): Promise<{ success: boolean; error?
             name: currentUser.name,
             role: currentUser.role?.name || 'Unknown'
           },
-          targetId: id,
+          targetId: String(id),
           targetType: 'USER',
           previousData: {
             name: existingUser.name,
@@ -494,7 +514,7 @@ export async function deleteUser(id: string): Promise<{ success: boolean; error?
   }
 }
 
-export async function toggleUserStatus(id: string, isActive: boolean): Promise<{ success: boolean; error?: string }> {
+export async function toggleUserStatus(id: string | number, isActive: boolean): Promise<{ success: boolean; error?: string }> {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) return { success: false, error: "Unauthorized." };
@@ -508,7 +528,7 @@ export async function toggleUserStatus(id: string, isActive: boolean): Promise<{
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id },
+      where: { id: Number(id) },
       data: { isActive } as any
     });
 
@@ -523,7 +543,7 @@ export async function toggleUserStatus(id: string, isActive: boolean): Promise<{
             name: currentUser.name,
             role: currentUser.role?.name || 'Unknown'
           },
-          targetId: id,
+          targetId: String(id),
           targetType: 'USER',
           newData: { isActive },
         }

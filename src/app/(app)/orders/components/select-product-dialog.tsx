@@ -94,25 +94,25 @@ export function SelectProductDialog({ isOpen, onClose, onProductSelect, products
     });
   };
 
-  const updateQuantity = (productId: string, quantity: number | string) => {
+  const updateQuantity = (productId: string | number, quantity: number | string) => {
     setSelectedProducts(prev => prev.map(item =>
       item.product.id === productId ? { ...item, quantity: quantity === "" ? "" : Math.max(0, parseInt(quantity.toString()) || 0) } : item
     ));
   };
 
-  const incrementQuantity = (productId: string) => {
+  const incrementQuantity = (productId: string | number) => {
     setSelectedProducts(prev => prev.map(item =>
       item.product.id === productId ? { ...item, quantity: (typeof item.quantity === 'string' ? 0 : item.quantity) + 1 } : item
     ));
   };
 
-  const decrementQuantity = (productId: string) => {
+  const decrementQuantity = (productId: string | number) => {
     setSelectedProducts(prev => prev.map(item =>
       item.product.id === productId ? { ...item, quantity: Math.max(0, (typeof item.quantity === 'string' ? 0 : item.quantity) - 1) } : item
     ));
   };
 
-  const removeProduct = (productId: string) => {
+  const removeProduct = (productId: string | number) => {
     setSelectedProducts(prev => prev.filter(item => item.product.id !== productId));
   };
 

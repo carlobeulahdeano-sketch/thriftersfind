@@ -95,7 +95,7 @@ export function EditWarehouseDialog({ isOpen, onClose, onSuccess, product }: Edi
                 imageDataUrl = null;
             }
 
-            const result = await updateWarehouseProduct(product.id, {
+            const result = await updateWarehouseProduct(String(product.id), {
                 productName,
                 sku,
                 manufacture_date: manufacture_date || null,

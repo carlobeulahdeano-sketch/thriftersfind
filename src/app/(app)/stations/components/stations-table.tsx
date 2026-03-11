@@ -254,7 +254,7 @@ export default function StationsTable({ stations: initialStations, onRefresh }: 
                                                         <AlertDialogFooter>
                                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                                                             <AlertDialogAction
-                                                                onClick={() => handleDelete(station.id)}
+                                                                onClick={() => handleDelete(String(station.id))}
                                                                 className="bg-destructive hover:bg-destructive/90"
                                                                 disabled={isDeleting}
                                                             >

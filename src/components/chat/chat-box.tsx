@@ -87,7 +87,7 @@ export function ChatBox({ user, currentUser, onClose, index = 0 }: ChatBoxProps)
             try {
                 // Using statically imported getMessages and markMessagesAsRead
 
-                const result = await getMessages(user.id);
+                const result = await getMessages(String(user.id));
                 if (isMounted) {
                     if (result.success && Array.isArray(result.data)) {
                         const newMsgs = result.data as unknown as Message[];
@@ -96,7 +96,7 @@ export function ChatBox({ user, currentUser, onClose, index = 0 }: ChatBoxProps)
                         const hasUnread = newMsgs.some(m => m.senderId === user.id && !(m as any).read);
 
                         if (!isMinimizedRef.current && hasUnread) {
-                            markMessagesAsRead(user.id).catch(err => console.error("Failed to mark read", err));
+                            markMessagesAsRead(String(user.id)).catch(err => console.error("Failed to mark read", err));
                         }
 
                         setMessages((prev) => {
@@ -137,7 +137,8 @@ export function ChatBox({ user, currentUser, onClose, index = 0 }: ChatBoxProps)
 
     // SSE: immediately refresh messages when a new-message event involves this chat
     const handleChatEvent = useCallback((event: ChatEventData) => {
-        if (event.senderId === user.id || (currentUser && event.senderId === currentUser.id)) {
+        // Use String() coercion to handle number/string type mismatch from Prisma Int IDs
+        if (String(event.senderId) === String(user.id) || (currentUser && String(event.senderId) === String(currentUser.id))) {
             fetchMessagesRef.current();
         }
     }, [user.id, currentUser]);
@@ -164,7 +165,7 @@ export function ChatBox({ user, currentUser, onClose, index = 0 }: ChatBoxProps)
 
         setSending(true);
         try {
-            const result = await sendMessage(user.id, newMessage);
+            const result = await sendMessage(String(user.id), newMessage);
             if (result.success && result.message) {
                 const newMsg = result.message as unknown as Message;
                 setMessages((prev) => [...prev, newMsg]);
@@ -232,7 +233,7 @@ export function ChatBox({ user, currentUser, onClose, index = 0 }: ChatBoxProps)
         setSending(true);
         try {
             // Using statically imported sendMessage
-            const result = await sendMessage(user.id, productMessage);
+            const result = await sendMessage(String(user.id), productMessage);
             if (result.success && result.message) {
                 const newMsg = result.message as unknown as Message;
                 setMessages((prev) => [...prev, newMsg]);
@@ -286,7 +287,7 @@ export function ChatBox({ user, currentUser, onClose, index = 0 }: ChatBoxProps)
                             setIsMinimized(false);
                             // Mark messages as read when expanding
                             if (unreadCount > 0) {
-                                markMessagesAsRead(user.id).catch(err => console.error("Failed to mark read", err));
+                                markMessagesAsRead(String(user.id)).catch(err => console.error("Failed to mark read", err));
                                 // Optimistically update local messages read state so badge goes away
                                 setMessages(prev => prev.map(m => m.senderId === user.id ? { ...m, read: true } : m));
                             }
@@ -676,7 +677,7 @@ function ProductSelectorModal({
                                         }
                                     }
 
-                                    const isSelected = selectedProductIds.has(product.id);
+                                    const isSelected = selectedProductIds.has(String(product.id));
 
                                     return (
                                         <div
@@ -824,7 +825,7 @@ function ProductSelectorModal({
                 <BulkTransferModal
                     isOpen={isBulkTransferModalOpen}
                     onClose={() => setIsBulkTransferModalOpen(false)}
-                    selectedProducts={products.filter(p => selectedProductIds.has(p.id))}
+                    selectedProducts={products.filter(p => selectedProductIds.has(String(p.id)))}
                     onSuccess={handleBulkTransferSuccess}
                     targetUser={targetUser}
                 />
@@ -1169,7 +1170,7 @@ function BulkTransferModal({
                                                 min="1"
                                                 max={product.quantity}
                                                 value={quantities[product.id] || ""}
-                                                onChange={(e) => handleQuantityChange(product.id, e.target.value)}
+                                                onChange={(e) => handleQuantityChange(String(product.id), e.target.value)}
                                                 className="h-8 text-sm"
                                             />
                                         </div>

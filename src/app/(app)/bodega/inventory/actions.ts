@@ -12,7 +12,7 @@ export async function getBodegaProducts(): Promise<Product[]> {
             return [];
         }
 
-        const isSuperAdmin = user.role?.name === 'Super Admin';
+        const isSuperAdmin = user.role?.name?.toLowerCase() === 'super admin';
 
         // Only Super Admin can access bodega inventory
         if (!isSuperAdmin) {
@@ -47,7 +47,7 @@ export async function createBodegaProduct(productData: Omit<Product, 'id' | 'tot
         const user = await getCurrentUser();
 
         // Only Super Admin can create bodega products
-        if (user?.role?.name !== 'Super Admin') {
+        if (user?.role?.name?.toLowerCase() !== 'super admin') {
             throw new Error("Unauthorized: Only Super Admin can create bodega products");
         }
 
@@ -70,24 +70,23 @@ export async function createBodegaProduct(productData: Omit<Product, 'id' | 'tot
         const branch2 = 0;
         const warehouse = 0;
         const totalStock = (productData.quantity || 0);
-        const id = `c${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
 
-        // Use raw query to bypass outdated Prisma client validation for batchId and createdBy
-        await prisma.$executeRawUnsafe(
-            `INSERT INTO products (id, name, sku, description, quantity, alertStock, cost, retailPrice, images, createdBy, createdAt, updatedAt) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))`,
-            id,
-            productData.name,
-            productData.sku,
-            productData.description || null,
-            productData.quantity || 0,
-            productData.alertStock || 0,
-            productData.cost || 0,
-            productData.retailPrice || 0,
-            JSON.stringify(productData.images || []),
+        // Use Prisma client to create the product
+        const newProduct = await prisma.product.create({
+            data: {
+                name: productData.name,
+                sku: productData.sku,
+                description: productData.description || null,
+                quantity: productData.quantity || 0,
+                alertStock: productData.alertStock || 0,
+                cost: productData.cost || 0,
+                retailPrice: productData.retailPrice || 0,
+                images: productData.images ? JSON.parse(JSON.stringify(productData.images)) : [],
+                createdBy: createdBy as any,
+            } as any
+        });
 
-            JSON.stringify(createdBy)
-        );
+        const id = newProduct.id.toString();
 
         return {
             id,
@@ -112,12 +111,12 @@ export async function createBodegaProduct(productData: Omit<Product, 'id' | 'tot
     }
 }
 
-export async function updateBodegaProduct(id: string, productData: Partial<Omit<Product, 'id' | 'totalStock'>>): Promise<Product> {
+export async function updateBodegaProduct(id: string | number, productData: Partial<Omit<Product, 'id' | 'totalStock'>>): Promise<Product> {
     try {
         const user = await getCurrentUser();
 
         // Only Super Admin can update bodega products
-        if (user?.role?.name !== 'Super Admin') {
+        if (user?.role?.name?.toLowerCase() !== 'super admin') {
             throw new Error("Unauthorized: Only Super Admin can update bodega products");
         }
 
@@ -126,7 +125,7 @@ export async function updateBodegaProduct(id: string, productData: Partial<Omit<
             const existingProduct = await prisma.product.findFirst({
                 where: {
                     sku: productData.sku,
-                    id: { not: id }
+                    id: { not: Number(id) }
                 }
             });
 
@@ -137,7 +136,7 @@ export async function updateBodegaProduct(id: string, productData: Partial<Omit<
 
         // Get current product to calculate new totalStock if quantity changes
         const currentProduct = await prisma.product.findUnique({
-            where: { id }
+            where: { id: Number(id) as any }
         });
 
         if (!currentProduct) {
@@ -162,11 +161,11 @@ export async function updateBodegaProduct(id: string, productData: Partial<Omit<
 
         if (updates.length > 0) {
             const sql = `UPDATE products SET ${updates.join(", ")} WHERE id = ?`;
-            values.push(id);
+            values.push(Number(id));
             await prisma.$executeRawUnsafe(sql, ...values);
         }
 
-        const updatedProduct = await prisma.product.findUnique({ where: { id } });
+        const updatedProduct = await prisma.product.findUnique({ where: { id: Number(id) as any } });
 
         if (!updatedProduct) throw new Error("Failed to retrieve updated product");
 
@@ -197,12 +196,12 @@ export async function deleteBodegaProduct(id: string): Promise<void> {
         const user = await getCurrentUser();
 
         // Only Super Admin can delete bodega products
-        if (user?.role?.name !== 'Super Admin') {
+        if (user?.role?.name?.toLowerCase() !== 'super admin') {
             throw new Error("Unauthorized: Only Super Admin can delete bodega products");
         }
 
         await prisma.product.delete({
-            where: { id },
+            where: { id: Number(id) as any },
         });
     } catch (error) {
         throw new Error(`Failed to delete bodega product: ${error instanceof Error ? error.message : 'Unknown error'}`);

@@ -87,8 +87,8 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated }: EditUse
     if (user) {
       setName(user.name);
       setEmail(user.email);
-      setRoleId(user.roleId || "");
-      setBranchId(user.branchId || "");
+      setRoleId(user.roleId ? String(user.roleId) : "");
+      setBranchId(user.branchId ? String(user.branchId) : "");
       setPermissions({
         ...DEFAULT_PERMISSIONS,
         ...(user.permissions || {})
@@ -165,7 +165,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated }: EditUse
 
     setIsLoading(true);
     try {
-      const result = await updateUser(user.id, {
+      const result = await updateUser(String(user.id), {
         name,
         email,
         password: password || undefined,
@@ -314,7 +314,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated }: EditUse
                         <SelectContent>
                           <SelectItem value="none">No Role</SelectItem>
                           {roles.map((role) => (
-                            <SelectItem key={role.id} value={role.id}>
+                            <SelectItem key={role.id} value={String(role.id)}>
                               {role.name}
                             </SelectItem>
                           ))}
@@ -330,7 +330,7 @@ export function EditUserDialog({ isOpen, onClose, user, onUserUpdated }: EditUse
                         <SelectContent>
                           <SelectItem value="none">No Branch</SelectItem>
                           {branches.map((branch) => (
-                            <SelectItem key={branch.id} value={branch.id}>
+                            <SelectItem key={branch.id} value={String(branch.id)}>
                               {branch.name}
                             </SelectItem>
                           ))}

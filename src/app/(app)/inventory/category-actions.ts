@@ -88,7 +88,7 @@ export async function createCategory(data: CategoryData) {
     }
 }
 
-export async function updateCategory(id: string, data: CategoryData) {
+export async function updateCategory(id: string | number, data: CategoryData) {
     try {
         const user = await getCurrentUser();
         if (!user || !user.permissions?.inventory) {
@@ -99,7 +99,7 @@ export async function updateCategory(id: string, data: CategoryData) {
         const existing = await prisma.productCategory.findFirst({
             where: {
                 name: data.name.trim(),
-                NOT: { id },
+                NOT: { id: Number(id) },
             },
         });
         if (existing) {
@@ -107,7 +107,7 @@ export async function updateCategory(id: string, data: CategoryData) {
         }
 
         const category = await prisma.productCategory.update({
-            where: { id },
+            where: { id: Number(id) },
             data: {
                 name: data.name.trim(),
                 description: data.description?.trim() || null,
@@ -134,7 +134,7 @@ export async function updateCategory(id: string, data: CategoryData) {
     }
 }
 
-export async function deleteCategory(id: string) {
+export async function deleteCategory(id: string | number) {
     try {
         const user = await getCurrentUser();
         if (!user || !user.permissions?.inventory) {
@@ -143,7 +143,7 @@ export async function deleteCategory(id: string) {
 
         // Check if category has products
         const category = await prisma.productCategory.findUnique({
-            where: { id },
+            where: { id: Number(id) },
             include: { _count: { select: { products: true } } },
         });
 
@@ -157,7 +157,7 @@ export async function deleteCategory(id: string) {
             );
         }
 
-        await prisma.productCategory.delete({ where: { id } });
+        await prisma.productCategory.delete({ where: { id: Number(id) } });
 
         revalidatePath("/inventory");
     } catch (error) {

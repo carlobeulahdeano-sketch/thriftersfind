@@ -206,7 +206,7 @@ export default function BodegaInventoryTable({ products: initialProducts }: { pr
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(product.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                                    <AlertDialogAction onClick={() => handleDelete(String(product.id))} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
                                         </AlertDialog>

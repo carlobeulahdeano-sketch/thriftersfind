@@ -75,7 +75,7 @@ export function EditCustomerDialog({
         },
       };
 
-      await updateCustomer(customer.id, updatedData);
+      await updateCustomer(String(customer.id), updatedData);
 
       toast({
         title: "Customer Updated",

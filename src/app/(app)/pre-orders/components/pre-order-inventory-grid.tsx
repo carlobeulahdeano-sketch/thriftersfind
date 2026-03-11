@@ -19,6 +19,13 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface PreOrderItem {
     id: string;
@@ -44,21 +51,35 @@ interface PreOrderInventoryGridProps {
 export default function PreOrderInventoryGrid({ products, onRefresh }: PreOrderInventoryGridProps) {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = React.useState("");
+    const [selectedBatch, setSelectedBatch] = React.useState<string>("all");
     const [currentPage, setCurrentPage] = React.useState(1);
     const itemsPerPage = 10;
 
     React.useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm]);
+    }, [searchTerm, selectedBatch]);
+
+    const uniqueBatches = React.useMemo(() => {
+        const batches = new Set<string>();
+        products.forEach(item => {
+            if (item.preOrder.batch?.batchName) {
+                batches.add(item.preOrder.batch.batchName);
+            }
+        });
+        return Array.from(batches).sort();
+    }, [products]);
 
     const filteredItems = React.useMemo(() => {
         return products.filter((item) => {
             const matchesSearch =
                 item.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.preOrder.customerName.toLowerCase().includes(searchTerm.toLowerCase());
-            return matchesSearch;
+
+            const matchesBatch = selectedBatch === "all" || item.preOrder.batch?.batchName === selectedBatch;
+
+            return matchesSearch && matchesBatch;
         });
-    }, [products, searchTerm]);
+    }, [products, searchTerm, selectedBatch]);
 
     const paginatedItems = React.useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
@@ -71,16 +92,31 @@ export default function PreOrderInventoryGrid({ products, onRefresh }: PreOrderI
         <div className="space-y-6">
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-card p-4 rounded-xl shadow-sm border border-t-4 border-t-pink-500/50">
-                <div className="relative w-full sm:w-96">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        className="pl-9 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-foreground"
-                        placeholder="Search items or customers..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                    <div className="relative w-full sm:w-96">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            className="pl-9 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-foreground"
+                            placeholder="Search items or customers..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <Select value={selectedBatch} onValueChange={setSelectedBatch}>
+                        <SelectTrigger className="w-full sm:w-[180px] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-foreground">
+                            <SelectValue placeholder="All Batches" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Batches</SelectItem>
+                            {uniqueBatches.map((batch) => (
+                                <SelectItem key={batch} value={batch}>
+                                    {batch}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground w-full sm:w-auto text-left sm:text-right">
                     Total Items: <span className="font-medium text-foreground">{filteredItems.length}</span>
                 </div>
             </div>

@@ -41,7 +41,7 @@ export async function getWarehouseProducts(id?: string): Promise<WarehouseProduc
 export async function getWarehouseProduct(id: string): Promise<WarehouseProduct | null> {
     try {
         const product = await prisma.warehouseProduct.findUnique({
-            where: { id }
+            where: { id: Number(id) }
         });
 
         if (!product) return null;
@@ -94,7 +94,7 @@ export async function createWarehouseProduct(data: {
                 image: data.image,
                 location: data.location,
                 retailPrice: data.retailPrice,
-                batchId: data.batchId || null,
+                batchId: data.batchId ? Number(data.batchId) : null,
             },
         });
 
@@ -123,7 +123,7 @@ export async function updateWarehouseProduct(
 ): Promise<{ success: boolean; error?: string }> {
     try {
         await prisma.warehouseProduct.update({
-            where: { id },
+            where: { id: Number(id) },
             data: {
                 ...(data.productName !== undefined && { productName: data.productName }),
                 ...(data.sku !== undefined && { sku: data.sku }),
@@ -133,7 +133,7 @@ export async function updateWarehouseProduct(
                 ...(data.image !== undefined && { image: data.image }),
                 ...(data.location !== undefined && { location: data.location }),
                 ...(data.retailPrice !== undefined && { retailPrice: data.retailPrice }),
-                ...(data.batchId !== undefined && { batchId: data.batchId }),
+                ...(data.batchId !== undefined && { batchId: data.batchId ? Number(data.batchId) : null }),
                 ...(data.alertStock !== undefined && { alertStock: data.alertStock }),
             },
         });
@@ -141,7 +141,7 @@ export async function updateWarehouseProduct(
         // Check for low stock notification
         if ((data.quantity !== undefined || data.alertStock !== undefined)) {
             const updatedProduct = await prisma.warehouseProduct.findUnique({
-                where: { id },
+                where: { id: Number(id) },
                 select: { productName: true, sku: true, quantity: true, alertStock: true }
             });
 
@@ -163,10 +163,10 @@ export async function updateWarehouseProduct(
     }
 }
 
-export async function deleteWarehouseProduct(id: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteWarehouseProduct(id: string | number): Promise<{ success: boolean; error?: string }> {
     try {
         await prisma.warehouseProduct.delete({
-            where: { id },
+            where: { id: Number(id) },
         });
 
         revalidatePath("/warehouses");
@@ -183,7 +183,7 @@ export async function adjustWarehouseStock(
 ): Promise<{ success: boolean; error?: string }> {
     try {
         await prisma.warehouseProduct.update({
-            where: { id },
+            where: { id: Number(id) },
             data: {
                 quantity: {
                     increment: adjustment,
@@ -193,7 +193,7 @@ export async function adjustWarehouseStock(
 
         // Check for low stock notification
         const updatedProduct = await prisma.warehouseProduct.findUnique({
-            where: { id },
+            where: { id: Number(id) },
             select: { productName: true, sku: true, quantity: true, alertStock: true }
         });
 
@@ -231,7 +231,7 @@ export async function bulkAddWarehouseStock(
         await prisma.$transaction(async (tx) => {
             for (const item of items) {
                 const product = await tx.warehouseProduct.findUnique({
-                    where: { id: item.id },
+                    where: { id: Number(item.id) },
                     select: { productName: true, sku: true, quantity: true, alertStock: true }
                 });
 
@@ -240,7 +240,7 @@ export async function bulkAddWarehouseStock(
                 }
 
                 await tx.warehouseProduct.update({
-                    where: { id: item.id },
+                    where: { id: Number(item.id) },
                     data: {
                         quantity: {
                             increment: item.quantityToAdd,

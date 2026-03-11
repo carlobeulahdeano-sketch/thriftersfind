@@ -30,7 +30,7 @@ export function SendSmsDialog({ isOpen, onClose, order }: SendSmsDialogProps) {
     useEffect(() => {
         if (isOpen && order) {
             // Pre-fill or reset message when dialog opens
-            setMessage(`Hi ${order.customerName}, regarding your order #${order.id.substring(0, 7)}...`);
+            setMessage(`Hi ${order.customerName}, regarding your order #${String(order.id).substring(0, 7)}...`);
         }
     }, [isOpen, order]);
 

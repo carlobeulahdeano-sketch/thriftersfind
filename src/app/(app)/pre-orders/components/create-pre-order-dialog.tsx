@@ -58,7 +58,7 @@ const paymentMethods: PaymentMethod[] = ["COD", "GCash", "Bank Transfer"];
 
 interface OrderItem {
     id: string; // temp id
-    productId?: string;
+    productId?: string | number;
     name: string;
     quantity: number | string;
     price: number | string;
@@ -129,7 +129,7 @@ export function CreatePreOrderDialog({
 
     const handleBatchCreated = (batch: Batch) => {
         setAvailableBatches(prev => [batch, ...prev]);
-        setBatchId(batch.id);
+        setBatchId(String(batch.id));
         setCreateBatchOpen(false);
     };
 
@@ -253,7 +253,7 @@ export function CreatePreOrderDialog({
             }
 
             const itemsPayload = selectedItems.map(item => ({
-                productId: item.productId,
+                productId: item.productId ? String(item.productId) : undefined,
                 productName: item.name,
                 quantity: typeof item.quantity === 'string' ? parseFloat(item.quantity) || 0 : item.quantity,
                 pricePerUnit: typeof item.price === 'string' ? parseFloat(item.price) || 0 : item.price,
@@ -287,12 +287,12 @@ export function CreatePreOrderDialog({
                 paymentMethod,
                 paymentStatus: finalPaymentStatus,
                 depositAmount: finalDeposit,
-                customerId: finalCustomerId!,
+                customerId: String(finalCustomerId!),
                 customerEmail: finalCustomerEmail,
                 remarks: '',
                 items: itemsPayload,
                 batchId: batchId,
-                productId: selectedItems[0]?.productId,
+                productId: selectedItems[0]?.productId ? String(selectedItems[0].productId) : undefined,
             });
 
             toast({
@@ -660,7 +660,7 @@ export function CreatePreOrderDialog({
                                                     <>
                                                         <SelectItem value="none">No Batch</SelectItem>
                                                         {availableBatches.map((batch) => (
-                                                            <SelectItem key={batch.id} value={batch.id}>
+                                                            <SelectItem key={batch.id} value={String(batch.id)}>
                                                                 {batch.batchName} ({batch.status})
                                                             </SelectItem>
                                                         ))}

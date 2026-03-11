@@ -63,7 +63,7 @@ export function EditWarehouseProductDialog({ isOpen, onClose, product, onSuccess
 
         setIsSubmitting(true);
         try {
-            const result = await updateWarehouseProduct(product.id, {
+            const result = await updateWarehouseProduct(String(product.id), {
                 productName,
                 sku,
                 quantity: parseInt(quantity),

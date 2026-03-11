@@ -73,7 +73,8 @@ export function MessengerNav({ currentUser }: MessengerNavProps) {
     const handleChatEvent = useCallback((event: ChatEventData) => {
         if (!currentUser) return;
         // Only auto-open for messages from OTHER users (not our own sends)
-        if (event.senderId === currentUser.id) return;
+        // Use String() coercion to handle number/string type mismatch from Prisma Int IDs
+        if (String(event.senderId) === String(currentUser.id)) return;
 
         // Update unread count immediately
         setUnreadCounts(prev => ({
@@ -84,17 +85,17 @@ export function MessengerNav({ currentUser }: MessengerNavProps) {
         // Auto-open the chat box for the sender
         setActiveChats(prev => {
             // If already chatting with this user, keep it (chat-box will pick up the event)
-            if (prev.find(u => u.id === event.senderId)) return prev;
+            if (prev.find(u => String(u.id) === String(event.senderId))) return prev;
 
             // Find the sender in our users list
-            const sender = users.find(u => u.id === event.senderId);
+            const sender = users.find(u => String(u.id) === String(event.senderId));
             if (sender) {
                 return [...prev, sender];
             }
 
             // If sender not in the list yet, create a minimal user object
             return [...prev, {
-                id: event.senderId,
+                id: String(event.senderId),
                 name: event.senderName,
                 email: "",
                 password: "",
@@ -124,7 +125,7 @@ export function MessengerNav({ currentUser }: MessengerNavProps) {
 
     const handleUserSelect = (user: User) => {
         setActiveChats(prev => {
-            if (prev.find(u => u.id === user.id)) return prev;
+            if (prev.find(u => String(u.id) === String(user.id))) return prev;
             return [...prev, user];
         });
         // Optimistically clear unread count for this user
@@ -161,7 +162,7 @@ export function MessengerNav({ currentUser }: MessengerNavProps) {
                             No users found.
                         </div>
                     ) : (
-                        <div className="max-h-[300px] overflow-y-auto">
+                        <div className="max-h-[480px] overflow-y-auto">
                             {users.map((user) => (
                                 <DropdownMenuItem
                                     key={user.id}

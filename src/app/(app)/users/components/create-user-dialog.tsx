@@ -296,7 +296,7 @@ export function CreateUserDialog({ isOpen, onClose, onUserAdded }: CreateUserDia
                     <SelectContent>
                       <SelectItem value="none">No Branch</SelectItem>
                       {branches.map((branch) => (
-                        <SelectItem key={branch.id} value={branch.id}>
+                        <SelectItem key={branch.id} value={String(branch.id)}>
                           {branch.name}
                         </SelectItem>
                       ))}
