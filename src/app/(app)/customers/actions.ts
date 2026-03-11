@@ -14,9 +14,7 @@ export async function getCustomers(): Promise<Customer[]> {
   const customers = await prisma.customer.findMany({
     orderBy: { createdAt: 'desc' },
     include: {
-      orders: {
-        orderBy: { createdAt: 'desc' }
-      }
+      orders: true
     }
   });
 
@@ -61,6 +59,7 @@ export async function getCustomers(): Promise<Customer[]> {
     },
     orderHistory: customer.orders
       .filter(order => order.shippingStatus === 'Delivered')
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .map(order => ({
         orderId: order.id,
         date: order.createdAt.toISOString(),
@@ -109,6 +108,7 @@ export async function createCustomer(customerData: Omit<Customer, 'id'>): Promis
         },
         orderHistory: existingByEmail.orders
           .filter(order => order.shippingStatus === 'Delivered')
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
           .map(order => ({
             orderId: order.id,
             date: order.createdAt.toISOString(),
@@ -196,9 +196,7 @@ export async function updateCustomer(
         isActive: customerData.isActive,
       } as any,
       include: {
-        orders: {
-          orderBy: { createdAt: 'desc' }
-        }
+        orders: true
       }
     });
 
@@ -216,6 +214,7 @@ export async function updateCustomer(
       },
       orderHistory: updatedCustomer.orders
         .filter(order => order.shippingStatus === 'Delivered')
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .map(order => ({
           orderId: order.id,
           date: order.createdAt.toISOString(),
@@ -253,9 +252,7 @@ export async function getCustomerOrdersByYear(
   const customer = await prisma.customer.findUnique({
     where: { id: Number(customerId) },
     include: {
-      orders: {
-        orderBy: { createdAt: 'desc' }
-      }
+      orders: true
     }
   });
 
@@ -268,6 +265,9 @@ export async function getCustomerOrdersByYear(
   const filteredOrders = year
     ? baseFilteredOrders.filter(order => order.createdAt.getFullYear() === year)
     : baseFilteredOrders;
+
+  // Ensure orders are sorted by date descending, as we removed orderBy from DB query
+  filteredOrders.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   // Group orders by year
   const ordersByYear = filteredOrders.reduce((acc, order) => {

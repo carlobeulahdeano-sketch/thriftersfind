@@ -1106,3 +1106,684 @@
 2026-03-11 10:11:43: 
 2026-03-11 10:11:43: Error occurred during query execution:
 2026-03-11 10:11:43: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 11:30:15: ▲ Next.js 16.1.6
+2026-03-11 11:30:15: - Local:         http://localhost:3000
+2026-03-11 11:30:15: - Network:       http://100.101.241.108:3000
+2026-03-11 11:30:15: 
+2026-03-11 11:30:15: ✓ Starting...
+2026-03-11 11:30:16: ✓ Ready in 865ms
+2026-03-11 12:03:41: prisma:error 
+2026-03-11 12:03:41: Invalid `prisma.user.findUnique()` invocation:
+2026-03-11 12:03:41: 
+2026-03-11 12:03:41: 
+2026-03-11 12:03:41: Can't reach database server at `127.0.0.1`:`3306`
+2026-03-11 12:03:41: 
+2026-03-11 12:03:41: Please make sure your database server is running at `127.0.0.1`:`3306`.
+2026-03-11 13:47:11: ▲ Next.js 16.1.6
+2026-03-11 13:47:11: - Local:         http://localhost:3000
+2026-03-11 13:47:11: - Network:       http://100.101.241.108:3000
+2026-03-11 13:47:11: 
+2026-03-11 13:47:11: ✓ Starting...
+2026-03-11 13:47:12: ✓ Ready in 440ms
+2026-03-11 13:47:42: prisma:error 
+2026-03-11 13:47:42: Invalid `prisma.product.findMany()` invocation:
+2026-03-11 13:47:42: 
+2026-03-11 13:47:42: 
+2026-03-11 13:47:42: Error occurred during query execution:
+2026-03-11 13:47:42: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 13:48:07: prisma:error 
+2026-03-11 13:48:07: Invalid `prisma.product.findMany()` invocation:
+2026-03-11 13:48:07: 
+2026-03-11 13:48:07: 
+2026-03-11 13:48:07: Error occurred during query execution:
+2026-03-11 13:48:07: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 13:50:12: prisma:error 
+2026-03-11 13:50:12: Invalid `prisma.product.findMany()` invocation:
+2026-03-11 13:50:12: 
+2026-03-11 13:50:12: 
+2026-03-11 13:50:12: Error occurred during query execution:
+2026-03-11 13:50:12: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 13:51:15: prisma:error 
+2026-03-11 13:51:15: Invalid `prisma.product.findMany()` invocation:
+2026-03-11 13:51:15: 
+2026-03-11 13:51:15: 
+2026-03-11 13:51:15: Error occurred during query execution:
+2026-03-11 13:51:15: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 13:52:14: prisma:error 
+2026-03-11 13:52:14: Invalid `prisma.product.findMany()` invocation:
+2026-03-11 13:52:14: 
+2026-03-11 13:52:14: 
+2026-03-11 13:52:14: Error occurred during query execution:
+2026-03-11 13:52:14: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 13:53:41: ▲ Next.js 16.1.6
+2026-03-11 13:53:41: - Local:         http://localhost:3000
+2026-03-11 13:53:41: - Network:       http://100.101.241.108:3000
+2026-03-11 13:53:41: 
+2026-03-11 13:53:41: ✓ Starting...
+2026-03-11 13:53:41: ✓ Ready in 434ms
+2026-03-11 14:42:21: [transferStock] Initiating transfer for: 2, qty: 1, target: branch1
+2026-03-11 14:42:21: [transferStock] Transferring 1 of shoes nike
+2026-03-11 14:42:21: [transferStock] Updating existing product for branch1: 3
+2026-03-11 14:42:21: prisma:error 
+2026-03-11 14:42:21: Invalid `prisma.inventoryLog.create()` invocation:
+2026-03-11 14:42:21: 
+2026-03-11 14:42:21: {
+2026-03-11 14:42:21:   data: {
+2026-03-11 14:42:21:     action: "TRANSFER",
+2026-03-11 14:42:21:     productId: 3,
+2026-03-11 14:42:21:     warehouseProductId: null,
+2026-03-11 14:42:21:     quantityChange: 1,
+2026-03-11 14:42:21:     previousStock: 210,
+2026-03-11 14:42:21:     newStock: 211,
+2026-03-11 14:42:21:     reason: "Transferred from Warehouse to branch1",
+2026-03-11 14:42:21:     referenceId: 3,
+2026-03-11 14:42:21:                  ~
+2026-03-11 14:42:21:     performedBy: {
+2026-03-11 14:42:21:       uid: 7,
+2026-03-11 14:42:21:       name: "rex dev",
+2026-03-11 14:42:21:       email: "rextechpos@gmail.com"
+2026-03-11 14:42:21:     },
+2026-03-11 14:42:21:     orderId: null,
+2026-03-11 14:42:21:     preOrderId: null,
+2026-03-11 14:42:21:     userId: 7,
+2026-03-11 14:42:21:     branchId: 1
+2026-03-11 14:42:21:   }
+2026-03-11 14:42:21: }
+2026-03-11 14:42:21: 
+2026-03-11 14:42:21: Argument `referenceId`: Invalid value provided. Expected String or Null, provided Int.
+2026-03-11 14:42:21: [transferStock] New warehouse quantity: 189
+2026-03-11 15:09:54: [CustomerUpdate] Updated Customer 4: totalSpent +350
+2026-03-11 15:43:56: prisma:error 
+2026-03-11 15:43:56: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:43:56: 
+2026-03-11 15:43:56: 
+2026-03-11 15:43:56: Error occurred during query execution:
+2026-03-11 15:43:56: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:43:56: prisma:error 
+2026-03-11 15:43:56: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:43:56: 
+2026-03-11 15:43:56: 
+2026-03-11 15:43:56: Error occurred during query execution:
+2026-03-11 15:43:56: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:46:00: prisma:error 
+2026-03-11 15:46:00: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:46:00: 
+2026-03-11 15:46:00: 
+2026-03-11 15:46:00: Error occurred during query execution:
+2026-03-11 15:46:00: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:46:04: prisma:error 
+2026-03-11 15:46:04: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:46:04: 
+2026-03-11 15:46:04: 
+2026-03-11 15:46:04: Error occurred during query execution:
+2026-03-11 15:46:04: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:46:06: prisma:error 
+2026-03-11 15:46:06: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:46:06: 
+2026-03-11 15:46:06: 
+2026-03-11 15:46:06: Error occurred during query execution:
+2026-03-11 15:46:06: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:46:10: prisma:error 
+2026-03-11 15:46:10: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:46:10: 
+2026-03-11 15:46:10: 
+2026-03-11 15:46:10: Error occurred during query execution:
+2026-03-11 15:46:10: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:46:11: prisma:error 
+2026-03-11 15:46:11: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:46:11: 
+2026-03-11 15:46:11: 
+2026-03-11 15:46:11: Error occurred during query execution:
+2026-03-11 15:46:11: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:46:21: prisma:error 
+2026-03-11 15:46:21: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:46:21: 
+2026-03-11 15:46:21: 
+2026-03-11 15:46:21: Error occurred during query execution:
+2026-03-11 15:46:21: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:47:40: prisma:error 
+2026-03-11 15:47:40: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:47:40: 
+2026-03-11 15:47:40: 
+2026-03-11 15:47:40: Error occurred during query execution:
+2026-03-11 15:47:40: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:47:42: prisma:error 
+2026-03-11 15:47:42: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:47:42: 
+2026-03-11 15:47:42: 
+2026-03-11 15:47:42: Error occurred during query execution:
+2026-03-11 15:47:42: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:47:44: prisma:error 
+2026-03-11 15:47:44: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:47:44: 
+2026-03-11 15:47:44: 
+2026-03-11 15:47:44: Error occurred during query execution:
+2026-03-11 15:47:44: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:47:45: prisma:error 
+2026-03-11 15:47:45: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:47:45: 
+2026-03-11 15:47:45: 
+2026-03-11 15:47:45: Error occurred during query execution:
+2026-03-11 15:47:45: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:47:47: prisma:error 
+2026-03-11 15:47:47: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:47:47: 
+2026-03-11 15:47:47: 
+2026-03-11 15:47:47: Error occurred during query execution:
+2026-03-11 15:47:47: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:47:48: prisma:error 
+2026-03-11 15:47:48: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:47:48: 
+2026-03-11 15:47:48: 
+2026-03-11 15:47:48: Error occurred during query execution:
+2026-03-11 15:47:48: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:47:49: prisma:error 
+2026-03-11 15:47:49: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:47:49: 
+2026-03-11 15:47:49: 
+2026-03-11 15:47:49: Error occurred during query execution:
+2026-03-11 15:47:49: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:47:49: prisma:error 
+2026-03-11 15:47:49: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:47:49: 
+2026-03-11 15:47:49: 
+2026-03-11 15:47:49: Error occurred during query execution:
+2026-03-11 15:47:49: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:47:50: prisma:error 
+2026-03-11 15:47:50: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:47:50: 
+2026-03-11 15:47:50: 
+2026-03-11 15:47:50: Error occurred during query execution:
+2026-03-11 15:47:50: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:52:29: prisma:error 
+2026-03-11 15:52:29: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:52:29: 
+2026-03-11 15:52:29: 
+2026-03-11 15:52:29: Error occurred during query execution:
+2026-03-11 15:52:29: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:53:59: prisma:error 
+2026-03-11 15:53:59: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:53:59: 
+2026-03-11 15:53:59: 
+2026-03-11 15:53:59: Error occurred during query execution:
+2026-03-11 15:53:59: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:54:03: prisma:error 
+2026-03-11 15:54:03: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:54:03: 
+2026-03-11 15:54:03: 
+2026-03-11 15:54:03: Error occurred during query execution:
+2026-03-11 15:54:03: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:55:50: prisma:error 
+2026-03-11 15:55:50: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:55:50: 
+2026-03-11 15:55:50: 
+2026-03-11 15:55:50: Error occurred during query execution:
+2026-03-11 15:55:50: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:57:37: prisma:error 
+2026-03-11 15:57:37: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:57:37: 
+2026-03-11 15:57:37: 
+2026-03-11 15:57:37: Error occurred during query execution:
+2026-03-11 15:57:37: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:57:39: prisma:error 
+2026-03-11 15:57:39: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:57:39: 
+2026-03-11 15:57:39: 
+2026-03-11 15:57:39: Error occurred during query execution:
+2026-03-11 15:57:39: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:57:44: prisma:error 
+2026-03-11 15:57:44: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:57:44: 
+2026-03-11 15:57:44: 
+2026-03-11 15:57:44: Error occurred during query execution:
+2026-03-11 15:57:44: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:57:58: prisma:error 
+2026-03-11 15:57:58: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:57:58: 
+2026-03-11 15:57:58: 
+2026-03-11 15:57:58: Error occurred during query execution:
+2026-03-11 15:57:58: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:58:11: prisma:error 
+2026-03-11 15:58:11: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:58:11: 
+2026-03-11 15:58:11: 
+2026-03-11 15:58:11: Error occurred during query execution:
+2026-03-11 15:58:11: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:58:11: prisma:error 
+2026-03-11 15:58:11: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:58:11: 
+2026-03-11 15:58:11: 
+2026-03-11 15:58:11: Error occurred during query execution:
+2026-03-11 15:58:11: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:58:20: prisma:error 
+2026-03-11 15:58:20: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:58:20: 
+2026-03-11 15:58:20: 
+2026-03-11 15:58:20: Error occurred during query execution:
+2026-03-11 15:58:20: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:58:21: prisma:error 
+2026-03-11 15:58:21: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:58:21: 
+2026-03-11 15:58:21: 
+2026-03-11 15:58:21: Error occurred during query execution:
+2026-03-11 15:58:21: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:58:25: prisma:error 
+2026-03-11 15:58:25: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:58:25: 
+2026-03-11 15:58:25: 
+2026-03-11 15:58:25: Error occurred during query execution:
+2026-03-11 15:58:25: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:18: prisma:error 
+2026-03-11 15:59:18: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:59:18: 
+2026-03-11 15:59:18: 
+2026-03-11 15:59:18: Error occurred during query execution:
+2026-03-11 15:59:18: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:19: prisma:error 
+2026-03-11 15:59:19: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:59:19: 
+2026-03-11 15:59:19: 
+2026-03-11 15:59:19: Error occurred during query execution:
+2026-03-11 15:59:19: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:22: prisma:error 
+2026-03-11 15:59:22: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:59:22: 
+2026-03-11 15:59:22: 
+2026-03-11 15:59:22: Error occurred during query execution:
+2026-03-11 15:59:22: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:22: prisma:error 
+2026-03-11 15:59:22: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:59:22: 
+2026-03-11 15:59:22: 
+2026-03-11 15:59:22: Error occurred during query execution:
+2026-03-11 15:59:22: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:24: prisma:error 
+2026-03-11 15:59:24: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:59:24: 
+2026-03-11 15:59:24: 
+2026-03-11 15:59:24: Error occurred during query execution:
+2026-03-11 15:59:24: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:24: prisma:error 
+2026-03-11 15:59:24: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:59:24: 
+2026-03-11 15:59:24: 
+2026-03-11 15:59:24: Error occurred during query execution:
+2026-03-11 15:59:24: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:47: prisma:error 
+2026-03-11 15:59:47: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:59:47: 
+2026-03-11 15:59:47: 
+2026-03-11 15:59:47: Error occurred during query execution:
+2026-03-11 15:59:47: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:48: prisma:error 
+2026-03-11 15:59:48: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:59:48: 
+2026-03-11 15:59:48: 
+2026-03-11 15:59:48: Error occurred during query execution:
+2026-03-11 15:59:48: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:54: prisma:error 
+2026-03-11 15:59:54: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:59:54: 
+2026-03-11 15:59:54: 
+2026-03-11 15:59:54: Error occurred during query execution:
+2026-03-11 15:59:54: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:57: prisma:error 
+2026-03-11 15:59:57: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 15:59:57: 
+2026-03-11 15:59:57: 
+2026-03-11 15:59:57: Error occurred during query execution:
+2026-03-11 15:59:57: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 15:59:57: prisma:error 
+2026-03-11 15:59:57: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 15:59:57: 
+2026-03-11 15:59:57: 
+2026-03-11 15:59:57: Error occurred during query execution:
+2026-03-11 15:59:57: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:00:08: prisma:error 
+2026-03-11 16:00:08: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:00:08: 
+2026-03-11 16:00:08: 
+2026-03-11 16:00:08: Error occurred during query execution:
+2026-03-11 16:00:08: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:00:08: prisma:error 
+2026-03-11 16:00:08: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:00:08: 
+2026-03-11 16:00:08: 
+2026-03-11 16:00:08: Error occurred during query execution:
+2026-03-11 16:00:08: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:00:12: prisma:error 
+2026-03-11 16:00:12: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:00:12: 
+2026-03-11 16:00:12: 
+2026-03-11 16:00:12: Error occurred during query execution:
+2026-03-11 16:00:12: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:00:12: prisma:error 
+2026-03-11 16:00:12: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:00:12: 
+2026-03-11 16:00:12: 
+2026-03-11 16:00:12: Error occurred during query execution:
+2026-03-11 16:00:12: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:00:31: prisma:error 
+2026-03-11 16:00:31: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:00:31: 
+2026-03-11 16:00:31: 
+2026-03-11 16:00:31: Error occurred during query execution:
+2026-03-11 16:00:31: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:00:34: prisma:error 
+2026-03-11 16:00:34: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:00:34: 
+2026-03-11 16:00:34: 
+2026-03-11 16:00:34: Error occurred during query execution:
+2026-03-11 16:00:34: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:00:53: prisma:error 
+2026-03-11 16:00:53: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:00:53: 
+2026-03-11 16:00:53: 
+2026-03-11 16:00:53: Error occurred during query execution:
+2026-03-11 16:00:53: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:00:53: prisma:error 
+2026-03-11 16:00:53: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:00:53: 
+2026-03-11 16:00:53: 
+2026-03-11 16:00:53: Error occurred during query execution:
+2026-03-11 16:00:53: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:01:01: prisma:error 
+2026-03-11 16:01:01: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:01:01: 
+2026-03-11 16:01:01: 
+2026-03-11 16:01:01: Error occurred during query execution:
+2026-03-11 16:01:01: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:01:33: prisma:error 
+2026-03-11 16:01:33: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:01:33: 
+2026-03-11 16:01:33: 
+2026-03-11 16:01:33: Error occurred during query execution:
+2026-03-11 16:01:33: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:01:33: prisma:error 
+2026-03-11 16:01:33: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:01:33: 
+2026-03-11 16:01:33: 
+2026-03-11 16:01:33: Error occurred during query execution:
+2026-03-11 16:01:33: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:01:48: prisma:error 
+2026-03-11 16:01:48: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:01:48: 
+2026-03-11 16:01:48: 
+2026-03-11 16:01:48: Error occurred during query execution:
+2026-03-11 16:01:48: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:02:09: prisma:error 
+2026-03-11 16:02:09: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:02:09: 
+2026-03-11 16:02:09: 
+2026-03-11 16:02:09: Error occurred during query execution:
+2026-03-11 16:02:09: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:02:11: prisma:error 
+2026-03-11 16:02:11: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:02:11: 
+2026-03-11 16:02:11: 
+2026-03-11 16:02:11: Error occurred during query execution:
+2026-03-11 16:02:11: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:03:04: prisma:error 
+2026-03-11 16:03:04: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:03:04: 
+2026-03-11 16:03:04: 
+2026-03-11 16:03:04: Error occurred during query execution:
+2026-03-11 16:03:04: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:03:04: prisma:error 
+2026-03-11 16:03:04: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:03:04: 
+2026-03-11 16:03:04: 
+2026-03-11 16:03:04: Error occurred during query execution:
+2026-03-11 16:03:04: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:03:49: prisma:error 
+2026-03-11 16:03:49: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:03:49: 
+2026-03-11 16:03:49: 
+2026-03-11 16:03:49: Error occurred during query execution:
+2026-03-11 16:03:49: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:03:51: prisma:error 
+2026-03-11 16:03:51: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:03:51: 
+2026-03-11 16:03:51: 
+2026-03-11 16:03:51: Error occurred during query execution:
+2026-03-11 16:03:51: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:03:53: prisma:error 
+2026-03-11 16:03:53: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:03:53: 
+2026-03-11 16:03:53: 
+2026-03-11 16:03:53: Error occurred during query execution:
+2026-03-11 16:03:53: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:03:53: prisma:error 
+2026-03-11 16:03:53: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:03:53: 
+2026-03-11 16:03:53: 
+2026-03-11 16:03:53: Error occurred during query execution:
+2026-03-11 16:03:53: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:03:53: prisma:error 
+2026-03-11 16:03:53: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:03:53: 
+2026-03-11 16:03:53: 
+2026-03-11 16:03:53: Error occurred during query execution:
+2026-03-11 16:03:53: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:04:01: prisma:error 
+2026-03-11 16:04:01: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:04:01: 
+2026-03-11 16:04:01: 
+2026-03-11 16:04:01: Error occurred during query execution:
+2026-03-11 16:04:01: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:04:01: prisma:error 
+2026-03-11 16:04:01: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:04:01: 
+2026-03-11 16:04:01: 
+2026-03-11 16:04:01: Error occurred during query execution:
+2026-03-11 16:04:01: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:04:01: prisma:error 
+2026-03-11 16:04:01: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:04:01: 
+2026-03-11 16:04:01: 
+2026-03-11 16:04:01: Error occurred during query execution:
+2026-03-11 16:04:01: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:04:01: prisma:error 
+2026-03-11 16:04:01: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:04:01: 
+2026-03-11 16:04:01: 
+2026-03-11 16:04:01: Error occurred during query execution:
+2026-03-11 16:04:01: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:04:08: prisma:error 
+2026-03-11 16:04:08: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:04:08: 
+2026-03-11 16:04:08: 
+2026-03-11 16:04:08: Error occurred during query execution:
+2026-03-11 16:04:08: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:04:15: prisma:error 
+2026-03-11 16:04:15: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:04:15: 
+2026-03-11 16:04:15: 
+2026-03-11 16:04:15: Error occurred during query execution:
+2026-03-11 16:04:15: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:04:15: prisma:error 
+2026-03-11 16:04:15: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:04:15: 
+2026-03-11 16:04:15: 
+2026-03-11 16:04:15: Error occurred during query execution:
+2026-03-11 16:04:15: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:05:54: prisma:error 
+2026-03-11 16:05:54: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:05:54: 
+2026-03-11 16:05:54: 
+2026-03-11 16:05:54: Error occurred during query execution:
+2026-03-11 16:05:54: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:05:55: prisma:error 
+2026-03-11 16:05:55: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:05:55: 
+2026-03-11 16:05:55: 
+2026-03-11 16:05:55: Error occurred during query execution:
+2026-03-11 16:05:55: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:06:48: prisma:error 
+2026-03-11 16:06:48: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:06:48: 
+2026-03-11 16:06:48: 
+2026-03-11 16:06:48: Error occurred during query execution:
+2026-03-11 16:06:48: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:06:48: prisma:error 
+2026-03-11 16:06:48: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:06:48: 
+2026-03-11 16:06:48: 
+2026-03-11 16:06:48: Error occurred during query execution:
+2026-03-11 16:06:48: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:14:04: prisma:error 
+2026-03-11 16:14:04: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:14:04: 
+2026-03-11 16:14:04: 
+2026-03-11 16:14:04: Error occurred during query execution:
+2026-03-11 16:14:04: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:14:06: prisma:error 
+2026-03-11 16:14:06: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:14:06: 
+2026-03-11 16:14:06: 
+2026-03-11 16:14:06: Error occurred during query execution:
+2026-03-11 16:14:06: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:14:36: prisma:error 
+2026-03-11 16:14:36: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:14:36: 
+2026-03-11 16:14:36: 
+2026-03-11 16:14:36: Error occurred during query execution:
+2026-03-11 16:14:36: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:15:37: prisma:error 
+2026-03-11 16:15:37: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:15:37: 
+2026-03-11 16:15:37: 
+2026-03-11 16:15:37: Error occurred during query execution:
+2026-03-11 16:15:37: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:15:37: prisma:error 
+2026-03-11 16:15:37: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:15:37: 
+2026-03-11 16:15:37: 
+2026-03-11 16:15:37: Error occurred during query execution:
+2026-03-11 16:15:37: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:15:39: prisma:error 
+2026-03-11 16:15:39: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:15:39: 
+2026-03-11 16:15:39: 
+2026-03-11 16:15:39: Error occurred during query execution:
+2026-03-11 16:15:39: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:15:39: prisma:error 
+2026-03-11 16:15:39: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:15:39: 
+2026-03-11 16:15:39: 
+2026-03-11 16:15:39: Error occurred during query execution:
+2026-03-11 16:15:39: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:15:40: prisma:error 
+2026-03-11 16:15:40: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:15:40: 
+2026-03-11 16:15:40: 
+2026-03-11 16:15:40: Error occurred during query execution:
+2026-03-11 16:15:40: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:15:41: prisma:error 
+2026-03-11 16:15:41: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:15:41: 
+2026-03-11 16:15:41: 
+2026-03-11 16:15:41: Error occurred during query execution:
+2026-03-11 16:15:41: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:15:42: prisma:error 
+2026-03-11 16:15:42: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:15:42: 
+2026-03-11 16:15:42: 
+2026-03-11 16:15:42: Error occurred during query execution:
+2026-03-11 16:15:42: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:15:43: prisma:error 
+2026-03-11 16:15:43: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:15:43: 
+2026-03-11 16:15:43: 
+2026-03-11 16:15:43: Error occurred during query execution:
+2026-03-11 16:15:43: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:15:45: prisma:error 
+2026-03-11 16:15:45: Invalid `prisma.customer.findMany()` invocation:
+2026-03-11 16:15:45: 
+2026-03-11 16:15:45: 
+2026-03-11 16:15:45: Error occurred during query execution:
+2026-03-11 16:15:45: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:15:46: prisma:error 
+2026-03-11 16:15:46: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:15:46: 
+2026-03-11 16:15:46: 
+2026-03-11 16:15:46: Error occurred during query execution:
+2026-03-11 16:15:46: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:20:31: prisma:error 
+2026-03-11 16:20:31: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:20:31: 
+2026-03-11 16:20:31: 
+2026-03-11 16:20:31: Error occurred during query execution:
+2026-03-11 16:20:31: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:20:32: prisma:error 
+2026-03-11 16:20:32: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:20:32: 
+2026-03-11 16:20:32: 
+2026-03-11 16:20:32: Error occurred during query execution:
+2026-03-11 16:20:32: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:20:33: prisma:error 
+2026-03-11 16:20:33: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:20:33: 
+2026-03-11 16:20:33: 
+2026-03-11 16:20:33: Error occurred during query execution:
+2026-03-11 16:20:33: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:20:33: prisma:error 
+2026-03-11 16:20:33: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:20:33: 
+2026-03-11 16:20:33: 
+2026-03-11 16:20:33: Error occurred during query execution:
+2026-03-11 16:20:33: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:20:34: prisma:error 
+2026-03-11 16:20:34: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:20:34: 
+2026-03-11 16:20:34: 
+2026-03-11 16:20:34: Error occurred during query execution:
+2026-03-11 16:20:34: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:20:35: prisma:error 
+2026-03-11 16:20:35: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:20:35: 
+2026-03-11 16:20:35: 
+2026-03-11 16:20:35: Error occurred during query execution:
+2026-03-11 16:20:35: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:20:35: prisma:error 
+2026-03-11 16:20:35: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:20:35: 
+2026-03-11 16:20:35: 
+2026-03-11 16:20:35: Error occurred during query execution:
+2026-03-11 16:20:35: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:21:37: prisma:error 
+2026-03-11 16:21:37: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:21:37: 
+2026-03-11 16:21:37: 
+2026-03-11 16:21:37: Error occurred during query execution:
+2026-03-11 16:21:37: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:21:39: prisma:error 
+2026-03-11 16:21:39: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:21:39: 
+2026-03-11 16:21:39: 
+2026-03-11 16:21:39: Error occurred during query execution:
+2026-03-11 16:21:39: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:21:39: prisma:error 
+2026-03-11 16:21:39: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:21:39: 
+2026-03-11 16:21:39: 
+2026-03-11 16:21:39: Error occurred during query execution:
+2026-03-11 16:21:39: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:21:40: prisma:error 
+2026-03-11 16:21:40: Invalid `prisma.order.findMany()` invocation:
+2026-03-11 16:21:40: 
+2026-03-11 16:21:40: 
+2026-03-11 16:21:40: Error occurred during query execution:
+2026-03-11 16:21:40: ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1038, message: "Out of sort memory, consider increasing server sort buffer size", state: "HY001" })), transient: false })
+2026-03-11 16:55:10: ▲ Next.js 16.1.6
+2026-03-11 16:55:10: - Local:         http://localhost:3000
+2026-03-11 16:55:10: - Network:       http://100.101.241.108:3000
+2026-03-11 16:55:10: 
+2026-03-11 16:55:10: ✓ Starting...
+2026-03-11 16:55:10: ✓ Ready in 858ms
+2026-03-11 16:57:37: ▲ Next.js 16.1.6
+2026-03-11 16:57:37: - Local:         http://localhost:3000
+2026-03-11 16:57:37: - Network:       http://100.101.241.108:3000
+2026-03-11 16:57:37: 
+2026-03-11 16:57:37: ✓ Starting...
+2026-03-11 16:57:37: ✓ Ready in 451ms

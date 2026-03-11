@@ -161,4 +161,23 @@ Comprehensive analytics designed for weekly review and business tracking.
 ### Export Options
 
 - Export data to Excel or PDF for reporting and bookkeeping.
-- Print report summaries directly from dashboard view.
+## 8. Networking
+
+The system uses **Tailscale** for secure internal networking. This ensures that the application can communicate with the database and other services regardless of the physical location of the devices, provided they are part of the same Tailnet.
+
+### Key Nodes
+- **Database Server**: `100.101.241.108` (server)
+- **Local Dev/Client**: `100.95.122.21` (desktop)
+- **Other Node**: `100.65.142.68` (thrifte)
+
+### Requirements
+- Tailscale must be installed and running on the host machine.
+- The machine must be authenticated to the ThriftersFind Tailnet.
+
+### Connection Utility
+You can verify the network status and connectivity to the database server using the following command:
+```bash
+node scripts/check-network.js
+```
+
+---

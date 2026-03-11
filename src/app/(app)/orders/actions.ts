@@ -17,12 +17,14 @@ export async function getOrders(): Promise<Order[]> {
   const isSuperAdmin = user.role?.name?.toLowerCase() === 'super admin';
 
   const orders = await prisma.order.findMany({
-    orderBy: { createdAt: 'desc' },
     include: {
       customer: true,
       batch: true,
     }
   });
+
+  // Sort orders by createdAt descending in JS to prevent MySQL out of sort memory error
+  orders.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   // Filter orders based on user role
   const filteredOrders = isSuperAdmin
@@ -86,12 +88,14 @@ export async function getAllOrders(): Promise<{ orders: Order[], isAuthorized: b
 
   // Fetch ALL orders regardless of creator
   const orders = await prisma.order.findMany({
-    orderBy: { createdAt: 'desc' },
     include: {
       customer: true,
       batch: true,
     }
   });
+
+  // Sort orders by createdAt descending in JS to prevent MySQL out of sort memory error
+  orders.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   const mapOrders = orders.map(order => ({
     id: String(order.id),

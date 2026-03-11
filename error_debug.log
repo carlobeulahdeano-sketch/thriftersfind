@@ -1,0 +1,682 @@
+
+--- [2026-03-11T09:43:02.098Z] Error in getProducts ---
+Error: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__c65f05fb._.js:1775:169
+
+  1772 }
+  1773 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  1774 // Apply whereClause here to minimize the number of rows being sorted
+→ 1775 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany({
+         where: {
+           branchId: 1,
+           ~~~~~~~~
+       ?   AND?: ProductWhereInput | ProductWhereInput[],
+       ?   OR?: ProductWhereInput[],
+       ?   NOT?: ProductWhereInput | ProductWhereInput[],
+       ?   id?: IntFilter | Int,
+       ?   name?: StringFilter | String,
+       ?   sku?: StringFilter | String,
+       ?   description?: StringNullableFilter | String | Null,
+       ?   quantity?: IntFilter | Int,
+       ?   alertStock?: IntFilter | Int,
+       ?   cost?: FloatFilter | Float,
+       ?   retailPrice?: FloatNullableFilter | Float | Null,
+       ?   images?: JsonNullableFilter,
+       ?   createdBy?: JsonNullableFilter,
+       ?   createdAt?: DateTimeFilter | DateTime,
+       ?   updatedAt?: DateTimeFilter | DateTime,
+       ?   warehouseId?: IntNullableFilter | Int | Null,
+       ?   categoryId?: IntNullableFilter | Int | Null,
+       ?   batchId?: IntNullableFilter | Int | Null,
+       ?   inventoryLogs?: InventoryLogListRelationFilter,
+       ?   preOrders?: PreOrderListRelationFilter,
+       ?   batch?: BatchNullableRelationFilter | BatchWhereInput | Null,
+       ?   category?: ProductCategoryNullableRelationFilter | ProductCategoryWhereInput | Null,
+       ?   warehouseProduct?: WarehouseProductNullableRelationFilter | WarehouseProductWhereInput | Null
+         },
+         select: {
+           id: true
+         },
+         orderBy: {
+           createdAt: "desc"
+         }
+       })
+
+Unknown argument `branchId`. Did you mean `batchId`? Available options are marked with ?.
+Stack: PrismaClientValidationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__c65f05fb._.js:1775:169
+
+  1772 }
+  1773 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  1774 // Apply whereClause here to minimize the number of rows being sorted
+→ 1775 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany({
+         where: {
+           branchId: 1,
+           ~~~~~~~~
+       ?   AND?: ProductWhereInput | ProductWhereInput[],
+       ?   OR?: ProductWhereInput[],
+       ?   NOT?: ProductWhereInput | ProductWhereInput[],
+       ?   id?: IntFilter | Int,
+       ?   name?: StringFilter | String,
+       ?   sku?: StringFilter | String,
+       ?   description?: StringNullableFilter | String | Null,
+       ?   quantity?: IntFilter | Int,
+       ?   alertStock?: IntFilter | Int,
+       ?   cost?: FloatFilter | Float,
+       ?   retailPrice?: FloatNullableFilter | Float | Null,
+       ?   images?: JsonNullableFilter,
+       ?   createdBy?: JsonNullableFilter,
+       ?   createdAt?: DateTimeFilter | DateTime,
+       ?   updatedAt?: DateTimeFilter | DateTime,
+       ?   warehouseId?: IntNullableFilter | Int | Null,
+       ?   categoryId?: IntNullableFilter | Int | Null,
+       ?   batchId?: IntNullableFilter | Int | Null,
+       ?   inventoryLogs?: InventoryLogListRelationFilter,
+       ?   preOrders?: PreOrderListRelationFilter,
+       ?   batch?: BatchNullableRelationFilter | BatchWhereInput | Null,
+       ?   category?: ProductCategoryNullableRelationFilter | ProductCategoryWhereInput | Null,
+       ?   warehouseProduct?: WarehouseProductNullableRelationFilter | WarehouseProductWhereInput | Null
+         },
+         select: {
+           id: true
+         },
+         orderBy: {
+           createdAt: "desc"
+         }
+       })
+
+Unknown argument `branchId`. Did you mean `batchId`? Available options are marked with ?.
+    at ti (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:118:5888)
+    at si.handleRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6473)
+    at si.handleAndLogRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6151)
+    at si.request (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:5859)
+    at async l (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:130:10025)
+    at async getProducts (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__c65f05fb._.js:1775:28)
+    at async executeActionAndPrepareForRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3101:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3307:32)
+    at async Module.handler (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3678:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\start-server.js:226:13)
+Prisma error: {
+  "name": "PrismaClientValidationError",
+  "clientVersion": "5.7.1"
+}
+
+--- [2026-03-11T09:49:07.932Z] Error in getProducts ---
+Error: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__c65f05fb._.js:1775:169
+
+  1772 }
+  1773 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  1774 // Apply whereClause here to minimize the number of rows being sorted
+→ 1775 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany({
+         where: {
+           branchId: 1,
+           ~~~~~~~~
+       ?   AND?: ProductWhereInput | ProductWhereInput[],
+       ?   OR?: ProductWhereInput[],
+       ?   NOT?: ProductWhereInput | ProductWhereInput[],
+       ?   id?: IntFilter | Int,
+       ?   name?: StringFilter | String,
+       ?   sku?: StringFilter | String,
+       ?   description?: StringNullableFilter | String | Null,
+       ?   quantity?: IntFilter | Int,
+       ?   alertStock?: IntFilter | Int,
+       ?   cost?: FloatFilter | Float,
+       ?   retailPrice?: FloatNullableFilter | Float | Null,
+       ?   images?: JsonNullableFilter,
+       ?   createdBy?: JsonNullableFilter,
+       ?   createdAt?: DateTimeFilter | DateTime,
+       ?   updatedAt?: DateTimeFilter | DateTime,
+       ?   warehouseId?: IntNullableFilter | Int | Null,
+       ?   categoryId?: IntNullableFilter | Int | Null,
+       ?   batchId?: IntNullableFilter | Int | Null,
+       ?   inventoryLogs?: InventoryLogListRelationFilter,
+       ?   preOrders?: PreOrderListRelationFilter,
+       ?   batch?: BatchNullableRelationFilter | BatchWhereInput | Null,
+       ?   category?: ProductCategoryNullableRelationFilter | ProductCategoryWhereInput | Null,
+       ?   warehouseProduct?: WarehouseProductNullableRelationFilter | WarehouseProductWhereInput | Null
+         },
+         select: {
+           id: true
+         },
+         orderBy: {
+           createdAt: "desc"
+         }
+       })
+
+Unknown argument `branchId`. Did you mean `batchId`? Available options are marked with ?.
+Stack: PrismaClientValidationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__c65f05fb._.js:1775:169
+
+  1772 }
+  1773 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  1774 // Apply whereClause here to minimize the number of rows being sorted
+→ 1775 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany({
+         where: {
+           branchId: 1,
+           ~~~~~~~~
+       ?   AND?: ProductWhereInput | ProductWhereInput[],
+       ?   OR?: ProductWhereInput[],
+       ?   NOT?: ProductWhereInput | ProductWhereInput[],
+       ?   id?: IntFilter | Int,
+       ?   name?: StringFilter | String,
+       ?   sku?: StringFilter | String,
+       ?   description?: StringNullableFilter | String | Null,
+       ?   quantity?: IntFilter | Int,
+       ?   alertStock?: IntFilter | Int,
+       ?   cost?: FloatFilter | Float,
+       ?   retailPrice?: FloatNullableFilter | Float | Null,
+       ?   images?: JsonNullableFilter,
+       ?   createdBy?: JsonNullableFilter,
+       ?   createdAt?: DateTimeFilter | DateTime,
+       ?   updatedAt?: DateTimeFilter | DateTime,
+       ?   warehouseId?: IntNullableFilter | Int | Null,
+       ?   categoryId?: IntNullableFilter | Int | Null,
+       ?   batchId?: IntNullableFilter | Int | Null,
+       ?   inventoryLogs?: InventoryLogListRelationFilter,
+       ?   preOrders?: PreOrderListRelationFilter,
+       ?   batch?: BatchNullableRelationFilter | BatchWhereInput | Null,
+       ?   category?: ProductCategoryNullableRelationFilter | ProductCategoryWhereInput | Null,
+       ?   warehouseProduct?: WarehouseProductNullableRelationFilter | WarehouseProductWhereInput | Null
+         },
+         select: {
+           id: true
+         },
+         orderBy: {
+           createdAt: "desc"
+         }
+       })
+
+Unknown argument `branchId`. Did you mean `batchId`? Available options are marked with ?.
+    at ti (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:118:5888)
+    at si.handleRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6473)
+    at si.handleAndLogRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6151)
+    at si.request (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:5859)
+    at async l (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:130:10025)
+    at async getProducts (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__c65f05fb._.js:1775:28)
+    at async executeActionAndPrepareForRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3101:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3307:32)
+    at async Module.handler (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3678:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\start-server.js:226:13)
+Prisma error: {
+  "name": "PrismaClientValidationError",
+  "clientVersion": "5.7.1"
+}
+
+--- [2026-03-11T09:51:47.685Z] Error in getProducts ---
+Error: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+    at si.handleRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6817)
+    at si.handleAndLogRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6151)
+    at si.request (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:5859)
+    at async l (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:130:10025)
+    at async getProducts (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:28)
+    at async executeActionAndPrepareForRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3101:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3307:32)
+    at async Module.handler (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3678:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\start-server.js:226:13)
+Prisma error: {
+  "name": "PrismaClientKnownRequestError",
+  "code": "P2022",
+  "clientVersion": "5.7.1",
+  "meta": {
+    "modelName": "Product",
+    "column": "thriftersfind.products.branchId"
+  }
+}
+
+--- [2026-03-11T09:52:26.871Z] Error in getProducts ---
+Error: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+    at si.handleRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6817)
+    at si.handleAndLogRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6151)
+    at si.request (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:5859)
+    at async l (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:130:10025)
+    at async getProducts (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:28)
+    at async executeActionAndPrepareForRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3101:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3307:32)
+    at async Module.handler (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3678:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\start-server.js:226:13)
+Prisma error: {
+  "name": "PrismaClientKnownRequestError",
+  "code": "P2022",
+  "clientVersion": "5.7.1",
+  "meta": {
+    "modelName": "Product",
+    "column": "thriftersfind.products.branchId"
+  }
+}
+
+--- [2026-03-11T09:52:28.911Z] Error in getProducts ---
+Error: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+    at si.handleRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6817)
+    at si.handleAndLogRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6151)
+    at si.request (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:5859)
+    at async l (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:130:10025)
+    at async getProducts (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:28)
+    at async executeActionAndPrepareForRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3101:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3307:32)
+    at async Module.handler (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3678:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\start-server.js:226:13)
+Prisma error: {
+  "name": "PrismaClientKnownRequestError",
+  "code": "P2022",
+  "clientVersion": "5.7.1",
+  "meta": {
+    "modelName": "Product",
+    "column": "thriftersfind.products.branchId"
+  }
+}
+
+--- [2026-03-11T09:52:29.312Z] Error in getProducts ---
+Error: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+    at si.handleRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6817)
+    at si.handleAndLogRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6151)
+    at si.request (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:5859)
+    at async l (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:130:10025)
+    at async getProducts (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:28)
+    at async executeActionAndPrepareForRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3101:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3307:32)
+    at async Module.handler (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3678:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\start-server.js:226:13)
+Prisma error: {
+  "name": "PrismaClientKnownRequestError",
+  "code": "P2022",
+  "clientVersion": "5.7.1",
+  "meta": {
+    "modelName": "Product",
+    "column": "thriftersfind.products.branchId"
+  }
+}
+
+--- [2026-03-11T09:52:38.128Z] Error in getProducts ---
+Error: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+    at si.handleRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6817)
+    at si.handleAndLogRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6151)
+    at si.request (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:5859)
+    at async l (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:130:10025)
+    at async getProducts (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:28)
+    at async executeActionAndPrepareForRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3101:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3307:32)
+    at async Module.handler (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3678:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\start-server.js:226:13)
+Prisma error: {
+  "name": "PrismaClientKnownRequestError",
+  "code": "P2022",
+  "clientVersion": "5.7.1",
+  "meta": {
+    "modelName": "Product",
+    "column": "thriftersfind.products.branchId"
+  }
+}
+
+--- [2026-03-11T09:52:38.645Z] Error in getProducts ---
+Error: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+    at si.handleRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6817)
+    at si.handleAndLogRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6151)
+    at si.request (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:5859)
+    at async l (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:130:10025)
+    at async getProducts (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:28)
+    at async executeActionAndPrepareForRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3101:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3307:32)
+    at async Module.handler (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_f9ad6ef5._.js:3678:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\start-server.js:226:13)
+Prisma error: {
+  "name": "PrismaClientKnownRequestError",
+  "code": "P2022",
+  "clientVersion": "5.7.1",
+  "meta": {
+    "modelName": "Product",
+    "column": "thriftersfind.products.branchId"
+  }
+}
+
+--- [2026-03-11T09:52:40.775Z] Error in getProducts ---
+Error: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+    at si.handleRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6817)
+    at si.handleAndLogRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6151)
+    at si.request (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:5859)
+    at async l (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:130:10025)
+    at async getProducts (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:28)
+    at async executeActionAndPrepareForRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3101:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3307:32)
+    at async Module.handler (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3678:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\start-server.js:226:13)
+Prisma error: {
+  "name": "PrismaClientKnownRequestError",
+  "code": "P2022",
+  "clientVersion": "5.7.1",
+  "meta": {
+    "modelName": "Product",
+    "column": "thriftersfind.products.branchId"
+  }
+}
+
+--- [2026-03-11T09:52:41.156Z] Error in getProducts ---
+Error: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
+C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:169
+
+  2908 }
+  2909 // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+  2910 // Apply whereClause here to minimize the number of rows being sorted
+→ 2911 const orderedIds = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].product.findMany(
+The column `thriftersfind.products.branchId` does not exist in the current database.
+    at si.handleRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6817)
+    at si.handleAndLogRequestError (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:6151)
+    at si.request (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:125:5859)
+    at async l (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\@prisma\client\runtime\library.js:130:10025)
+    at async getProducts (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\[root-of-the-server]__43cc3012._.js:2911:28)
+    at async executeActionAndPrepareForRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3101:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3307:32)
+    at async Module.handler (C:\Users\Carlo Beulah\Desktop\thriftersfind\.next\dev\server\chunks\ssr\node_modules_next_dist_6fb3019c._.js:3678:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\Carlo Beulah\Desktop\thriftersfind\node_modules\next\dist\server\lib\start-server.js:226:13)
+Prisma error: {
+  "name": "PrismaClientKnownRequestError",
+  "code": "P2022",
+  "clientVersion": "5.7.1",
+  "meta": {
+    "modelName": "Product",
+    "column": "thriftersfind.products.branchId"
+  }
+}

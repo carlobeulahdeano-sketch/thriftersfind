@@ -41,9 +41,13 @@ export async function getSalesData(timeframe: "week" | "month" | "year" | "all")
                 },
                 // Removed strict paymentStatus filter to match dashboard aggregation
             },
-            orderBy: {
-                orderDate: 'desc',
-            },
+        });
+
+        // Sort orders by orderDate descending in JS to prevent MySQL out of sort memory error
+        orders.sort((a, b) => {
+            const dateA = a.orderDate ? new Date(a.orderDate).getTime() : 0;
+            const dateB = b.orderDate ? new Date(b.orderDate).getTime() : 0;
+            return dateB - dateA;
         });
 
         const mappedOrders = orders.map((order: any) => ({
@@ -265,9 +269,13 @@ export async function getPreOrderSalesData(timeframe: "week" | "month" | "year" 
                 items: true,
                 batch: true,
             },
-            orderBy: {
-                orderDate: 'desc',
-            },
+        });
+
+        // Sort preOrders by orderDate descending in JS to prevent MySQL out of sort memory error
+        preOrders.sort((a, b) => {
+            const dateA = a.orderDate ? new Date(a.orderDate).getTime() : 0;
+            const dateB = b.orderDate ? new Date(b.orderDate).getTime() : 0;
+            return dateB - dateA;
         });
 
         const mappedPreOrders = preOrders.map((preOrder: any) => ({

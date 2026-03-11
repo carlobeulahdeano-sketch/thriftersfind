@@ -8,6 +8,8 @@ import { createInventoryLog } from "@/lib/inventory-log-helper";
 import { checkAndNotifyStock } from "./notifications-actions";
 
 import { unstable_noStore as noStore } from "next/cache";
+import fs from "fs";
+import path from "path";
 
 export async function getProducts(): Promise<Product[]> {
   noStore();
@@ -26,13 +28,34 @@ export async function getProducts(): Promise<Product[]> {
       return [];
     }
 
-    // Use raw query with LEFT JOIN to include category data
-    const products: any[] = await prisma.$queryRaw`
-      SELECT p.*, pc.name as categoryName 
-      FROM products p 
-      LEFT JOIN product_categories pc ON p.categoryId = pc.id 
-      ORDER BY p.createdAt DESC
-    `;
+    const whereClause: any = {};
+    
+    // Filter by branch if not super admin
+    if (!isSuperAdmin && user.branchId) {
+      whereClause.branchId = user.branchId;
+    }
+
+    // Fetch only IDs sorted by createdAt to bypass MySQL filesort memory limits
+    // Apply whereClause here to minimize the number of rows being sorted
+    const orderedIds = await prisma.product.findMany({
+      where: whereClause,
+      select: { id: true },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const finalWhereClause: any = { id: { in: orderedIds.map(p => p.id) } };
+
+    const unsortedProducts = await prisma.product.findMany({
+      where: finalWhereClause,
+      include: {
+        category: {
+          select: { name: true }
+        }
+      }
+    });
+
+    const productMap = new Map(unsortedProducts.map(p => [p.id, p]));
+    const products = orderedIds.map(p => productMap.get(p.id)!).filter(Boolean);
 
     // Filter products based on user role
     const filteredProducts = products;
@@ -50,6 +73,8 @@ export async function getProducts(): Promise<Product[]> {
         console.warn("Failed to parse images for product", product.id);
       }
 
+      const categoryName = (product as any).category?.name;
+
       return {
         id: String(product.id),
         name: product.name,
@@ -58,7 +83,7 @@ export async function getProducts(): Promise<Product[]> {
         quantity: typeof (product as any).quantity === 'number' ? (product as any).quantity : 0,
         warehouseId: (product as any).warehouseId || null,
         categoryId: (product as any).categoryId || null,
-        category: product.categoryName ? { id: product.categoryId, name: product.categoryName, description: null, imageUrl: null, createdAt: '', updatedAt: '' } : null,
+        category: categoryName && product.categoryId !== null ? { id: product.categoryId as number, name: categoryName, description: null, imageUrl: null, createdAt: '', updatedAt: '' } : null,
         totalStock: ((product as any).quantity || 0),
         alertStock: typeof product.alertStock === 'number' ? product.alertStock : 0,
         cost: typeof product.cost === 'number' ? product.cost : 0,
@@ -67,6 +92,17 @@ export async function getProducts(): Promise<Product[]> {
       };
     });
   } catch (error) {
+    const errorLog = `\n--- [${new Date().toISOString()}] Error in getProducts ---\n` +
+      `Error: ${error instanceof Error ? error.message : String(error)}\n` +
+      `Stack: ${error instanceof Error ? error.stack : 'No stack'}\n` +
+      `Prisma error: ${JSON.stringify(error, null, 2)}\n`;
+    
+    try {
+      fs.appendFileSync("c:\\Users\\Carlo Beulah\\Desktop\\thriftersfind\\error_debug.log", errorLog);
+    } catch (e) {
+      console.error("Failed to write to debug log:", e);
+    }
+
     console.error("Error fetching products:", error);
     throw new Error("Failed to fetch products. Please try again later.");
   }
@@ -77,11 +113,20 @@ export async function getProductNames(): Promise<string[]> {
     const user = await getCurrentUser();
     if (!user) return [];
 
-    // Fetch all unique product names across all branches
+    const roleName = user.role?.name?.toLowerCase() || "";
+    const isSuperAdmin = roleName === "super admin";
+
+    const whereClause: any = {};
+    if (!isSuperAdmin && user.branchId) {
+      whereClause.branchId = user.branchId;
+    }
+
+    // Fetch all unique product names for the branch (or all if super admin)
+    // We remove distinct and orderBy here to prevent filesort memory issues
+    // and rely on the client-side deduplication below.
     const products = await prisma.product.findMany({
+      where: whereClause,
       select: { name: true },
-      distinct: ['name'],
-      orderBy: { name: 'asc' },
     });
 
     // Client-side deduplication to handle case sensitivity and whitespace issues
@@ -111,13 +156,22 @@ export async function searchProducts(query: string): Promise<Product[]> {
     const user = await getCurrentUser();
     if (!user) return [];
 
+    const roleName = user.role?.name?.toLowerCase() || "";
+    const isSuperAdmin = roleName === "super admin";
+    
+    const whereClause: any = {
+      OR: [
+        { name: { contains: query } },
+        { sku: { contains: query } },
+      ],
+    };
+
+    if (!isSuperAdmin && user.branchId) {
+      whereClause.branchId = user.branchId;
+    }
+
     const products = await prisma.product.findMany({
-      where: {
-        OR: [
-          { name: { contains: query } },
-          { sku: { contains: query } },
-        ],
-      },
+      where: whereClause,
       take: 10,
       orderBy: { createdAt: 'desc' },
     });
@@ -147,13 +201,22 @@ export async function searchProductsSimple(query: string): Promise<{ id: string;
     const user = await getCurrentUser();
     if (!user) return [];
 
+    const roleName = user.role?.name?.toLowerCase() || "";
+    const isSuperAdmin = roleName === "super admin";
+
+    const whereClause: any = {
+      OR: [
+        { name: { contains: query } },
+        { sku: { contains: query } },
+      ],
+    };
+
+    if (!isSuperAdmin && user.branchId) {
+      whereClause.branchId = user.branchId;
+    }
+
     const products = await prisma.product.findMany({
-      where: {
-        OR: [
-          { name: { contains: query } },
-          { sku: { contains: query } },
-        ],
-      },
+      where: whereClause,
       select: {
         id: true,
         name: true,
@@ -197,11 +260,26 @@ export async function getLowStockProducts(): Promise<Product[]> {
     const user = await getCurrentUser();
     if (!user) return [];
 
-    const products = await prisma.product.findMany({
-      where: {
-        alertStock: {
-          gt: 0,
-        },
+    const roleName = user.role?.name?.toLowerCase() || "";
+    const isSuperAdmin = roleName === "super admin";
+
+    const whereClause: any = {
+      alertStock: {
+        gt: 0,
+      },
+    };
+
+    if (!isSuperAdmin && user.branchId) {
+      whereClause.branchId = user.branchId;
+    }
+
+    // Fetch only necessary fields to bypass MySQL filesort memory limits
+    const orderedProducts = await prisma.product.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        alertStock: true,
+        quantity: true,
       },
       orderBy: {
         quantity: 'asc',
@@ -209,7 +287,20 @@ export async function getLowStockProducts(): Promise<Product[]> {
     });
 
     // Filter products where quantity <= alertStock
-    const lowStockProducts = products.filter(p => p.quantity <= p.alertStock);
+    const lowStockIds = orderedProducts
+      .filter(p => p.quantity <= p.alertStock)
+      .map(p => p.id);
+
+    if (lowStockIds.length === 0) {
+      return [];
+    }
+
+    const unsortedProducts = await prisma.product.findMany({
+      where: { id: { in: lowStockIds } }
+    });
+
+    const productMap = new Map(unsortedProducts.map(p => [p.id, p]));
+    const lowStockProducts = lowStockIds.map(id => productMap.get(id)!).filter(Boolean);
 
     return lowStockProducts.map(product => {
       let images: string[] = [];
@@ -279,6 +370,7 @@ export async function createProduct(productData: Omit<Product, 'id' | 'totalStoc
         quantity: productData.quantity || 0,
         warehouseId: productData.warehouseId ? parseInt(productData.warehouseId as any, 10) : null,
         categoryId: (productData as any).categoryId ? parseInt((productData as any).categoryId, 10) : null,
+        branchId: user.branchId ? parseInt(String(user.branchId), 10) : null,
         alertStock: productData.alertStock || 0,
         cost: productData.cost || 0,
         retailPrice: productData.retailPrice || 0,

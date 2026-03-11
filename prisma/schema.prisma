@@ -129,18 +129,21 @@ model Product {
   createdBy        Json?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @default(now()) @updatedAt
-  warehouseId      Int?
-  categoryId       Int?
+  branchId         Int?
   batchId          Int?
+  categoryId       Int?
+  warehouseId      Int?
   inventoryLogs    InventoryLog[]
   preOrders        PreOrder[]
   batch            Batch?            @relation(fields: [batchId], references: [id])
   category         ProductCategory?  @relation(fields: [categoryId], references: [id])
   warehouseProduct WarehouseProduct? @relation(fields: [warehouseId], references: [id])
+  branch           Branch?           @relation(fields: [branchId], references: [id])
 
   @@index([warehouseId], map: "products_warehouseId_fkey")
   @@index([batchId], map: "products_batchId_fkey")
   @@index([categoryId], map: "products_categoryId_fkey")
+  @@index([branchId], map: "products_branchId_fkey")
   @@index([createdAt])
   @@map("products")
 }
@@ -192,6 +195,7 @@ model Branch {
   updatedAt     DateTime       @default(now()) @updatedAt
   inventoryLogs InventoryLog[]
   users         User[]
+  products      Product[]
 
   @@map("branches")
 }

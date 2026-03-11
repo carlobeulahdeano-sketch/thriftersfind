@@ -178,6 +178,7 @@ export type Product = {
   quantity: number;
   warehouseId?: string | number | null;
   categoryId?: string | number | null;
+  branchId?: string | number | null;
   category?: ProductCategory | null;
   totalStock: number;
   alertStock: number;
