@@ -42,6 +42,7 @@ export type UserPermissions = {
   preOrders: boolean;
   warehouses: boolean;
   sales: boolean;
+  branches: boolean;
 };
 
 export type User = {
@@ -94,14 +95,14 @@ export type YearlyOrderSummary = {
 export type Customer = {
   id: string | number;
   name: string;
-  email: string;
-  phone: string;
-  avatar: string;
+  email?: string;
+  phone?: string;
+  avatar?: string;
   address: {
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
   };
   orderHistory: OrderHistoryItem[];
   totalSpent: number;

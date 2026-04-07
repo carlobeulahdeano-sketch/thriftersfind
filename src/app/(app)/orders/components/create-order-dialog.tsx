@@ -238,7 +238,7 @@ Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}
         customerId: finalCustomerId!,
         customerName: customerName,
         customerEmail: finalCustomerEmail,
-        contactNumber: contactNumber || (existingCustomer ? existingCustomer.phone : ''),
+        contactNumber: contactNumber || (existingCustomer ? (existingCustomer.phone || '') : ''),
         address: address || (existingCustomer ? `${existingCustomer.address.street}, ${existingCustomer.address.city}`.trim() : ''),
         orderDate: new Date().toISOString().split('T')[0],
         itemName: combinedItemName,
@@ -286,7 +286,7 @@ Total Amount: ₱${lastCreatedOrder.totalAmount.toFixed(2)}
 
   const handleCustomerSelect = (customer: Customer) => {
     setCustomerName(customer.name);
-    setContactNumber(customer.phone);
+    setContactNumber(customer.phone || "");
     setAddress([customer.address.street, customer.address.city, customer.address.state].filter(Boolean).join(', '));
     setComboboxOpen(false);
   }

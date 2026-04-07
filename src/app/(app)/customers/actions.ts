@@ -43,7 +43,7 @@ export async function getCustomers(): Promise<Customer[]> {
   return filteredCustomers.map(customer => ({
     id: customer.id,
     name: customer.name,
-    email: customer.email,
+    email: customer.email || undefined,
     phone: customer.phone || "",
     avatar: customer.avatar || "",
     address: customer.street ? {
@@ -87,55 +87,57 @@ export async function createCustomer(customerData: Omit<Customer, 'id'>): Promis
       email: user.email
     };
 
-    // Check if customer with same email already exists
-    const existingByEmail = await prisma.customer.findUnique({
-      where: { email: customerData.email },
-      include: { orders: true }
-    });
+    // Check if customer with same email already exists (only if email is provided)
+    if (customerData.email && customerData.email.trim() !== "") {
+      const existingByEmail = await prisma.customer.findUnique({
+        where: { email: customerData.email },
+        include: { orders: true }
+      });
 
-    if (existingByEmail) {
-      return {
-        id: existingByEmail.id,
-        name: existingByEmail.name,
-        email: existingByEmail.email,
-        phone: existingByEmail.phone || "",
-        avatar: existingByEmail.avatar || "",
-        address: {
-          street: existingByEmail.street || "",
-          city: existingByEmail.city || "",
-          state: existingByEmail.state || "",
-          zip: existingByEmail.zip || "",
-        },
-        orderHistory: existingByEmail.orders
-          .filter(order => order.shippingStatus === 'Delivered')
-          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-          .map(order => ({
-            orderId: order.id,
-            date: order.createdAt.toISOString(),
-            amount: order.totalAmount,
-            items: order.itemName,
-            year: order.createdAt.getFullYear(),
-            paymentMethod: order.paymentMethod || 'N/A',
-            shippingStatus: order.shippingStatus || 'N/A'
-          })),
-        totalSpent: existingByEmail.orders
-          .filter(order => order.shippingStatus === 'Delivered')
-          .reduce((sum, order) => sum + order.totalAmount, 0),
-        role: existingByEmail.role as UserRole | undefined,
-        isActive: (existingByEmail as any).isActive,
-      };
+      if (existingByEmail) {
+        return {
+          id: existingByEmail.id,
+          name: existingByEmail.name,
+          email: existingByEmail.email || "",
+          phone: existingByEmail.phone || "",
+          avatar: existingByEmail.avatar || "",
+          address: {
+            street: existingByEmail.street || "",
+            city: existingByEmail.city || "",
+            state: existingByEmail.state || "",
+            zip: existingByEmail.zip || "",
+          },
+          orderHistory: existingByEmail.orders
+            .filter(order => order.shippingStatus === 'Delivered')
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+            .map(order => ({
+              orderId: order.id,
+              date: order.createdAt.toISOString(),
+              amount: order.totalAmount,
+              items: order.itemName,
+              year: order.createdAt.getFullYear(),
+              paymentMethod: order.paymentMethod || 'N/A',
+              shippingStatus: order.shippingStatus || 'N/A'
+            })),
+          totalSpent: existingByEmail.orders
+            .filter(order => order.shippingStatus === 'Delivered')
+            .reduce((sum, order) => sum + order.totalAmount, 0),
+          role: existingByEmail.role as UserRole | undefined,
+          isActive: (existingByEmail as any).isActive,
+        };
+      }
     }
 
     const newCustomer = await prisma.customer.create({
       data: {
         name: customerData.name,
-        email: customerData.email,
-        phone: customerData.phone,
-        avatar: customerData.avatar,
-        street: customerData.address.street,
-        city: customerData.address.city,
-        state: customerData.address.state,
-        zip: customerData.address.zip,
+        email: customerData.email || null,
+        phone: customerData.phone || null,
+        avatar: customerData.avatar || null,
+        street: customerData.address.street || null,
+        city: customerData.address.city || null,
+        state: customerData.address.state || null,
+        zip: customerData.address.zip || null,
         role: customerData.role,
         createdBy: createdBy as any,
         isActive: true,
@@ -145,7 +147,7 @@ export async function createCustomer(customerData: Omit<Customer, 'id'>): Promis
     return {
       id: newCustomer.id,
       name: newCustomer.name,
-      email: newCustomer.email,
+      email: newCustomer.email || "",
       phone: newCustomer.phone || "",
       avatar: newCustomer.avatar || "",
       address: {
@@ -185,13 +187,13 @@ export async function updateCustomer(
       where: { id: Number(customerId) },
       data: {
         name: customerData.name,
-        email: customerData.email,
-        phone: customerData.phone,
+        email: customerData.email || (customerData.email === "" ? null : undefined),
+        phone: customerData.phone || (customerData.phone === "" ? null : undefined),
         avatar: customerData.avatar,
-        street: customerData.address?.street,
-        city: customerData.address?.city,
-        state: customerData.address?.state,
-        zip: customerData.address?.zip,
+        street: customerData.address?.street || (customerData.address?.street === "" ? null : undefined),
+        city: customerData.address?.city || (customerData.address?.city === "" ? null : undefined),
+        state: customerData.address?.state || (customerData.address?.state === "" ? null : undefined),
+        zip: customerData.address?.zip || (customerData.address?.zip === "" ? null : undefined),
         role: customerData.role,
         isActive: customerData.isActive,
       } as any,
@@ -203,7 +205,7 @@ export async function updateCustomer(
     return {
       id: updatedCustomer.id,
       name: updatedCustomer.name,
-      email: updatedCustomer.email,
+      email: updatedCustomer.email || undefined,
       phone: updatedCustomer.phone || "",
       avatar: updatedCustomer.avatar || "",
       address: {
@@ -314,6 +316,53 @@ export async function toggleCustomerStatus(customerId: string | number, isActive
   } catch (error) {
     console.error('Error in toggleCustomerStatus:', error);
     return false;
+  }
+}
+
+export async function deleteCustomer(customerId: string | number): Promise<{ success: boolean; message: string }> {
+  try {
+    const user = await getCurrentUser();
+    if (!user || !user.permissions?.customers) {
+      throw new Error("Permission denied");
+    }
+
+    const id = Number(customerId);
+
+    // Check for orders
+    const orderCount = await prisma.order.count({
+      where: { customerId: id }
+    });
+
+    if (orderCount > 0) {
+      return { 
+        success: false, 
+        message: "Cannot delete customer with existing orders. Consider deactivating instead." 
+      };
+    }
+
+    // Check for pre-orders
+    const preOrderCount = await prisma.preOrder.count({
+      where: { customerId: id }
+    });
+
+    if (preOrderCount > 0) {
+      return { 
+        success: false, 
+        message: "Cannot delete customer with existing pre-orders. Consider deactivating instead." 
+      };
+    }
+
+    await prisma.customer.delete({
+      where: { id: id }
+    });
+
+    return { success: true, message: "Customer deleted successfully" };
+  } catch (error: any) {
+    console.error('Error in deleteCustomer:', error);
+    return { 
+      success: false, 
+      message: error.message || "Failed to delete customer" 
+    };
   }
 }
 

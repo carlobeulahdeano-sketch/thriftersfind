@@ -32,9 +32,19 @@ import { CreateCustomerDialog } from "./create-customer-dialog";
 import { EditCustomerDialog } from "./edit-customer-dialog";
 import { ViewCustomerDialog } from "./view-customer-dialog";
 import { Switch } from "@/components/ui/switch";
-import { toggleCustomerStatus } from "../actions";
+import { toggleCustomerStatus, deleteCustomer } from "../actions";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -54,6 +64,8 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
   const [isCreateDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [editingCustomer, setEditingCustomer] = React.useState<Customer | null>(null);
   const [viewingCustomer, setViewingCustomer] = React.useState<Customer | null>(null);
+  const [deletingCustomer, setDeletingCustomer] = React.useState<Customer | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
 
   React.useEffect(() => {
@@ -74,7 +86,7 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
       filtered = filtered.filter(
         (customer) =>
           customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+          (customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
       );
     }
 
@@ -120,6 +132,38 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
       setAllCustomers(prev => prev.map(c =>
         c.id === customerId ? { ...c, isActive: currentStatus } : c
       ));
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (!deletingCustomer) return;
+
+    setIsDeleting(true);
+    try {
+      const result = await deleteCustomer(deletingCustomer.id);
+
+      if (result.success) {
+        toast({
+          title: "Customer deleted",
+          description: result.message,
+        });
+        if (onCustomerAdded) onCustomerAdded();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred",
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeletingCustomer(null);
     }
   };
 
@@ -215,6 +259,12 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setViewingCustomer(customer)}>View details</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setEditingCustomer(customer)}>Edit</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-red-600 focus:text-red-600" 
+                          onClick={() => setDeletingCustomer(customer)}
+                        >
+                          Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -269,6 +319,35 @@ export default function CustomerTable({ customers: initialCustomers, onCustomerA
         onClose={() => setViewingCustomer(null)}
         customer={viewingCustomer}
       />
+      
+      <AlertDialog open={!!deletingCustomer} onOpenChange={(open) => !open && setDeletingCustomer(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the customer
+              <strong> {deletingCustomer?.name}</strong> and remove their data from our servers.
+              <br /><br />
+              <span className="text-amber-600 font-medium italic text-xs">
+                Note: Deletion will be blocked if the customer has existing orders or pre-orders.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteCustomer();
+              }}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? "Deleting..." : "Delete Customer"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -59,14 +59,14 @@ export function CreateCustomerDialog({
 
       const newCustomerData: Omit<Customer, 'id'> = {
         name,
-        email,
-        phone,
+        email: email || undefined,
+        phone: phone || undefined,
         avatar: '',
         address: {
-          street: addressParts[0] || 'N/A',
-          city: addressParts[1] || 'N/A',
-          state: addressParts[2] || 'N/A',
-          zip: addressParts[3] || 'N/A'
+          street: addressParts[0] || undefined,
+          city: addressParts[1] || undefined,
+          state: addressParts[2] || undefined,
+          zip: addressParts[3] || undefined
         },
         orderHistory: [],
         totalSpent: 0

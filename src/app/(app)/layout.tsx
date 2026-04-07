@@ -110,6 +110,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { key: 'orders', path: '/orders' },
         { key: 'batches', path: '/batches' },
         { key: 'inventory', path: '/inventory' },
+        { key: 'branches', path: '/branches' },
         { key: 'customers', path: '/customers' },
         { key: 'stations', path: '/stations' },
         { key: 'warehouses', path: '/warehouses' },

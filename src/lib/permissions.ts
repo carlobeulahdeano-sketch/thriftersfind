@@ -15,6 +15,7 @@ export function hasPermission(
         if (pathname.startsWith('/users') ||
             pathname.startsWith('/settings') ||
             pathname.startsWith('/profile') ||
+            pathname.startsWith('/branches') ||
             pathname.startsWith('/admin')) {
             return true;
         }
@@ -56,6 +57,7 @@ export function hasPermission(
     if (normalizedPath.startsWith('/reports')) return !!permissions?.reports;
     if (normalizedPath.startsWith('/users')) return !!permissions?.users;
     if (normalizedPath.startsWith('/settings')) return !!permissions?.settings;
+    if (normalizedPath.startsWith('/branches')) return !!permissions?.branches;
 
     // Default to true if path is not recognized (though everything should be covered)
     return true;

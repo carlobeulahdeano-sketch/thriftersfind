@@ -104,6 +104,12 @@ const links = [
     icon: <TrendingUp />,
     permission: "sales",
   },
+  {
+    href: "/branches",
+    label: "Branches",
+    icon: <MapPin />,
+    permission: "branches",
+  },
 
   {
     href: "/users",

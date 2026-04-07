@@ -158,7 +158,7 @@ export function EditOrderDialog({
 
   const handleCustomerSelect = (customer: Customer) => {
     setCustomerName(customer.name);
-    setContactNumber(customer.phone);
+    setContactNumber(customer.phone || "");
     setAddress([customer.address.street, customer.address.city, customer.address.state].filter(Boolean).join(', '));
     setComboboxOpen(false);
   }

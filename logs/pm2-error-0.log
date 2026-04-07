@@ -5015,3 +5015,582 @@
 2026-03-11 16:21:40:   clientVersion: '5.7.1',
 2026-03-11 16:21:40:   digest: '3653234147'
 2026-03-11 16:21:40: }
+2026-03-17 17:22:05: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-03-17 17:22:05: Invalid `prisma.batch.findUnique()` invocation:
+2026-03-17 17:22:05: 
+2026-03-17 17:22:05: {
+2026-03-17 17:22:05:   where: {
+2026-03-17 17:22:05: +   id: Int
+2026-03-17 17:22:05:   }
+2026-03-17 17:22:05: }
+2026-03-17 17:22:05: 
+2026-03-17 17:22:05: Argument `id` is missing.
+2026-03-17 17:22:05:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-03-17 17:22:05:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-03-17 17:22:05:   clientVersion: '5.7.1'
+2026-03-17 17:22:05: }
+2026-03-17 17:22:05: ⨯ Error: 
+2026-03-17 17:22:05: Invalid `prisma.batch.findUnique()` invocation:
+2026-03-17 17:22:05: 
+2026-03-17 17:22:05: {
+2026-03-17 17:22:05:   where: {
+2026-03-17 17:22:05: +   id: Int
+2026-03-17 17:22:05:   }
+2026-03-17 17:22:05: }
+2026-03-17 17:22:05: 
+2026-03-17 17:22:05: Argument `id` is missing.
+2026-03-17 17:22:05:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-03-17 17:22:05:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-03-17 17:22:05:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-03-17 17:22:05:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-03-17 17:22:05:   digest: '3133041108'
+2026-03-17 17:22:05: }
+2026-03-17 17:22:19: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-03-17 17:22:19: Invalid `prisma.batch.findUnique()` invocation:
+2026-03-17 17:22:19: 
+2026-03-17 17:22:19: {
+2026-03-17 17:22:19:   where: {
+2026-03-17 17:22:19: +   id: Int
+2026-03-17 17:22:19:   }
+2026-03-17 17:22:19: }
+2026-03-17 17:22:19: 
+2026-03-17 17:22:19: Argument `id` is missing.
+2026-03-17 17:22:19:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-03-17 17:22:19:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-03-17 17:22:19:   clientVersion: '5.7.1'
+2026-03-17 17:22:19: }
+2026-03-17 17:22:19: ⨯ Error: 
+2026-03-17 17:22:19: Invalid `prisma.batch.findUnique()` invocation:
+2026-03-17 17:22:19: 
+2026-03-17 17:22:19: {
+2026-03-17 17:22:19:   where: {
+2026-03-17 17:22:19: +   id: Int
+2026-03-17 17:22:19:   }
+2026-03-17 17:22:19: }
+2026-03-17 17:22:19: 
+2026-03-17 17:22:19: Argument `id` is missing.
+2026-03-17 17:22:19:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-03-17 17:22:19:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-03-17 17:22:19:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-03-17 17:22:19:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-03-17 17:22:19:   digest: '3133041108'
+2026-03-17 17:22:19: }
+2026-03-17 17:22:28: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-03-17 17:22:28: Invalid `prisma.batch.findUnique()` invocation:
+2026-03-17 17:22:28: 
+2026-03-17 17:22:28: {
+2026-03-17 17:22:28:   where: {
+2026-03-17 17:22:28: +   id: Int
+2026-03-17 17:22:28:   }
+2026-03-17 17:22:28: }
+2026-03-17 17:22:28: 
+2026-03-17 17:22:28: Argument `id` is missing.
+2026-03-17 17:22:28:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-03-17 17:22:28:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-03-17 17:22:28:   clientVersion: '5.7.1'
+2026-03-17 17:22:28: }
+2026-03-17 17:22:28: ⨯ Error: 
+2026-03-17 17:22:28: Invalid `prisma.batch.findUnique()` invocation:
+2026-03-17 17:22:28: 
+2026-03-17 17:22:28: {
+2026-03-17 17:22:28:   where: {
+2026-03-17 17:22:28: +   id: Int
+2026-03-17 17:22:28:   }
+2026-03-17 17:22:28: }
+2026-03-17 17:22:28: 
+2026-03-17 17:22:28: Argument `id` is missing.
+2026-03-17 17:22:28:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-03-17 17:22:28:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-03-17 17:22:28:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-03-17 17:22:28:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-03-17 17:22:28:   digest: '3133041108'
+2026-03-17 17:22:28: }
+2026-03-17 17:22:39: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-03-17 17:22:39: Invalid `prisma.batch.findUnique()` invocation:
+2026-03-17 17:22:39: 
+2026-03-17 17:22:39: {
+2026-03-17 17:22:39:   where: {
+2026-03-17 17:22:39: +   id: Int
+2026-03-17 17:22:39:   }
+2026-03-17 17:22:39: }
+2026-03-17 17:22:39: 
+2026-03-17 17:22:39: Argument `id` is missing.
+2026-03-17 17:22:39:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-03-17 17:22:39:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-03-17 17:22:39:   clientVersion: '5.7.1'
+2026-03-17 17:22:39: }
+2026-03-17 17:22:39: ⨯ Error: 
+2026-03-17 17:22:39: Invalid `prisma.batch.findUnique()` invocation:
+2026-03-17 17:22:39: 
+2026-03-17 17:22:39: {
+2026-03-17 17:22:39:   where: {
+2026-03-17 17:22:39: +   id: Int
+2026-03-17 17:22:39:   }
+2026-03-17 17:22:39: }
+2026-03-17 17:22:39: 
+2026-03-17 17:22:39: Argument `id` is missing.
+2026-03-17 17:22:39:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-03-17 17:22:39:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-03-17 17:22:39:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-03-17 17:22:39:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-03-17 17:22:39:   digest: '3133041108'
+2026-03-17 17:22:39: }
+2026-03-24 14:56:59: Error in updateCustomer: Error [PrismaClientKnownRequestError]: 
+2026-03-24 14:56:59: Invalid `prisma.customer.update()` invocation:
+2026-03-24 14:56:59: 
+2026-03-24 14:56:59: 
+2026-03-24 14:56:59: Unique constraint failed on the constraint: `customers_email_key`
+2026-03-24 14:56:59:     at async g (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\[root-of-the-server]__d9c780ca._.js:2:4128)
+2026-03-24 14:56:59:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_1cc4b769._.js:1:7339) {
+2026-03-24 14:56:59:   code: 'P2002',
+2026-03-24 14:56:59:   clientVersion: '5.7.1',
+2026-03-24 14:56:59:   meta: [Object]
+2026-03-24 14:56:59: }
+2026-03-24 14:56:59: ⨯ Error [PrismaClientKnownRequestError]: 
+2026-03-24 14:56:59: Invalid `prisma.customer.update()` invocation:
+2026-03-24 14:56:59: 
+2026-03-24 14:56:59: 
+2026-03-24 14:56:59: Unique constraint failed on the constraint: `customers_email_key`
+2026-03-24 14:56:59:     at async g (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\[root-of-the-server]__d9c780ca._.js:2:4128)
+2026-03-24 14:56:59:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_1cc4b769._.js:1:7339) {
+2026-03-24 14:56:59:   code: 'P2002',
+2026-03-24 14:56:59:   clientVersion: '5.7.1',
+2026-03-24 14:56:59:   meta: [Object],
+2026-03-24 14:56:59:   digest: '4255805742'
+2026-03-24 14:56:59: }
+2026-03-24 14:57:05: Error in updateCustomer: Error [PrismaClientKnownRequestError]: 
+2026-03-24 14:57:05: Invalid `prisma.customer.update()` invocation:
+2026-03-24 14:57:05: 
+2026-03-24 14:57:05: 
+2026-03-24 14:57:05: Unique constraint failed on the constraint: `customers_email_key`
+2026-03-24 14:57:05:     at async g (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\[root-of-the-server]__d9c780ca._.js:2:4128)
+2026-03-24 14:57:05:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_1cc4b769._.js:1:7339) {
+2026-03-24 14:57:05:   code: 'P2002',
+2026-03-24 14:57:05:   clientVersion: '5.7.1',
+2026-03-24 14:57:05:   meta: [Object]
+2026-03-24 14:57:05: }
+2026-03-24 14:57:05: ⨯ Error [PrismaClientKnownRequestError]: 
+2026-03-24 14:57:05: Invalid `prisma.customer.update()` invocation:
+2026-03-24 14:57:05: 
+2026-03-24 14:57:05: 
+2026-03-24 14:57:05: Unique constraint failed on the constraint: `customers_email_key`
+2026-03-24 14:57:05:     at async g (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\[root-of-the-server]__d9c780ca._.js:2:4128)
+2026-03-24 14:57:05:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_1cc4b769._.js:1:7339) {
+2026-03-24 14:57:05:   code: 'P2002',
+2026-03-24 14:57:05:   clientVersion: '5.7.1',
+2026-03-24 14:57:05:   meta: [Object],
+2026-03-24 14:57:05:   digest: '4255805742'
+2026-03-24 14:57:05: }
+2026-03-24 14:57:13: Error in updateCustomer: Error [PrismaClientKnownRequestError]: 
+2026-03-24 14:57:13: Invalid `prisma.customer.update()` invocation:
+2026-03-24 14:57:13: 
+2026-03-24 14:57:13: 
+2026-03-24 14:57:13: Unique constraint failed on the constraint: `customers_email_key`
+2026-03-24 14:57:13:     at async g (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\[root-of-the-server]__d9c780ca._.js:2:4128)
+2026-03-24 14:57:13:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_1cc4b769._.js:1:7339) {
+2026-03-24 14:57:13:   code: 'P2002',
+2026-03-24 14:57:13:   clientVersion: '5.7.1',
+2026-03-24 14:57:13:   meta: [Object]
+2026-03-24 14:57:13: }
+2026-03-24 14:57:13: ⨯ Error [PrismaClientKnownRequestError]: 
+2026-03-24 14:57:13: Invalid `prisma.customer.update()` invocation:
+2026-03-24 14:57:13: 
+2026-03-24 14:57:13: 
+2026-03-24 14:57:13: Unique constraint failed on the constraint: `customers_email_key`
+2026-03-24 14:57:13:     at async g (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\[root-of-the-server]__d9c780ca._.js:2:4128)
+2026-03-24 14:57:13:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_1cc4b769._.js:1:7339) {
+2026-03-24 14:57:13:   code: 'P2002',
+2026-03-24 14:57:13:   clientVersion: '5.7.1',
+2026-03-24 14:57:13:   meta: [Object],
+2026-03-24 14:57:13:   digest: '4255805742'
+2026-03-24 14:57:13: }
+2026-04-07 15:49:48: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 15:49:48: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:49:48: 
+2026-04-07 15:49:48: {
+2026-04-07 15:49:48:   where: {
+2026-04-07 15:49:48: +   id: Int
+2026-04-07 15:49:48:   }
+2026-04-07 15:49:48: }
+2026-04-07 15:49:48: 
+2026-04-07 15:49:48: Argument `id` is missing.
+2026-04-07 15:49:48:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 15:49:48:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 15:49:48:   clientVersion: '5.7.1'
+2026-04-07 15:49:48: }
+2026-04-07 15:49:48: ⨯ Error: 
+2026-04-07 15:49:48: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:49:48: 
+2026-04-07 15:49:48: {
+2026-04-07 15:49:48:   where: {
+2026-04-07 15:49:48: +   id: Int
+2026-04-07 15:49:48:   }
+2026-04-07 15:49:48: }
+2026-04-07 15:49:48: 
+2026-04-07 15:49:48: Argument `id` is missing.
+2026-04-07 15:49:48:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 15:49:48:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 15:49:48:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 15:49:48:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 15:49:48:   digest: '3133041108'
+2026-04-07 15:49:48: }
+2026-04-07 15:50:04: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 15:50:04: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:50:04: 
+2026-04-07 15:50:04: {
+2026-04-07 15:50:04:   where: {
+2026-04-07 15:50:04: +   id: Int
+2026-04-07 15:50:04:   }
+2026-04-07 15:50:04: }
+2026-04-07 15:50:04: 
+2026-04-07 15:50:04: Argument `id` is missing.
+2026-04-07 15:50:04:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 15:50:04:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 15:50:04:   clientVersion: '5.7.1'
+2026-04-07 15:50:04: }
+2026-04-07 15:50:04: ⨯ Error: 
+2026-04-07 15:50:04: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:50:04: 
+2026-04-07 15:50:04: {
+2026-04-07 15:50:04:   where: {
+2026-04-07 15:50:04: +   id: Int
+2026-04-07 15:50:04:   }
+2026-04-07 15:50:04: }
+2026-04-07 15:50:04: 
+2026-04-07 15:50:04: Argument `id` is missing.
+2026-04-07 15:50:04:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 15:50:04:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 15:50:04:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 15:50:04:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 15:50:04:   digest: '3133041108'
+2026-04-07 15:50:04: }
+2026-04-07 15:50:48: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 15:50:48: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:50:48: 
+2026-04-07 15:50:48: {
+2026-04-07 15:50:48:   where: {
+2026-04-07 15:50:48: +   id: Int
+2026-04-07 15:50:48:   }
+2026-04-07 15:50:48: }
+2026-04-07 15:50:48: 
+2026-04-07 15:50:48: Argument `id` is missing.
+2026-04-07 15:50:48:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 15:50:48:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 15:50:48:   clientVersion: '5.7.1'
+2026-04-07 15:50:48: }
+2026-04-07 15:50:48: ⨯ Error: 
+2026-04-07 15:50:48: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:50:48: 
+2026-04-07 15:50:48: {
+2026-04-07 15:50:48:   where: {
+2026-04-07 15:50:48: +   id: Int
+2026-04-07 15:50:48:   }
+2026-04-07 15:50:48: }
+2026-04-07 15:50:48: 
+2026-04-07 15:50:48: Argument `id` is missing.
+2026-04-07 15:50:48:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 15:50:48:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 15:50:48:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 15:50:48:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 15:50:48:   digest: '3133041108'
+2026-04-07 15:50:48: }
+2026-04-07 15:50:55: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 15:50:55: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:50:55: 
+2026-04-07 15:50:55: {
+2026-04-07 15:50:55:   where: {
+2026-04-07 15:50:55: +   id: Int
+2026-04-07 15:50:55:   }
+2026-04-07 15:50:55: }
+2026-04-07 15:50:55: 
+2026-04-07 15:50:55: Argument `id` is missing.
+2026-04-07 15:50:55:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 15:50:55:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 15:50:55:   clientVersion: '5.7.1'
+2026-04-07 15:50:55: }
+2026-04-07 15:50:55: ⨯ Error: 
+2026-04-07 15:50:55: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:50:55: 
+2026-04-07 15:50:55: {
+2026-04-07 15:50:55:   where: {
+2026-04-07 15:50:55: +   id: Int
+2026-04-07 15:50:55:   }
+2026-04-07 15:50:55: }
+2026-04-07 15:50:55: 
+2026-04-07 15:50:55: Argument `id` is missing.
+2026-04-07 15:50:55:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 15:50:55:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 15:50:55:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 15:50:55:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 15:50:55:   digest: '3133041108'
+2026-04-07 15:50:55: }
+2026-04-07 15:51:25: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 15:51:25: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:51:25: 
+2026-04-07 15:51:25: {
+2026-04-07 15:51:25:   where: {
+2026-04-07 15:51:25: +   id: Int
+2026-04-07 15:51:25:   }
+2026-04-07 15:51:25: }
+2026-04-07 15:51:25: 
+2026-04-07 15:51:25: Argument `id` is missing.
+2026-04-07 15:51:25:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 15:51:25:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 15:51:25:   clientVersion: '5.7.1'
+2026-04-07 15:51:25: }
+2026-04-07 15:51:25: ⨯ Error: 
+2026-04-07 15:51:25: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:51:25: 
+2026-04-07 15:51:25: {
+2026-04-07 15:51:25:   where: {
+2026-04-07 15:51:25: +   id: Int
+2026-04-07 15:51:25:   }
+2026-04-07 15:51:25: }
+2026-04-07 15:51:25: 
+2026-04-07 15:51:25: Argument `id` is missing.
+2026-04-07 15:51:25:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 15:51:25:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 15:51:25:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 15:51:25:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 15:51:25:   digest: '3133041108'
+2026-04-07 15:51:25: }
+2026-04-07 15:54:02: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 15:54:02: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:54:02: 
+2026-04-07 15:54:02: {
+2026-04-07 15:54:02:   where: {
+2026-04-07 15:54:02: +   id: Int
+2026-04-07 15:54:02:   }
+2026-04-07 15:54:02: }
+2026-04-07 15:54:02: 
+2026-04-07 15:54:02: Argument `id` is missing.
+2026-04-07 15:54:02:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 15:54:02:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 15:54:02:   clientVersion: '5.7.1'
+2026-04-07 15:54:02: }
+2026-04-07 15:54:02: ⨯ Error: 
+2026-04-07 15:54:02: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:54:02: 
+2026-04-07 15:54:02: {
+2026-04-07 15:54:02:   where: {
+2026-04-07 15:54:02: +   id: Int
+2026-04-07 15:54:02:   }
+2026-04-07 15:54:02: }
+2026-04-07 15:54:02: 
+2026-04-07 15:54:02: Argument `id` is missing.
+2026-04-07 15:54:02:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 15:54:02:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 15:54:02:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 15:54:02:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 15:54:02:   digest: '3133041108'
+2026-04-07 15:54:02: }
+2026-04-07 15:54:29: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 15:54:29: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:54:29: 
+2026-04-07 15:54:29: {
+2026-04-07 15:54:29:   where: {
+2026-04-07 15:54:29: +   id: Int
+2026-04-07 15:54:29:   }
+2026-04-07 15:54:29: }
+2026-04-07 15:54:29: 
+2026-04-07 15:54:29: Argument `id` is missing.
+2026-04-07 15:54:29:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 15:54:29:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 15:54:29:   clientVersion: '5.7.1'
+2026-04-07 15:54:29: }
+2026-04-07 15:54:29: ⨯ Error: 
+2026-04-07 15:54:29: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 15:54:29: 
+2026-04-07 15:54:29: {
+2026-04-07 15:54:29:   where: {
+2026-04-07 15:54:29: +   id: Int
+2026-04-07 15:54:29:   }
+2026-04-07 15:54:29: }
+2026-04-07 15:54:29: 
+2026-04-07 15:54:29: Argument `id` is missing.
+2026-04-07 15:54:29:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 15:54:29:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 15:54:29:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 15:54:29:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 15:54:29:   digest: '3133041108'
+2026-04-07 15:54:29: }
+2026-04-07 16:03:03: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 16:03:03: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 16:03:03: 
+2026-04-07 16:03:03: {
+2026-04-07 16:03:03:   where: {
+2026-04-07 16:03:03: +   id: Int
+2026-04-07 16:03:03:   }
+2026-04-07 16:03:03: }
+2026-04-07 16:03:03: 
+2026-04-07 16:03:03: Argument `id` is missing.
+2026-04-07 16:03:03:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 16:03:03:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 16:03:03:   clientVersion: '5.7.1'
+2026-04-07 16:03:03: }
+2026-04-07 16:03:03: ⨯ Error: 
+2026-04-07 16:03:03: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 16:03:03: 
+2026-04-07 16:03:03: {
+2026-04-07 16:03:03:   where: {
+2026-04-07 16:03:03: +   id: Int
+2026-04-07 16:03:03:   }
+2026-04-07 16:03:03: }
+2026-04-07 16:03:03: 
+2026-04-07 16:03:03: Argument `id` is missing.
+2026-04-07 16:03:03:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 16:03:03:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 16:03:03:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 16:03:03:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 16:03:03:   digest: '3133041108'
+2026-04-07 16:03:03: }
+2026-04-07 16:03:52: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 16:03:52: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 16:03:52: 
+2026-04-07 16:03:52: {
+2026-04-07 16:03:52:   where: {
+2026-04-07 16:03:52: +   id: Int
+2026-04-07 16:03:52:   }
+2026-04-07 16:03:52: }
+2026-04-07 16:03:52: 
+2026-04-07 16:03:52: Argument `id` is missing.
+2026-04-07 16:03:52:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 16:03:52:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 16:03:52:   clientVersion: '5.7.1'
+2026-04-07 16:03:52: }
+2026-04-07 16:03:52: ⨯ Error: 
+2026-04-07 16:03:52: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 16:03:52: 
+2026-04-07 16:03:52: {
+2026-04-07 16:03:52:   where: {
+2026-04-07 16:03:52: +   id: Int
+2026-04-07 16:03:52:   }
+2026-04-07 16:03:52: }
+2026-04-07 16:03:52: 
+2026-04-07 16:03:52: Argument `id` is missing.
+2026-04-07 16:03:52:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 16:03:52:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 16:03:52:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 16:03:52:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 16:03:52:   digest: '3133041108'
+2026-04-07 16:03:52: }
+2026-04-07 16:04:20: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 16:04:20: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 16:04:20: 
+2026-04-07 16:04:20: {
+2026-04-07 16:04:20:   where: {
+2026-04-07 16:04:20: +   id: Int
+2026-04-07 16:04:20:   }
+2026-04-07 16:04:20: }
+2026-04-07 16:04:20: 
+2026-04-07 16:04:20: Argument `id` is missing.
+2026-04-07 16:04:20:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 16:04:20:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 16:04:20:   clientVersion: '5.7.1'
+2026-04-07 16:04:20: }
+2026-04-07 16:04:20: ⨯ Error: 
+2026-04-07 16:04:20: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 16:04:20: 
+2026-04-07 16:04:20: {
+2026-04-07 16:04:20:   where: {
+2026-04-07 16:04:20: +   id: Int
+2026-04-07 16:04:20:   }
+2026-04-07 16:04:20: }
+2026-04-07 16:04:20: 
+2026-04-07 16:04:20: Argument `id` is missing.
+2026-04-07 16:04:20:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 16:04:20:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 16:04:20:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 16:04:20:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 16:04:20:   digest: '3133041108'
+2026-04-07 16:04:20: }
+2026-04-07 16:20:28: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 16:20:28: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 16:20:28: 
+2026-04-07 16:20:28: {
+2026-04-07 16:20:28:   where: {
+2026-04-07 16:20:28: +   id: Int
+2026-04-07 16:20:28:   }
+2026-04-07 16:20:28: }
+2026-04-07 16:20:28: 
+2026-04-07 16:20:28: Argument `id` is missing.
+2026-04-07 16:20:28:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 16:20:28:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 16:20:28:   clientVersion: '5.7.1'
+2026-04-07 16:20:28: }
+2026-04-07 16:20:28: ⨯ Error: 
+2026-04-07 16:20:28: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 16:20:28: 
+2026-04-07 16:20:28: {
+2026-04-07 16:20:28:   where: {
+2026-04-07 16:20:28: +   id: Int
+2026-04-07 16:20:28:   }
+2026-04-07 16:20:28: }
+2026-04-07 16:20:28: 
+2026-04-07 16:20:28: Argument `id` is missing.
+2026-04-07 16:20:28:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 16:20:28:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 16:20:28:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 16:20:28:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 16:20:28:   digest: '3133041108'
+2026-04-07 16:20:28: }
+2026-04-07 17:04:21: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 17:04:21: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 17:04:21: 
+2026-04-07 17:04:21: {
+2026-04-07 17:04:21:   where: {
+2026-04-07 17:04:21: +   id: Int
+2026-04-07 17:04:21:   }
+2026-04-07 17:04:21: }
+2026-04-07 17:04:21: 
+2026-04-07 17:04:21: Argument `id` is missing.
+2026-04-07 17:04:21:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 17:04:21:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 17:04:21:   clientVersion: '5.7.1'
+2026-04-07 17:04:21: }
+2026-04-07 17:04:21: ⨯ Error: 
+2026-04-07 17:04:21: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 17:04:21: 
+2026-04-07 17:04:21: {
+2026-04-07 17:04:21:   where: {
+2026-04-07 17:04:21: +   id: Int
+2026-04-07 17:04:21:   }
+2026-04-07 17:04:21: }
+2026-04-07 17:04:21: 
+2026-04-07 17:04:21: Argument `id` is missing.
+2026-04-07 17:04:21:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 17:04:21:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 17:04:21:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 17:04:21:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 17:04:21:   digest: '3133041108'
+2026-04-07 17:04:21: }
+2026-04-07 17:08:02: CRITICAL ERROR in createOrder: Error [PrismaClientValidationError]: 
+2026-04-07 17:08:02: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 17:08:02: 
+2026-04-07 17:08:02: {
+2026-04-07 17:08:02:   where: {
+2026-04-07 17:08:02: +   id: Int
+2026-04-07 17:08:02:   }
+2026-04-07 17:08:02: }
+2026-04-07 17:08:02: 
+2026-04-07 17:08:02: Argument `id` is missing.
+2026-04-07 17:08:02:     at async c.prisma.$transaction.timeout (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:4561)
+2026-04-07 17:08:02:     at async i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:2946) {
+2026-04-07 17:08:02:   clientVersion: '5.7.1'
+2026-04-07 17:08:02: }
+2026-04-07 17:08:02: ⨯ Error: 
+2026-04-07 17:08:02: Invalid `prisma.batch.findUnique()` invocation:
+2026-04-07 17:08:02: 
+2026-04-07 17:08:02: {
+2026-04-07 17:08:02:   where: {
+2026-04-07 17:08:02: +   id: Int
+2026-04-07 17:08:02:   }
+2026-04-07 17:08:02: }
+2026-04-07 17:08:02: 
+2026-04-07 17:08:02: Argument `id` is missing.
+2026-04-07 17:08:02:     at i (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\src_app_(app)_orders_actions_ts_4e59be62._.js:1:5816)
+2026-04-07 17:08:02:     at async m (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:1:7324)
+2026-04-07 17:08:02:     at async o (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:2713)
+2026-04-07 17:08:02:     at async Module.J (c:\Users\Carlo Beulah\Desktop\thriftersfind\.next\server\chunks\ssr\_f1c5e49b._.js:2:7928) {
+2026-04-07 17:08:02:   digest: '3133041108'
+2026-04-07 17:08:02: }

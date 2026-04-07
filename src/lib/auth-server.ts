@@ -65,7 +65,7 @@ export async function checkPermission(permission: keyof UserPermissions): Promis
 
     // Safety net: Super admins always have access to critical features to prevent lockout
     const isSuperAdmin = user.role?.name?.toLowerCase() === 'super admin';
-    if (isSuperAdmin && (permission === 'users' || permission === 'settings' || permission === 'adminManage')) {
+    if (isSuperAdmin && (permission === 'users' || permission === 'settings' || permission === 'adminManage' || permission === 'branches')) {
         return true;
     }
 

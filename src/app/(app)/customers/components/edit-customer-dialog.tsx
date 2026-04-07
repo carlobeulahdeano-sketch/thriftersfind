@@ -41,8 +41,8 @@ export function EditCustomerDialog({
   useEffect(() => {
     if (customer) {
       setName(customer.name);
-      setEmail(customer.email);
-      setPhone(customer.phone);
+      setEmail(customer.email || "");
+      setPhone(customer.phone || "");
       const { street, city, state, zip } = customer.address;
       setAddress([street, city, state, zip].filter(item => item && item !== 'N/A').join(', '));
     }
@@ -65,13 +65,13 @@ export function EditCustomerDialog({
       const addressParts = address.split(',').map(s => s.trim());
       const updatedData: Partial<Omit<Customer, 'id' | 'orderHistory' | 'totalSpent'>> = {
         name,
-        email,
-        phone,
+        email: email || "",
+        phone: phone || "",
         address: {
-          street: addressParts[0] || 'N/A',
-          city: addressParts[1] || 'N/A',
-          state: addressParts[2] || 'N/A',
-          zip: addressParts[3] || 'N/A',
+          street: addressParts[0] || "",
+          city: addressParts[1] || "",
+          state: addressParts[2] || "",
+          zip: addressParts[3] || "",
         },
       };
 
